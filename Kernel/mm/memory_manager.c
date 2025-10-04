@@ -1,105 +1,92 @@
 #include "memory_manager.h"
 
-//TOTAL_MEM_SIZE
-
-//MAX_BLOCKS ??
-//BLOCK_SIZE ??
-
 #define TOTAL_MEM_SIZE (16 * 1024)  //16KB de memoria iniciales. Pure64 deja mucho mas.
 #define BLOCK_SIZE (4 * 1024)       //Mínimo 4KB, una página. No usamos páginas pero es un lindo numero
 #define MAX_BLOCKS (TOTAL_MEM_SIZE/BLOCK_SIZE)
+#define BASE_ADDRESS 0x0000000000100000
 
 #define FREE 0
 #define USED 1
 
-/**
- * Crea un bloque de memoria
- * Formato lista: conoce su tamaño y quién le sigue
- * Para fines de consulta, también conoce su estado
-*/
-typedef struct mem_block_cdt
+//void * base_address;
+
+typedef struct mem_block
 {
-    mem_block_adt next_addr;
-    unsigned long int size; //TODO: para que...?
+    unsigned long int start;
+    unsigned long int end;
     int status;
-} mem_block_cdt;
+} mem_block;
 
-static mem_block_adt base_block;
+mem_block memory_array[MAX_BLOCKS];
+static int mem_initialize = 0;
 
-/**
- * Crea la memoria a partir de una dirección inicial (base)
-*/
-mem_block_adt create_mm(void * const restrict base_addr){
-    
-    base_block = (mem_block_adt) base_addr;
-    
-    base_block->next_addr = NULL;
-    base_block->size = BLOCK_SIZE;
-    base_block->status = FREE;
-    
-    return base_block;
+//Crea la memoria a partir de una dirección inicial (base)
+
+void create_mm(){
+    if (mem_initialize)
+        return;
+
+    mem_initialize = 1;
+    //base_address = base_addr;
+    for(int i = 0; i <  MAX_BLOCKS; i++)
+        memory_array[i].status = FREE;
 }
 
-/**
- * Aloco un nuevo bloque
-*/
-void *alloc_mm(const unsigned long int size){
-    //TODO: recibe un size. entonces el size es dinamico? o lo hacemos fijo para cada bloque y le asignamos una secuencia de bloques?
+void * alloc(const unsigned long int size){ 
+    int blocks = size / BLOCK_SIZE;
+    int available_space = 0;
 
-    //TODO: probablemente algunos casos mas
-    if(size <= 0 || size >= TOTAL_MEM_SIZE || size + used_mem() >= TOTAL_MEM_SIZE){
+    if (!mem_initialize)
         return NULL;
-    }
 
-    //TODO: Recorro la lista hasta encontrar uno FREE ó llegar al final de la lista
-    //while();
-    mem_block_adt new_block = NULL;
-
-    new_block->next_addr += size;
-
-	return (void *) new_block;
-
-}
-
-void free_mm(){
-
-    //algoritmo eliminacion de nodo
-    //mem_block_adt aux;
-
-}
-
-int *status_count(){
-    int block_count = 0;
-    int free_count = 0;
-    int used_count = 0;
-    mem_block_adt next_block = BASE_ADDR;    //inicio de la memoria
-    while(next_block != NULL){
-        block_count++;
-        if(next_block->status == FREE)
-            free_count++;
-        else if(next_block->status == USED)
-            used_count++;
-
-        next_block = next_block->next_addr;
-    }
-    int status_count[3] = {block_count, free_count, used_count};
-    return status_count;
-}
-
-/**
- * Cuenta la memoria asignada Y libre
-*/
-int used_mem(){
-    size_t used_mem = 0;
-
-    mem_block_adt current = base_block;
-
-    while(current){
-        if(current->status == USED){
-            used_mem+=current->size;
+    for(int i = 0; i < MAX_BLOCKS; i++){
+        if(memory_array[i].status == FREE){
+            for(int j = 0; j < blocks; j++){
+                if (memory_array[i+j].status == USED){
+                    i += j;
+                    break;
+                }
+                if (j == blocks - 1) 
+                    available_space = 1;
+            }
+            if (available_space == 1){
+                for(int k = 0; k < blocks; k++){
+                    memory_array[i+k].status = USED;
+                    memory_array[i+k].start = i;
+                    memory_array[i+k].end = i + blocks - 1;
+                }
+            }
         }
-        current = current->next_addr;
+        
+        return (void *)((char *)BASE_ADDRESS + i * BLOCK_SIZE);
+
+        //return (void *)((char *)base_address + i * BLOCK_SIZE);
+    }
+    return NULL;
+}
+
+void free (void * address){
+    
+    int index = ((char *)address - (char *)BASE_ADDRESS)/BLOCK_SIZE;
+    
+    //int index = ((char *)address - (char *)base_address)/BLOCK_SIZE;
+    int start = memory_array[index].start;
+    int end = memory_array[index].end;
+    for(int i = start; i <= end; i++){
+        memory_array[i].status = FREE;
+    }
+}
+
+void status_count(int *status_out){
+    int block_count = MAX_BLOCKS;
+    int used_count = 0;
+
+    for(int i = 0; i < MAX_BLOCKS; i++){
+        if(memory_array[i].status == USED)
+            used_count++;      
     }
 
-    return used_mem;
+    status_out[0] = block_count;
+    status_out[1] = block_count - used_count;
+    status_out[2] = used_count;
 }
