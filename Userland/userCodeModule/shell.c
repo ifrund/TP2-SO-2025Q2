@@ -3,8 +3,9 @@
 #include "include/userlibasm.h"
 #include "include/snake.h"
 #include <stdint.h>
+#include "tests/test_mm.h"
 
-#define COMMANDS 15
+#define COMMANDS 16
 #define VERT_SIZE 32
 #define LINE_SIZE 63
 #define BUFFER_SIZE 128
@@ -16,7 +17,8 @@ char PROMPT_START[] = {127, 0};
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
-static char* commands[COMMANDS] = {"exit", "clear", "inc-size", "dec-size", "time", "sleep", "infoSleep", "help", "milisleep", "nanosleep", "registers", "snake", "test-div", "test-invalid", "speak"};
+static char* commands[COMMANDS] = {"exit", "clear", "inc-size", "dec-size", "time", "sleep", "infoSleep", "help", "milisleep", "nanosleep", 
+    "registers", "snake", "test-div", "test-invalid", "speak", "test-mm"};
 char char_buffer[1];
 
 // Cursors & flags
@@ -100,7 +102,9 @@ void process_key(char key){
     }
 }
 
-void process_command(char* buffer){
+void process_command(char* buffer /*, int read, int write*/){
+
+
    if (buffer[0] == '\0'){
         return;
     }
@@ -246,6 +250,12 @@ void process_command(char* buffer){
 
                 case 14:
                     beep(1000, 50);
+                    break;
+
+                case 15:
+                    //TODO q reciba argc y argv
+                    char *args[] = { "4096" };  
+                    test_mm(1, args);
                     break;
                     
             }   

@@ -6,6 +6,7 @@
 #include <time.h>
 #include <registers.h>
 #include <sound.h>
+#include "mm/memory_manager.h"
 
 #define STDIN 0
 #define STDOUT 1
@@ -51,6 +52,23 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
   case (0x84):
     sys_speak(rdi, rsi);
     break;
+
+  case (0x30):
+    sys_create_mm();
+    break;
+
+  case (0x31):
+    sys_alloc(rdi);
+    break;
+
+  case(0x32):
+    sys_free(rdi);
+    break;
+
+  case (0x33):
+    sys_status_count(rdi);
+    break;
+
   }
 }
 
@@ -129,4 +147,24 @@ void sys_changeSize(uint8_t newSize, uint8_t fd){
 
 void sys_speak(uint64_t frequence, uint64_t duration){
     beep((uint32_t) frequence, (int) duration);
+}
+
+/*================================================================================================================================
+SISTEMAS OPERATIVOS
+================================================================================================================================*/
+
+void sys_create_mm(){
+    create_mm();
+}
+
+void *sys_alloc(uint64_t size){
+    return alloc(size);
+}
+
+void sys_free(uint64_t address){
+    free((void *) address);
+}
+
+void sys_status_count(uint64_t status_out){
+  status_count((int *) status_out);
 }

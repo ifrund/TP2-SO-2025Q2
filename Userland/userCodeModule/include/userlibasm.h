@@ -11,3 +11,8 @@ void _changeSize(uint8_t newSize, uint8_t fd);
 int _getRegs(uint64_t regs[]);
 void _opError();
 void _beep(uint32_t frequency, int duration);
+
+void _create_mm();
+void * _alloc(int size);
+void _free(void *address);
+void _status_count(int *status_count);
