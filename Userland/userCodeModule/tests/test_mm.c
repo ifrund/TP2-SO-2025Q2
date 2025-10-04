@@ -11,11 +11,15 @@ typedef struct MM_rq {
 
 
 void * memset2(void * destiation, int32_t c, uint64_t length) {
+  write_out("entro a memset2\n");
 	uint8_t chr = (uint8_t)c;
 	char * dst = (char*)destiation;
+  write_out("antes de while\n");
 
 	while(length--)
 		dst[length] = chr;
+
+  write_out("dsp de while\n");
 
 	return destiation;
 }
@@ -43,18 +47,23 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
     while (rq < MAX_BLOCKS && total < max_memory) {
       mm_rqs[rq].size = GetUniform(max_memory - total - 1) + 1;
       mm_rqs[rq].address = alloc(mm_rqs[rq].size);
+      
 
       if (mm_rqs[rq].address) {
         total += mm_rqs[rq].size;
         rq++;
+        write_out("funciono alloc\n");
       }
     }
+    write_out("salimos del while\n");
 
     // Set
     uint32_t i;
     for (i = 0; i < rq; i++)
-      if (mm_rqs[i].address)
+      if (mm_rqs[i].address){
         memset2(mm_rqs[i].address, i, mm_rqs[i].size);
+        write_out("Hacemos memset2\n");
+      } 
 
     // Check
     for (i = 0; i < rq; i++)
