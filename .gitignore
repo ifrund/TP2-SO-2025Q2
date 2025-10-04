@@ -4,4 +4,6 @@
 *.qcow2
 *.vmdk
 *.o
-.vscode/c_cpp_properties.json
+*.elf
+.vscode
+.bash_history
