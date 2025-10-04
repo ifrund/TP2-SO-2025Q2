@@ -97,3 +97,30 @@ ls
 make clean
 make all
 exit
+make clean
+make all
+make clean
+make all
+cd ..
+ls
+cd root
+ls
+cd Toolchain/
+make clean
+make all
+cd ..
+make clean
+make all
+exit
+cd Toolchain/
+make clean
+make all
+cd ..
+make clean
+make all
+make clean
+make all
+clear
+make clean
+make all
+exit

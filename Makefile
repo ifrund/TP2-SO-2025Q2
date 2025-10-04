@@ -13,6 +13,8 @@ userland:
 image: kernel bootloader userland
 	cd Image; make all
 
+#TODO los archivos de Tests
+
 clean:
 	cd Bootloader; make clean
 	cd Image; make clean
