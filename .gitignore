@@ -4,3 +4,4 @@
 *.qcow2
 *.vmdk
 *.o
+.vscode/c_cpp_properties.json
