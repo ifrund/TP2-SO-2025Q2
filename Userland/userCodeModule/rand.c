@@ -21,3 +21,5 @@ unsigned int time(){
     getClock(&hrs,&min,&seg);
     return (hrs*(18*60*60)) + (min*(18*60)) + (seg*(18));
 }
+
+//comment
