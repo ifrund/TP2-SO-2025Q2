@@ -1,7 +1,6 @@
 #include "include/userlib.h"
 #include "include/shell.h"
 #include "include/userlibasm.h"
-#include "include/snake.h"
 #include <stdint.h>
 
 #define COMMANDS 15
@@ -16,7 +15,7 @@ char PROMPT_START[] = {127, 0};
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
-static char* commands[COMMANDS] = {"exit", "clear", "inc-size", "dec-size", "time", "sleep", "infoSleep", "help", "milisleep", "nanosleep", "registers", "snake", "test-div", "test-invalid", "speak"};
+static char* commands[COMMANDS] = {"exit", "clear", "inc-size", "dec-size", "time", "sleep", "infoSleep", "help", "milisleep", "nanosleep", "registers", "test-div", "test-invalid", "speak"};
 char char_buffer[1];
 
 // Cursors & flags
@@ -211,15 +210,6 @@ void process_command(char* buffer){
                     break;
          
                 case 11:
-                    Snake();
-                    cursor_y = 0;
-                    cursor_x = 0;
-                    limit_index = VERT_SIZE/font_size - 1;
-                    flushBuffer();
-                    clearScreen();
-                    break;
-
-                case 12:
                     write_out("Vamos a testear dividir 1 por 0 en:\n");
                     write_out("3...\n");
                     sleep(1, 0);
@@ -233,7 +223,7 @@ void process_command(char* buffer){
                         write_out("You really shouldnt be here chief... medio que rompiste la matematica\n");
                     break;
 
-                case 13:
+                case 12:
                     write_out("Vamos a tratar de desafiar al runtime de asm en:\n");
                     write_out("3...\n");
                     sleep(1, 0);
@@ -244,7 +234,7 @@ void process_command(char* buffer){
                     _opError();    
                     break;
 
-                case 14:
+                case 13:
                     beep(1000, 50);
                     break;
                     

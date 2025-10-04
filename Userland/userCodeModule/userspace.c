@@ -2,22 +2,12 @@
 #include "include/shell.h"
 #include "include/userlibasm.h"
 #include "include/drawings.h"
-#include "include/snake.h"
 #include "include/rand.h"
 
 
-int main(){    
-    
-    while(1){
-        uint8_t selection = mainMenu();
+int main(){
 
-        if(selection==1){
-            shell();
-        }
-        else{
-            Snake();
-        }
-    }
+    shell();
 
     return 0;
 }
