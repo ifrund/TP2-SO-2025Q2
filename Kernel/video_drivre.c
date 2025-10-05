@@ -8,7 +8,7 @@
 #define ERROR_FONT 0xDADADA
 #define ERROR_BACK 0xa70000
 
-typedef struct vbe_mode_info_structure {
+struct vbe_mode_info_structure {
 	uint16_t attributes;		// deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
 	uint8_t window_a;			// deprecated
 	uint8_t window_b;			// deprecated
@@ -19,7 +19,7 @@ typedef struct vbe_mode_info_structure {
 	uint32_t win_func_ptr;		// deprecated; used to switch banks from protected mode without returning to real mode
 	uint16_t pitch;			// number of bytes per horizontal line
 	uint16_t width;			// width in pixels
-	uint16_t height;	    // height in pixels
+	uint16_t height;			// height in pixels
 	uint8_t w_char;			// unused...
 	uint8_t y_char;			// ...
 	uint8_t planes;
@@ -44,7 +44,7 @@ typedef struct vbe_mode_info_structure {
 	uint32_t off_screen_mem_off;
 	uint16_t off_screen_mem_size;	// size of memory in the framebuffer but not being displayed on the screen
 	uint8_t reserved1[206];
-}__attribute__((packed));
+} __attribute__ ((packed));
 
 typedef struct vbe_mode_info_structure * VBEInfoPtr;
 
@@ -86,21 +86,11 @@ uint8_t getDrawSize(){
 }
 
 void putPixel(uint32_t hexColor, uint64_t x, uint64_t y){
-	if( (x < getScreenWidth()) && (y < getScreenHeight())){
-		uint8_t * framebuffer = (uint8_t *) VBE_mode_info->framebuffer;
-		uint64_t offset = (x * ((VBE_mode_info->bpp)/8)) + (y * VBE_mode_info->pitch); //3 ya que son RGB(3) (24bits)
-		framebuffer[offset]=(hexColor) & 0x000000FF;	//agarro la parte baja del hexColor que es el azul
-		framebuffer[offset+1]=(hexColor >> 8) & 0x0000FF;
-		framebuffer[offset+2]=(hexColor >> 16) & 0x00FF;
-        
-	}
-	if( (x < getScreenWidth()) && (y < getScreenHeight())){
-		uint8_t * framebuffer = (uint8_t *) VBE_mode_info->framebuffer;
-		uint64_t offset = (x * ((VBE_mode_info->bpp)/8)) + (y * VBE_mode_info->pitch); //3 ya que son RGB(3) (24bits)
-		framebuffer[offset]=(hexColor) & 0x000000FF;	//agarro la parte baja del hexColor que es el azul
-		framebuffer[offset+1]=(hexColor >> 8) & 0x0000FF;
-		framebuffer[offset+2]=(hexColor >> 16) & 0x00FF;
-	}
+	uint8_t * framebuffer = (uint8_t *)(uintptr_t)VBE_mode_info->framebuffer;
+    uint64_t offset = (x * ((VBE_mode_info->bpp)/8)) + (y * VBE_mode_info->pitch);
+    framebuffer[offset]     =  (hexColor) & 0xFF;
+    framebuffer[offset+1]   =  (hexColor >> 8) & 0xFF; 
+    framebuffer[offset+2]   =  (hexColor >> 16) & 0xFF;
 }
 
 void draw_rectangle(uint64_t ancho, uint64_t alto, uint32_t color, uint64_t init_x, uint64_t init_y){

@@ -7,3 +7,4 @@
 *.elf
 .vscode
 .bash_history
+.gdb_history
