@@ -1,7 +1,7 @@
 #include "test_util.h"
-//#include "../include/userlib.h"
-//#include "../include/shell.h"
-#include <string.h>
+#include "../include/userlib.h" //create_mm lib, not sure why this was commented
+#include "../include/shell.h"   //write_out lib, for testing
+//#include <string.h>
 
 #define MAX_BLOCKS 128
 
