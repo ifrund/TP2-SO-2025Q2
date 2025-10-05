@@ -8,6 +8,7 @@
 
 int64_t global; // shared memory
 
+/*
 void slowInc(int64_t *p, int64_t inc) {
   uint64_t aux = *p;
   my_yield(); // This makes the race condition highly probable
@@ -77,3 +78,5 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
 
   return 0;
 }
+
+*/

@@ -10,7 +10,7 @@
 #define LOWEST 0  // TODO: Change as required
 #define MEDIUM 1  // TODO: Change as required
 #define HIGHEST 2 // TODO: Change as required
-
+/*
 int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
 void test_prio() {
@@ -49,3 +49,4 @@ void test_prio() {
   for (i = 0; i < TOTAL_PROCESSES; i++)
     my_kill(pids[i]);
 }
+*/

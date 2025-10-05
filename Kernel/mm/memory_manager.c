@@ -1,6 +1,6 @@
 #include "memory_manager.h"
 
-#define TOTAL_MEM_SIZE (16 * 1024)  //16KB de memoria iniciales. Pure64 deja mucho mas.
+#define TOTAL_MEM_SIZE (1024 * 1024)  //(16 * 1024)  //16KB de memoria iniciales. Pure64 deja mucho mas.
 #define BLOCK_SIZE (4 * 1024)       //Mínimo 4KB, una página. No usamos páginas pero es un lindo numero
 #define MAX_BLOCKS (TOTAL_MEM_SIZE/BLOCK_SIZE)
 #define BASE_ADDRESS 0x0000000000100000
@@ -33,39 +33,39 @@ void create_mm(){
 }
 
 void * alloc(const unsigned long int size){ 
-    int blocks = size / BLOCK_SIZE;
-    int available_space = 0;
+    int blocks = (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
-    if (!mem_initialize)
+    if (!mem_initialize || blocks > MAX_BLOCKS)
         return NULL;
 
-    for(int i = 0; i < MAX_BLOCKS; i++){
-        if(memory_array[i].status == FREE){
-            for(int j = 0; j < blocks; j++){
-                if (memory_array[i+j].status == USED){
-                    i += j;
-                    break;
-                }
-                if (j == blocks - 1) 
-                    available_space = 1;
-            }
-            if (available_space == 1){
-                for(int k = 0; k < blocks; k++){
-                    memory_array[i+k].status = USED;
-                    memory_array[i+k].start = i;
-                    memory_array[i+k].end = i + blocks - 1;
-                }
+    for (int i = 0; i <= MAX_BLOCKS - blocks; i++) {
+        int found = 1;
+
+        for (int j = 0; j < blocks; j++) {
+            if (memory_array[i + j].status == USED) {
+                found = 0;
+                i += j; 
+                break;
             }
         }
-        
-        return (void *)((char *)BASE_ADDRESS + i * BLOCK_SIZE);
 
-        //return (void *)((char *)base_address + i * BLOCK_SIZE);
+        if (found) {
+            for (int k = 0; k < blocks; k++) {
+                memory_array[i + k].status = USED;
+                memory_array[i + k].start = i;
+                memory_array[i + k].end = i + blocks - 1;
+            }
+
+            return (void *)((char *)BASE_ADDRESS + i * BLOCK_SIZE);
+        }
     }
     return NULL;
 }
 
+
 void free (void * address){
+    if (address == NULL)
+        return;
     
     int index = ((char *)address - (char *)BASE_ADDRESS)/BLOCK_SIZE;
     

@@ -193,3 +193,29 @@ int getRegs(uint64_t regs[]){
 void beep(uint32_t frequency, int duration){
     _beep(frequency, duration);
 }
+
+
+/*================================================================================================================================
+SISTEMAS OPERATIVOS
+================================================================================================================================*/
+
+
+// Crear la memoria
+void create_mm(){
+    _create_mm();
+}
+
+// Ocupa espacio en la memoria
+void *alloc(int size){
+    return _alloc(size);
+}
+
+// Libera espacio de la memoria
+void free(void* address){
+    _free(address);
+}
+
+// Llena el array con los datos block_count, free_space, y used_space 
+void status_count(int *status_out){
+    _status_count(status_out);
+}
