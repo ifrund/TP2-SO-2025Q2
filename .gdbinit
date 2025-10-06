@@ -1,5 +1,4 @@
-
-target remote 192.168.52.73:1234
+target remote host.docker.internal:1234
 add-symbol-file Kernel/kernel.elf 0x100000
 add-symbol-file Userland/userCodeModuleLoader.elf 0x400000
 
@@ -14,6 +13,11 @@ define asm-prof
 end
 python
 
+#===============================================================================
+# Version modificada del original (Andrea Cardaci) por Franco Morroni
+# agregando un stack
+# https://github.com/fmorroni/dotfiles/tree/main/.config/gdb
+#===============================================================================
 
 
 # GDB dashboard - Modular visual interface for GDB in Python.
@@ -509,6 +513,7 @@ class Dashboard(gdb.Command):
         # fetch module content and info
         all_disabled = True
         display_map = dict()
+        disalbe_scroll = {}
         for module in self.modules:
             # fall back to the global value
             output = module.output or self.output
@@ -519,6 +524,11 @@ class Dashboard(gdb.Command):
             else:
                 instance = None
             display_map.setdefault(output, []).append(instance)
+            # Disable scrolling for all outputs except the one with the Stack instance
+            if isinstance(instance, Assembly) or isinstance(instance, Source):
+                disalbe_scroll[output] = True
+            elif output not in disalbe_scroll:
+                disalbe_scroll[output] = False
         # process each display info
         for output, instances in display_map.items():
             try:
@@ -528,7 +538,8 @@ class Dashboard(gdb.Command):
                 if output:
                     fs = open(output, 'w')
                     fd = fs.fileno()
-                    fs.write(Dashboard.setup_terminal())
+                    if disalbe_scroll[output]:
+                        fs.write(Dashboard.setup_terminal())
                 else:
                     fs = gdb
                     fd = 1  # stdout
@@ -1766,14 +1777,14 @@ Optionally list the frame arguments and locals too.'''
 
     def get_frame_lines(self, number, frame, selected=False):
         # fetch frame info
+
         style = R.style_selected_1 if selected else R.style_selected_2
         frame_id = ansi(str(number), style)
         info = Stack.get_pc_line(frame, style)
         frame_lines = []
         frame_lines.append('[{}] {}'.format(frame_id, info))
         # add frame arguments and locals
-        variables = Variables.format_frame(
-            frame, self.show_arguments, self.show_locals, self.compact, self.align, self.sort)
+        variables = Variables.format_frame(frame, self.show_arguments, self.show_locals, self.compact, self.align, self.sort)
         frame_lines.extend(variables)
         return frame_lines
 
@@ -1838,6 +1849,11 @@ class Memory(Dashboard.Module):
     '''Allow to inspect memory regions.'''
 
     DEFAULT_LENGTH = 16
+    DEFAULT_WIDTH = 4
+
+    def __init__(self, width = DEFAULT_WIDTH):
+        self.table = {}
+        self.width = width
 
     class Region():
         def __init__(self, expression, length, module):
@@ -1902,9 +1918,6 @@ class Memory(Dashboard.Module):
             self.latest = memory
             return out
 
-    def __init__(self):
-        self.table = {}
-
     def label(self):
         return 'Memory'
 
@@ -1950,6 +1963,11 @@ The length defaults to 16 bytes.''',
             'placeholder': {
                 'doc': 'Placeholder used for missing items and unprintable characters.',
                 'default': '·'
+            },
+            'width': {
+                'doc': 'Memory widht in bytes',
+                'default': self.DEFAULT_WIDTH,
+                'type': int
             }
         }
 
@@ -1992,12 +2010,132 @@ The length defaults to 16 bytes.''',
             address_length = gdb.parse_and_eval('$pc').type.sizeof * 2 + 2  # 0x
             return max(int((term_width - address_length - padding) / elem_size), 1)
         else:
-            return Memory.DEFAULT_LENGTH
+            return self.width
 
     @staticmethod
     def parse_as_address(expression):
         value = gdb.parse_and_eval(expression)
         return to_unsigned(value)
+
+class StackMemory(Dashboard.Module):
+    def __init__(self):
+        self.frames = {}
+        self.frames2 = []
+        self.total_frames = 2
+        self.memory = Memory()
+        setattr(self.memory, 'full', False)
+        setattr(self.memory, 'placeholder', '•')
+        setattr(self.memory, 'cumulative', False)
+        self.reg_marks_enabled = True
+        self.width_set = False
+
+    def toggle_reg_marks(self, _):
+        if not self.reg_marks_enabled:
+            self.reg_marks_enabled = True
+            self.set_reg_marks()
+        else:
+            self.reg_marks_enabled = False
+            self.unset_reg_marks()
+
+    def set_reg_marks(self):
+        self.sp_mark = ' - ' + self.sp
+        self.bp_mark = ' - ' + self.bp
+        self.sp_bp_mark = ' - sbp'
+        self.ret_mark = ' - ret'
+
+    def unset_reg_marks(self):
+        self.sp_mark = ''
+        self.bp_mark = ''
+        self.sp_bp_mark = ''
+        self.ret_mark = ''
+
+    def set_width(self):
+        self.width = gdb.lookup_type('void').pointer().sizeof
+        self.memory.width = self.width
+        if self.width == 4:
+            self.sp = "esp"
+            self.bp = "ebp"
+        elif self.width == 8:
+            self.sp = "rsp"
+            self.bp = "rbp"
+        else:
+            raise Exception('StackMemory width must be either 4 or 8, was: ', self.width)
+        if self.reg_marks_enabled:
+            self.set_reg_marks()
+
+    def label(self):
+        return 'Stack Memory'
+
+    def watch_frame(self, frame):
+        name = frame.name()
+        bp = frame.read_register(self.bp)
+        sp = frame.read_register(self.sp)
+        if sp <= bp:
+            key = f"{name}-{bp}"
+            expression = f"{sp}"
+            length = bp - sp + self.width*2
+            self.frames[key] = Memory.Region(expression, length, self.memory)
+
+    def get_frame_lines(self, frame, term_width):
+        name = frame.name()
+        bp = frame.read_register(self.bp)
+        key = f"{name}-{bp}"
+        out = []
+        if key in self.frames:
+            out.append(divider(term_width, name))
+            lines = self.frames[key].format(self.memory.get_per_line(term_width))
+            if len(lines) > 0:
+                if lines[0] == lines[-2]:
+                    lines[0] = f"{lines[0]}{self.sp_bp_mark}"
+                else:
+                    lines[0] = f"{lines[0]}{self.sp_mark}"
+                    lines[-2] = f"{lines[-2]}{self.bp_mark}"
+                lines[-1] = f"{lines[-1]}{self.ret_mark}"
+            out.extend(lines)
+        return out
+
+    def reset_frames(self):
+        self.frames = {}
+        self.frames2 = []
+
+    def lines(self, term_width, term_height, style_changed):
+        # This is disgusting but I have to set width here and not in the constructor because at
+        # instantiation the process hasn't been loaded yet and width is always calculated as 4 bytes
+        # (I guess it's related to how gdb was compiled)
+        if not self.width_set:
+            self.set_width()
+        frame_lines = []
+        frame = gdb.selected_frame()
+        self.reset_frames()
+        for i in range(self.total_frames):
+            if frame != None:
+                self.watch_frame(frame)
+                lines = self.get_frame_lines(frame, term_width=20)
+                frame_lines.extend(lines)
+                frame = frame.older()
+        return frame_lines
+
+    def attributes(self):
+        return {
+            'total_frames': {
+                'doc': 'Number of frames to display at once',
+                'default': 2,
+                'type': int
+            },
+            # 'enable_reg_marks': {
+            #     'default': True,
+            #     'type': bool
+            # }
+        }
+
+    def commands(self):
+        return {
+            'toggle_reg_marks': {
+                'action': self.toggle_reg_marks,
+                'doc': 'Enable stack/base pointer and return address marks',
+            },
+        }
+
 
 class Registers(Dashboard.Module):
     '''Show the CPU registers and their values.'''
@@ -2375,6 +2513,7 @@ class Breakpoints(Dashboard.Module):
         }
 
 # XXX traceback line numbers in this Python block must be increased by 1
+
 end
 
 # Better GDB defaults ----------------------------------------------------------
@@ -2396,4 +2535,3 @@ python Dashboard.start()
 # Local Variables:
 # mode: python
 # End:
-
