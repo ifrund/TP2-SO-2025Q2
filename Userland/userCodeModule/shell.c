@@ -4,10 +4,11 @@
 #include <stdint.h>
 #include "tests/test_mm.h"
 
-#define COMMANDS 15
+#define COMMANDS 10
 #define VERT_SIZE 32
 #define LINE_SIZE 63
 #define BUFFER_SIZE 128
+#define MAX_ARGS 10
 
 // Esto es un "string" manual para poder imprimir el caracter 128 de nuestro font de kernel usando lsa funciones estandar
 char PROMPT_START[] = {127, 0};
@@ -16,8 +17,7 @@ char PROMPT_START[] = {127, 0};
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
-static char* commands[COMMANDS] = {"exit", "clear", "inc-size", "dec-size", "time", "sleep", "infoSleep", "help", "milisleep", "nanosleep", 
-    "registers", "test-div", "test-invalid", "speak", "test-mm"};
+static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", "test-mm"};
 char char_buffer[1];
 
 // Cursors & flags
@@ -101,12 +101,25 @@ void process_key(char key){
     }
 }
 
-void process_command(char* buffer /*, int read, int write*/){
+static void remove_extra_spaces(char *str);
+static int split_arguments(char *buffer, char *argv[], int max_args);
+static void remove_first_argument(char *argv[]);
 
+void process_command(char* buffer){
 
-   if (buffer[0] == '\0'){
+    char *argv[MAX_ARGS];
+
+    if (buffer[0] == '\0'){
         return;
     }
+
+    remove_extra_spaces(buffer);
+    if (buffer[0] == '\0') {
+        write_out(PROMPT_START);
+        return;
+    }
+
+    int argc = split_arguments(buffer, argv, MAX_ARGS);
 
    for(int i = 0; i < COMMANDS; i++){
         if (!strcmp(buffer, commands[i])){
@@ -123,80 +136,21 @@ void process_command(char* buffer /*, int read, int write*/){
                     limit_index = VERT_SIZE/font_size - 1;
                     break;
                 case 2:
-                    if (font_size == 2){
-                        write_out("Font size max!\n");
-                    }
-                    else {
-                        change_font(++font_size);
-                        resize();
-                    }
-                    break;
-                
-                case 3:
-                    if (font_size == 1){
-                        write_out("Font size minimum!\n");
-                    }
-                    else {
-                        change_font(--font_size);
-                        desize();
-                    }
-                    break;
-                case 4:
-                    getClock(&hrs, &min, &sec);
-                    write_out("La hora es: ");
-                    uintToBase(hrs, aux, 10);
-                    if(hrs<10){
-                        write_out("0");
-                        write_out(aux);
-                    }
-                    else{
-                        write_out(aux);
-                    }
-                    write_out(":");
-                    uintToBase(min, aux, 10);
-                    if(min<10){
-                        write_out("0");
-                        write_out(aux);
-                    }
-                    else{
-                        write_out(aux);
-                    }
-                    write_out(":");
-                    uintToBase(sec, aux, 10);
-                    if(sec<10){
-                        write_out("0");
-                        write_out(aux);
-                    }
-                    else{
-                        write_out(aux);
-                    }
-                    write_out("\n");
-                    break;
-                case 5:
                     write_out("Vamos a esperar 4 segundos... ");
                     sleep(4, 0);
                     write_out("Listo!\n");
                     break;
-                case 6:
+                case 3:
                     write_out("El comando sleep efectuara una espera de 4 segundos para demostrar el funcionamiento de la syscall. Los comandos milisleep y nanosleep haran algo equivalente pero con sus respectivas unidades\n");
                     break;
-                case 7:
+                case 4:
                     write_out("Los comandos existentes son:\n");
                     for(int i=0; i<COMMANDS; i++){
                         write_out(commands[i]);
                         write_out("\n");
                     }
                     break;
-                
-                case 8:
-                    sleep(3000, 1);
-                    break;
-
-                case 9:
-                    sleep(3000000, 2);
-                    break;
-
-                case 10:
+                case 5:
                     if(getRegs(regs)==0){
                         write_out("Antes de pedir los registros debe apretar la tecla alt izquierda para que los mismos se guarden\n");
                     }
@@ -213,7 +167,7 @@ void process_command(char* buffer /*, int read, int write*/){
                     }
                     break;
          
-                case 11:
+                case 6:
                     write_out("Vamos a testear dividir 1 por 0 en:\n");
                     write_out("3...\n");
                     sleep(1, 0);
@@ -227,7 +181,7 @@ void process_command(char* buffer /*, int read, int write*/){
                         write_out("You really shouldnt be here chief... medio que rompiste la matematica\n");
                     break;
 
-                case 12:
+                case 7:
                     write_out("Vamos a tratar de desafiar al runtime de asm en:\n");
                     write_out("3...\n");
                     sleep(1, 0);
@@ -238,14 +192,9 @@ void process_command(char* buffer /*, int read, int write*/){
                     _opError();    
                     break;
 
-                case 13:
-                    beep(1000, 50);
-                    break;
-
-                case 14:
-                    //TODO q reciba argc y argv
-                    char *args[] = { "4096" };  
-                    test_mm(1, args);
+                case 8: 
+                    remove_first_argument(argv);
+                    test_mm(argc-1, argv);
                     break;
                     
             }   
@@ -318,47 +267,67 @@ void init_shell(){
     line_size = LINE_SIZE/font_size;
 }
 
+static void remove_extra_spaces(char *str) {
+    int i = 0, j = 0;
+    int in_space = 1; 
 
-void resize(){
-    init_shell();
-
-    int from = mod(cursor_y - rows_to_show, VERT_SIZE);
-    int offset = 0;
-
-    // voy a hacer un for auxiliar para no tener que shiftear mil veces
-    for (int i = 0; i < rows_to_show; i++){
-        int line_len = strlen(screen_buffer[(from + i) % VERT_SIZE]);
-        if (screen_buffer[(from + i) % VERT_SIZE][0] == 0 || line_len > line_size)
-
-            // si esto cambia a dejar size mas grande de 2 tendria que validar ese caso pero como es un desproposito la letra tan grande no lo implemente
-            offset++; 
+    while (str[i]) {
+        char c = str[i++];
+        if (c == ' ' || c == '\t' || c == '\n') {
+            if (!in_space) {
+                in_space = 1;
+                str[j++] = ' ';
+            }
+        } else {
+            in_space = 0;
+            str[j++] = c;
+        }
     }
 
-    limit_index = (cursor_y + rows_to_show - 1) % VERT_SIZE;
+    if (j > 0 && str[j - 1] == ' ')
+        j--;
 
-    clearScreen();
-
-    for (int i = 0; i < rows_to_show - offset; i++){
-        write_out(screen_buffer[(offset + from + i) % VERT_SIZE]);
-        write_out("\n");
-    }
-
+    str[j] = '\0';
 }
 
-void desize(){
+// Llenamos argv[]
+static int split_arguments(char *buffer, char *argv[], int max_args) {
+    int argc = 0;
+    int i = 0;
+    char *start = 0;
+    int in_token = 0;
 
-    // El from va antes del init_shell para no agarrar cosas de mas cunado cambia r_t_s
-    clearScreen();
-
-    int from = mod(limit_index - rows_to_show + 1, VERT_SIZE);
-    int until = mod(cursor_y - from, VERT_SIZE);
-    init_shell();
-
-    limit_index = (cursor_y + rows_to_show - 1) % VERT_SIZE;
-
-    for (int i = 0; i < until && screen_buffer[(from + i) % VERT_SIZE][0] != '\0'; i++){
-        write_out(screen_buffer[(from + i) % VERT_SIZE]);
-        write_out("\n");
+    while (buffer[i]) {
+        char c = buffer[i];
+        if (c != ' ') {
+            if (!in_token) {
+                start = &buffer[i];
+                in_token = 1;
+            }
+        } else {
+            if (in_token) {
+                buffer[i] = '\0';
+                if (argc < max_args - 1)
+                    argv[argc++] = start;
+                in_token = 0;
+            }
+        }
+        i++;
     }
 
+    if (in_token && argc < max_args - 1)
+        argv[argc++] = start;
+
+    argv[argc] = 0;
+    return argc;
+}
+
+//La usamos para sacar el comando del argv q le pasamos a los test :)
+void remove_first_argument(char *argv[]) {
+    int i = 0;
+
+    while (argv[i] != 0) {
+        argv[i] = argv[i + 1];
+        i++;
+    }
 }
