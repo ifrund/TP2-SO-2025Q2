@@ -5,6 +5,7 @@
 #include "tests/test_util.h"
 
 #define COMMANDS 14
+#define TESTS 4
 #define VERT_SIZE 32
 #define LINE_SIZE 63
 #define BUFFER_SIZE 128
@@ -18,7 +19,8 @@ char PROMPT_START[] = {127, 0};
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
 static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
-    "test-mm", "test-prio", "test-pcs", "test-sync", "status-memory"};
+    "test-mm", "test-prio", "test-pcs", "test-sync", "mem", "Tests"};
+static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
 char char_buffer[1];
 
 // Cursors & flags
@@ -224,6 +226,13 @@ void process_command(char* buffer){
                     write_out("\n");
                     break;
                     
+                case 13:
+                    write_out("Los Tests existentes son:\n");
+                    for(int i=0; i<TESTS; i++){
+                        write_out(tests[i]);
+                        write_out("\n");
+                    }
+                    break;
             }   
             return;
         }
