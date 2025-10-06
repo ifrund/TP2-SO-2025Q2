@@ -8,8 +8,7 @@
 
 int64_t global; // shared memory
 
-/*
-void slowInc(int64_t *p, int64_t inc) {
+/*void slowInc(int64_t *p, int64_t inc) {
   uint64_t aux = *p;
   my_yield(); // This makes the race condition highly probable
   aux += inc;
@@ -51,8 +50,13 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
 
   return 0;
 }
+*/
 
 uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
+  
+ write_out("Esto tdv no fue desarrollado, vuelva más tarde \n");
+    return -1;
+  /*
   uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
 
   if (argc != 2)
@@ -77,6 +81,6 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
   printf("Final value: %d\n", global);
 
   return 0;
+  */
 }
 
-*/

@@ -2,9 +2,9 @@
 #include "include/shell.h"
 #include "include/userlibasm.h"
 #include <stdint.h>
-#include "tests/test_mm.h"
+#include "tests/test_util.h"
 
-#define COMMANDS 10
+#define COMMANDS 14
 #define VERT_SIZE 32
 #define LINE_SIZE 63
 #define BUFFER_SIZE 128
@@ -17,7 +17,8 @@ char PROMPT_START[] = {127, 0};
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
-static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", "test-mm"};
+static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
+    "test-mm", "test-prio", "test-pcs", "test-sync", "status-memory"};
 char char_buffer[1];
 
 // Cursors & flags
@@ -195,6 +196,32 @@ void process_command(char* buffer){
                 case 8: 
                     remove_first_argument(argv);
                     test_mm(argc-1, argv);
+                    break;
+
+                case 9:
+                    test_prio();
+                    break;
+
+                case 10:
+                    remove_first_argument(argv);
+                    test_processes(argc, argv);
+                    break;
+
+                case 11:
+                    remove_first_argument(argv);
+                    test_sync(argc, argv);
+                    break;
+
+                case 12:
+                    int status[3];
+                    status_count(status);
+                    write_out("Bloques totales: ");
+                    printDec(status[0]);
+                    write_out("\nBloques libres: ");
+                    printDec(status[1]);
+                    write_out("\nBloques en uso: ");
+                    printDec(status[2]);
+                    write_out("\n");
                     break;
                     
             }   

@@ -1,14 +1,12 @@
 #include "memory_manager.h"
 
-#define TOTAL_MEM_SIZE (1024 * 1024)  //(16 * 1024)  //16KB de memoria iniciales. Pure64 deja mucho mas.
+#define TOTAL_MEM_SIZE (1024 * 1024)  //(16 * 1024) 1M de memoria iniciales.
 #define BLOCK_SIZE (4 * 1024)       //Mínimo 4KB, una página. No usamos páginas pero es un lindo numero
-#define MAX_BLOCKS (TOTAL_MEM_SIZE/BLOCK_SIZE)
-#define BASE_ADDRESS 0x0000000000100000
+#define MAX_BLOCKS (TOTAL_MEM_SIZE/BLOCK_SIZE) //256
+#define BASE_ADDRESS 0x0000000000100000  //TODO ver repo de la catedra para saber donde esta el kernel. buildin.md
 
 #define FREE 0
 #define USED 1
-
-//void * base_address;
 
 typedef struct mem_block
 {
@@ -20,14 +18,11 @@ typedef struct mem_block
 mem_block memory_array[MAX_BLOCKS];
 static int mem_initialize = 0;
 
-//Crea la memoria a partir de una dirección inicial (base)
-
 void create_mm(){
     if (mem_initialize)
         return;
 
     mem_initialize = 1;
-    //base_address = base_addr;
     for(int i = 0; i <  MAX_BLOCKS; i++)
         memory_array[i].status = FREE;
 }
@@ -68,9 +63,7 @@ void free (void * address){
         return;
     
     int index = ((char *)address - (char *)BASE_ADDRESS)/BLOCK_SIZE;
-    
-    //int index = ((char *)address - (char *)base_address)/BLOCK_SIZE;
-    int start = memory_array[index].start;
+        int start = memory_array[index].start;
     int end = memory_array[index].end;
     for(int i = start; i <= end; i++){
         memory_array[i].status = FREE;

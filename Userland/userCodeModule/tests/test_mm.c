@@ -1,7 +1,5 @@
 #include "test_util.h"
 #include "../include/userlib.h" //create_mm lib, not sure why this was commented
-#include "../include/shell.h"   //write_out lib, for testing
-//#include <string.h>
 
 #define MAX_BLOCKS 128
 
@@ -82,7 +80,9 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
           return -1;
         }
     write_out("Terminamos de hacer memCheck\n"); 
-
+      
+    write_out("\n");
+                    
     // Free
     for (i = 0; i < rq; i++){
       if (mm_rqs[i].address){
@@ -91,5 +91,6 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
       }
     }
     write_out("\n");
+
   }
 }

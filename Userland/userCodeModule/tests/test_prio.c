@@ -10,10 +10,13 @@
 #define LOWEST 0  // TODO: Change as required
 #define MEDIUM 1  // TODO: Change as required
 #define HIGHEST 2 // TODO: Change as required
-/*
+
 int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
 void test_prio() {
+  write_out("Esto tdv no fue desarrollado, vuelva más tarde \n");
+  return ;
+  /*
   int64_t pids[TOTAL_PROCESSES];
   char *argv[] = {0};
   uint64_t i;
@@ -48,5 +51,6 @@ void test_prio() {
 
   for (i = 0; i < TOTAL_PROCESSES; i++)
     my_kill(pids[i]);
+
+    */
 }
-*/
