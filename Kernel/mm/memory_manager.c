@@ -21,7 +21,7 @@ block_info block_array[TOTAL_BLOCK_COUNT];  // TODO: tira warning porque void* e
 static bool is_initialized = 0;
 
 unsigned int first_free_index = 0;
-unsigned int free_blocks; // TODO: ver si es util
+unsigned int free_blocks;
 
 void reset_first_free_index();
 
