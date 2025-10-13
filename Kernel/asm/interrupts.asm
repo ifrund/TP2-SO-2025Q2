@@ -28,6 +28,8 @@ EXTERN syscall_handler
 EXTERN exceptionDispatcher
 EXTERN getStackBase
 
+EXTERN scheduling
+
 SECTION .text
 
 %macro pushState 0
@@ -196,7 +198,21 @@ picSlaveMask:
 
 ;8254 Timer (Timer Tick)
 _irq00Handler:
-	irqHandlerMaster 0
+	pushState
+
+	mov rdi, 0 
+	call irqDispatcher
+
+	mov rdi, rsp ;mandamos el rsp a scheduling 
+	call scheduling
+	mov rsp, rax ;update rsp
+
+	;End of Interrupt
+	mov al, 20h
+	out 20h, al
+
+	popState
+	iretq
 
 ;Keyboard
 _irq01Handler:
