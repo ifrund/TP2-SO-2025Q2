@@ -1,10 +1,11 @@
 #include "proc.h"
 #include "mm/memory_manager.h"
+#include "lib.c"
 
 //Puntero a funcion
 typedef int (*ProcessEntryPoint)(int argc, char *argv[]);
 
-void createProcess(ProcessEntryPoint entryPoint, const char *name, int argc, char *argv[]){
+int createProcess(ProcessEntryPoint entryPoint, const char *name, int argc, char *argv[]){
     int i;
 
     for (i = 0; i < MAX_PROC; i++){
@@ -13,13 +14,56 @@ void createProcess(ProcessEntryPoint entryPoint, const char *name, int argc, cha
     }
 
     if (i >= MAX_PROC)
-        return;
+        return -1;
     
-    //TODO: Inicializamos todo:
-    processTable[i].PID = i;
-    processTable[i].state = READY;
-    strncpy(processTable[i].name, name, PROCESS_NAME_MAX_LENGTH);
+    //Reservamos el espacio
+    void* stackBase = alloc(MAX_STACK_SIZE);
+    if (stackBase == NULL) {
+        return -1; // Error de memoria
+    }
+    //Asignamos el stack frame al final de la memoria
+    StackFrame* frame = (StackFrame*)((uint8_t*)stackBase + MAX_STACK_SIZE - sizeof(StackFrame));
+    memset(frame, 0, sizeof(StackFrame));
 
+    //Inicializamos stack frame:
+    frame->rip = (uint64_t)entryPoint;
+    frame->rdi = (uint64_t)argc;
+    frame->rsi = (uint64_t)argv;
+    //TODO: verificar FLAGS
+    frame->rflags = 0x202; // habilita interrupciones (IF = 1)
+
+    //Inicializamos PCB:
+    PCB * pcb = &processTable[i];
+
+    //Informacion
+    strncpy(pcb->name, name, PROCESS_NAME_MAX_LENGTH - 1);
+    pcb->name[PROCESS_NAME_MAX_LENGTH - 1] = '\0';
+
+    pcb->PID = i;
+    //TODO: PARENT PID
+    pcb->ParentPID = 0;
+    pcb->isForeground = true;
+    pcb->state = READY;
+
+    //Datos
+    pcb->rsp = (uint64_t)frame;
+    pcb->rbp = pcb->rsp;
+    pcb->stackFrame = frame;
+    pcb->stackBase = stackBase;
+
+    //Argumentos que recibe
+    pcb->argc = argc;
+    pcb->argv = argv;
+
+    //TODO: Prioridad
+
+    //Informacion de los hijos
+    pcb->childrenAmount = 0;
+    pcb->isWaitingForChildren = false;
+
+    memset(pcb->fileDescriptors, 0, sizeof(pcb->fileDescriptors));
+
+    return 0;
 }
 
 int blockProcess(uint64_t pid){
