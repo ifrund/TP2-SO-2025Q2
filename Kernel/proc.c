@@ -5,12 +5,13 @@
 typedef int (*ProcessEntryPoint)(int argc, char *argv[]);
 
 void createProcess(ProcessEntryPoint entryPoint, const char *name, int argc, char *argv[]){
-    int i = 0;
+    int i;
 
-    for (int i = 0; i < MAX_PROC; i++){
+    for (i = 0; i < MAX_PROC; i++){
         if (processTable[i].PID == 0)
             break;
     }
+
     if (i >= MAX_PROC)
         return;
     
@@ -22,8 +23,7 @@ void createProcess(ProcessEntryPoint entryPoint, const char *name, int argc, cha
 }
 
 int blockProcess(uint64_t pid){
-    
-    if(pid > MAX_PROC || pid < 0 || processTable[pid].PID == 0)
+    if(pid > MAX_PROC || processTable[pid].PID == 0)
         return -1;
 
     processTable[pid].state = BLOCKED;
@@ -31,7 +31,7 @@ int blockProcess(uint64_t pid){
 }
 
 int unblockProcess(uint64_t pid){
-    if(pid > MAX_PROC || pid < 0 || processTable[pid].PID == 0)
+    if(pid > MAX_PROC || processTable[pid].PID == 0)
         return -1;
 
     processTable[pid].state = READY;
@@ -39,19 +39,26 @@ int unblockProcess(uint64_t pid){
 }
 
 int killProcess(uint64_t pid){
-    //TODO: Kill process
-    if(pid > MAX_PROC || pid < 0 || processTable[pid].PID == 0)
+    if(pid > MAX_PROC || processTable[pid].PID == 0)
         return -1;
 
-    //TODO: liberar recursos
-    void *stackBase = (void*)(processTable[pid].rsp);
-    free(stackBase);
+    //Liberacion de recursos
+    if (processTable[pid].stackBase != NULL) {
+        free(processTable[pid].stackBase);
+        processTable[pid].stackBase = NULL;
+    }
 
     processTable[pid].PID = 0;  
     processTable[pid].state = ZOMBIE;
     
     //desbloquear al padre si esta esperando      
-    unblockProcess(processTable[pid].ParentPID);
+    uint64_t parentPID = processTable[pid].ParentPID;
+    if (parentPID < MAX_PROC && processTable[parentPID].PID != 0) {
+        if (processTable[parentPID].isWaitingForChildren) {
+            unblockProcess(parentPID);
+            processTable[parentPID].isWaitingForChildren = false;
+        }
+    }
 
     return 0;
 }
