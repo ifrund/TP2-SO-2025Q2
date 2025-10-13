@@ -2,6 +2,7 @@
 #define _proc_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 //Constants
 #define MAX_FD 128
@@ -20,36 +21,46 @@ typedef enum {
 
 //context
 typedef struct {
-    uint64_t rax, rbx, rcx, rdx, rsi, rdi, rbp, rsp, r8, r9, r10, r11, r12, r13, r14, r15;
+    uint64_t rax, rbx, rcx, rdx, rsi, rdi, rbp, rsp;
+    uint64_t r8, r9, r10, r11, r12, r13, r14, r15;
     uint64_t rip;
     uint64_t rflags;
     //TODO: estos se utilizan?
-    uint16_t cs; 
-    uint16_t ss; 
-    uint16_t ds;
-    uint16_t es;
+    // uint16_t cs; 
+    // uint16_t ss; 
+    // uint16_t ds;
+    // uint16_t es;
 } StackFrame;
 
 //PCB definition
 typedef struct {
+    //Informacion 
     char name[PROCESS_NAME_MAX_LENGTH];
     uint64_t PID;
-    
-    //TODO: Prioridad
-    
-    //Stack
-    uint64_t rsp;
-    //Base pointer
-    uint64_t rbp;
-
-    char isForeground;
     uint64_t ParentPID;
+    bool isForeground;
     ProcessState state;
+
+    //File Descriptors
     uint64_t fileDescriptors[MAX_FD];
 
-    StackFrame stackFrame;
+    //Datos
+    uint64_t rsp; 
+    uint64_t rbp;
+    StackFrame * stackFrame;
+    void* stackBase;
+
+    //Argumentos que recibe
     int argc;
-    char* argv;
+    char** argv;
+
+    //TODO: Prioridad
+
+    //Informacion de los hijos:
+    int childrenAmount;
+    uint64_t childProc[MAX_PROC];
+    bool isWaitingForChildren;
+
 } PCB;
 
 //Tabla de procesos

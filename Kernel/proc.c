@@ -1,4 +1,5 @@
 #include "proc.h"
+#include "mm/memory_manager.h"
 
 //Puntero a funcion
 typedef int (*ProcessEntryPoint)(int argc, char *argv[]);
@@ -42,11 +43,13 @@ int killProcess(uint64_t pid){
     if(pid > MAX_PROC || pid < 0 || processTable[pid].PID == 0)
         return -1;
 
+    //TODO: liberar recursos
+    void *stackBase = (void*)(processTable[pid].rsp);
+    free(stackBase);
+
     processTable[pid].PID = 0;  
     processTable[pid].state = ZOMBIE;
     
-    //TODO: liberar recursos
-
     //desbloquear al padre si esta esperando      
     unblockProcess(processTable[pid].ParentPID);
 
