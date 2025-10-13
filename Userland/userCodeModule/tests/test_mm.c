@@ -10,15 +10,15 @@ typedef struct MM_rq {
 
 
 void * memset2(void * destiation, int32_t c, uint64_t length) {
-  write_out("entro a memset2--");
+  //write_out("entro a memset2--");
 	uint8_t chr = (uint8_t)c;
 	char * dst = (char*)destiation;
-  write_out("antes del copiado--");
+  //write_out("antes del copiado--");
 
 	while(length--)
 		dst[length] = chr;
 
-  write_out("dsp del copiado (memset2)\n");
+  //write_out("dsp del copiado (memset2)\n");
 
 	return destiation;
 }
@@ -34,12 +34,12 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
   uint64_t max_memory;
 
   if (argc != 1){
-    write_out("argc incorrecto\n");
+    //write_out("argc incorrecto\n");
     return -1;
   }
 
   if ((max_memory = satoi(argv[0])) <= 0){
-    write_out("error en el satoi\n");
+    //write_out("error en el satoi\n");
     return -1;
   }
 
@@ -50,47 +50,51 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
     // Request as many blocks as we can
     while (rq < MAX_BLOCKS && total < max_memory) {
       mm_rqs[rq].size = GetUniform(max_memory - total - 1) + 1;
-      write_out("Voy a hacers alloc--");
+      //write_out("Voy a hacers alloc--");
       mm_rqs[rq].address = alloc(mm_rqs[rq].size);
       
 
       if (mm_rqs[rq].address) {
         total += mm_rqs[rq].size;
         rq++;
-        write_out("Funciono alloc\n");
+        //write_out("Funciono alloc\n");
       }
     }
-    write_out("Terminamos de hacer Alloc\n");
+    //write_out("Terminamos de hacer Alloc\n");
 
     // Set
     uint32_t i;
     for (i = 0; i < rq; i++)
       if (mm_rqs[i].address){
-        write_out("Vamos a hacer memset2--");
+        //write_out("Vamos a hacer memset2--");
         memset2(mm_rqs[i].address, i, mm_rqs[i].size);
-        write_out("Hicimos memset2\n");
+        //write_out("Hicimos memset2\n");
       } 
 
-    write_out("Terminamos de hacer memset\n"); 
+    //write_out("Terminamos de hacer memset\n"); 
     // Check
     for (i = 0; i < rq; i++)
       if (mm_rqs[i].address)
-        if (!memcheck(mm_rqs[i].address, i, mm_rqs[i].size)) {
+      {
+        if (!memcheck(mm_rqs[i].address, i, mm_rqs[i].size))
+        {
           write_out("test_mm ERROR\n");
           return -1;
         }
-    write_out("Terminamos de hacer memCheck\n"); 
+        //write_out("test_mm OK\n");
+      }
+    //write_out("Terminamos de hacer memCheck\n"); 
       
-    write_out("\n");
+    //write_out("\n");
                     
     // Free
     for (i = 0; i < rq; i++){
       if (mm_rqs[i].address){
         free(mm_rqs[i].address);
-        write_out("Libero la memoria ");
+        //write_out("Libero la memoria ");
       }
     }
-    write_out("\n");
-
+    //write_out("\n");
+    //write_out("test_mm OK\n");
   }
 }
