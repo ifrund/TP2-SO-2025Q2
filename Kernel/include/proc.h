@@ -66,4 +66,12 @@ typedef struct {
 //Tabla de procesos
 PCB processTable[MAX_PROC];
 //uint64_t next_pid = 1;
+
+//Funciones:
+int createProcess(ProcessEntryPoint entryPoint, const char *name, int argc, char *argv[]);
+int blockProcess(uint64_t pid);
+int unblockProcess(uint64_t pid);
+int killProcess(uint64_t pid);
+void getProcList(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps, uint64_t * rbps);
+
 #endif

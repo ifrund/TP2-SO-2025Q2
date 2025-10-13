@@ -108,7 +108,7 @@ int killProcess(uint64_t pid){
     return 0;
 }
 
-void getProcList(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps, uint64_t * rbps, bool * foregroundStatus){
+void getProcList(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps, uint64_t * rbps){
     for(int i = 0; processTable[i].PID != 0; i++){
         
         memcpy(procNames[i], processTable[i].name, PROCESS_NAME_MAX_LENGTH - 1);
@@ -119,13 +119,7 @@ void getProcList(char ** procNames, uint64_t * pids, uint64_t * parentPids, char
 
         rbps[i] = processTable[i].rbp;
         rsps[i] = processTable[i].rsp;
-
-        if(processTable[i].isForeground){
-            foregroundStatus[i] = true;
-        } else {
-            foregroundStatus[i] = false;
-        }
-
+        
         if(processTable[i].state == RUNNING){
             memcpy(status[i], "RUNNING", PROCESS_NAME_MAX_LENGTH - 1);
         } else if (processTable[i].state == BLOCKED){
