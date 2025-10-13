@@ -30,7 +30,7 @@ $(LOADEROBJECT):
 	$(ASM) $(ASMFLAGS) $(LOADERSRC) -o $(LOADEROBJECT)
 
 clean:
-	rm -rf asm/*.o *.o *.bin
+	rm -rf asm/*.o mm/*.o *.o *.bin
 #TODO agregar al rm los test
 
 .PHONY: all clean
