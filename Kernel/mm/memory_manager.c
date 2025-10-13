@@ -13,18 +13,17 @@ typedef int bool;
 
 typedef struct block_info
 {
-    //void* address;
-    unsigned int status;            // TODO: Si dejo block_count, podria omitirse (block_count seria 0 si esta libre)
+    unsigned int status;
     unsigned int contiguous_blocks; // Cantidad de bloques contiguos, si se pide más memoria que BLOCK_SIZE. Luego deben liberarse todos juntos.
-    //unsigned int block_count;
-    //unsigned int index;
 } block_info;
 
-block_info block_array[TOTAL_BLOCK_COUNT];
+block_info block_array[TOTAL_BLOCK_COUNT];  // TODO: tira warning porque void* es system-dependent.
 static bool is_initialized = 0;
 
 unsigned int first_free_index = 0;
 unsigned int free_blocks; // TODO: ver si es util
+
+void reset_first_free_index();
 
 void create_mm(){
 
@@ -80,17 +79,9 @@ void* alloc(const unsigned long int size){
                 block_array[found_index + j].status = USED;
             }
 
-            // TODO: esto se puede hacer en otra funcion
             if (block_array[first_free_index].status != FREE)
             {
-                for (int j = first_free_index, found = 0; j < TOTAL_BLOCK_COUNT && found == 0; j++)
-                {
-                    if (block_array[j].status == FREE)
-                    {
-                        first_free_index = j;
-                        found = 1;
-                    }
-                }
+                reset_first_free_index();
             }
 
             free_blocks -= blocks_to_alloc;
@@ -110,11 +101,12 @@ void free (void * address){
     unsigned int index = (unsigned int)(address - MEMORY_START) / BLOCK_SIZE;
     unsigned int blocks_to_free = block_array[index].contiguous_blocks;
 
+    if (blocks_to_free == 0)
+        return;
+
     for(int i = index; i < blocks_to_free; i++) {
         block_array[i].status = FREE;
         block_array[i].contiguous_blocks = 0;
-        //block_array[i].block_count = 0;
-        //block_array[i].index = 0;
     }
     
     free_blocks += blocks_to_free;
@@ -122,14 +114,19 @@ void free (void * address){
 
 void status_count(int *status_out){
     int block_count = TOTAL_BLOCK_COUNT;
-    int used_count = 0;
-
-    for(int i = 0; i < TOTAL_BLOCK_COUNT; i++){
-        if(block_array[i].status == USED)
-            used_count++;      
-    }
 
     status_out[0] = block_count;
-    status_out[1] = block_count - used_count;
-    status_out[2] = used_count;
+    status_out[1] = block_count - free_blocks;
+    status_out[2] = free_blocks;
+}
+
+void reset_first_free_index() {
+    for (int i = first_free_index, found = 0; i < TOTAL_BLOCK_COUNT && found == 0; i++)
+        {
+            if (block_array[i].status == FREE)
+            {
+                first_free_index = i;
+                found = 1;
+            }
+        }
 }
