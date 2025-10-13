@@ -1,9 +1,12 @@
 #include "memory_manager.h"
 
-#define TOTAL_MEM_SIZE (1024 * 1024)  //(16 * 1024) 1M de memoria iniciales.
-#define BLOCK_SIZE (4 * 1024)       //Mínimo 4KB, una página. No usamos páginas pero es un lindo numero
-#define MAX_BLOCKS (TOTAL_MEM_SIZE/BLOCK_SIZE) //256
-#define BASE_ADDRESS 0x0000000000100000  //TODO ver repo de la catedra para saber donde esta el kernel. buildin.md
+#define BLOCK_SIZE 0x1000
+#define MEMORY_START (void*)0x0000000000500000
+#define MEMORY_END (void*)0x0000000001500000
+
+#define TOTAL_MEM_SIZE (unsigned int)(MEMORY_END - MEMORY_START)
+#define MAX_BLOCKS (TOTAL_MEM_SIZE / BLOCK_SIZE)
+#define BASE_ADDRESS (unsigned int)MEMORY_START
 
 #define FREE 0
 #define USED 1
@@ -16,21 +19,29 @@ typedef struct mem_block
 } mem_block;
 
 mem_block memory_array[MAX_BLOCKS];
-static int mem_initialize = 0;
+static int is_initialized = 0;
 
 void create_mm(){
-    if (mem_initialize)
+    if (is_initialized)
         return;
 
-    mem_initialize = 1;
+    is_initialized = 1;
+
     for(int i = 0; i <  MAX_BLOCKS; i++)
         memory_array[i].status = FREE;
 }
 
-void * alloc(const unsigned long int size){ 
+/**
+ * @param size amount of bytes to allocate
+ */
+void* alloc(const unsigned long int size){
+
+    if (!is_initialized || size <= 0)
+        return NULL;
+
     int blocks = (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
-    if (!mem_initialize || blocks > MAX_BLOCKS)
+    if (blocks > MAX_BLOCKS)
         return NULL;
 
     for (int i = 0; i <= MAX_BLOCKS - blocks; i++) {
@@ -58,19 +69,19 @@ void * alloc(const unsigned long int size){
 }
 
 
-void free (void * address){
+void free (void* address){
     if (address == NULL)
         return;
     
-    int index = ((char *)address - (char *)BASE_ADDRESS)/BLOCK_SIZE;
-        int start = memory_array[index].start;
+    int index = ((char*)address - (char*)BASE_ADDRESS)/BLOCK_SIZE;
+    int start = memory_array[index].start;
     int end = memory_array[index].end;
     for(int i = start; i <= end; i++){
         memory_array[i].status = FREE;
     }
 }
 
-void status_count(int *status_out){
+void status_count(int* status_out){
     int block_count = MAX_BLOCKS;
     int used_count = 0;
 
