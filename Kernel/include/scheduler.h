@@ -2,9 +2,11 @@
 #define SCHEDULER_H
 
 #include <stdint.h>
+#include <stddef.h>
 // #include "include/proc.h"
 #include "include/lib.h"
 
+#define MAX_PCS 32
 #define PROCESS_NAME_MAX_LENGTH 32
 
 //Estados del proceso
