@@ -11,6 +11,9 @@
 #define PROCESS_NAME_MAX_LENGTH 32
 //TODO: Definir MAX_PRIORITY
 
+//Puntero a funcion
+typedef int (*ProcessEntryPoint)(int argc, char *argv[]);
+
 //Estados del proceso
 typedef enum {
     READY,
@@ -72,6 +75,6 @@ int createProcess(ProcessEntryPoint entryPoint, const char *name, int argc, char
 int blockProcess(uint64_t pid);
 int unblockProcess(uint64_t pid);
 int killProcess(uint64_t pid);
-void getProcList(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps, uint64_t * rbps);
+void getProcList(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps);
 
 #endif

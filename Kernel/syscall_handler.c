@@ -7,6 +7,7 @@
 #include <registers.h>
 #include <sound.h>
 #include "mm/memory_manager.h"
+#include <proc.h>
 
 #define STDIN 0
 #define STDOUT 1
@@ -67,6 +68,26 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
 
   case (0x33):
     sys_status_count(rdi);
+    break;
+
+  case (0xA0):
+    sys_create_process(rdi, rsi, rdx, rcx);
+    break;
+  
+  case (0xA1):
+    sys_kill_process(rdi);
+    break;
+  
+  case (0xA2):
+    sys_block_process(rdi);
+    break;
+  
+  case (0xA3):
+    sys_unblock_process(rdi);
+    break;
+  
+  case (0xA4):
+    sys_get_proc_list(rdi, rsi, rdx, rcx, r8);
     break;
 
   }
@@ -167,4 +188,24 @@ void sys_free(uint64_t address){
 
 void sys_status_count(uint64_t status_out){
   status_count((int *) status_out);
+}
+
+void sys_create_process(uint64_t entryPoint, uint64_t name, uint64_t argc, uint64_t argv){
+  createProcess((ProcessEntryPoint) entryPoint, (char *) name, (int) argc, (char **) argv);
+}
+
+void sys_kill_process(uint64_t pid){
+  killProcess(pid);
+}
+
+void sys_block_process(uint64_t pid){
+  blockProcess(pid);
+}
+
+void sys_unblock_process(uint64_t pid){
+  unblockProcess(pid);
+}
+
+void sys_get_proc_list(uint64_t procNames, uint64_t pids, uint64_t parentPids, uint64_t status, uint64_t rsps){
+  getProcList((char**) procNames, (uint64_t *) pids, (uint64_t *) parentPids, (char **) status, (uint64_t *) rsps);
 }

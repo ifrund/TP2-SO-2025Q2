@@ -1,10 +1,7 @@
 #include "proc.h"
 #include "mm/memory_manager.h"
 #include "lib.c"
-#include "videoDriver.h"
-
-//Puntero a funcion
-typedef int (*ProcessEntryPoint)(int argc, char *argv[]);
+//#include "videoDriver.h"
 
 int createProcess(ProcessEntryPoint entryPoint, const char *name, int argc, char *argv[]){
     int i;
@@ -108,7 +105,7 @@ int killProcess(uint64_t pid){
     return 0;
 }
 
-void getProcList(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps, uint64_t * rbps){
+void getProcList(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps){
     for(int i = 0; processTable[i].PID != 0; i++){
         
         memcpy(procNames[i], processTable[i].name, PROCESS_NAME_MAX_LENGTH - 1);
@@ -117,9 +114,8 @@ void getProcList(char ** procNames, uint64_t * pids, uint64_t * parentPids, char
         pids[i] = processTable[i].PID;
         parentPids[i] = processTable[i].ParentPID;
 
-        rbps[i] = processTable[i].rbp;
         rsps[i] = processTable[i].rsp;
-        
+
         if(processTable[i].state == RUNNING){
             memcpy(status[i], "RUNNING", PROCESS_NAME_MAX_LENGTH - 1);
         } else if (processTable[i].state == BLOCKED){
