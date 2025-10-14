@@ -219,3 +219,23 @@ void free(void* address){
 void status_count(int *status_out){
     _status_count(status_out);
 }
+
+void create_process(int (*entryPoint)(int argc, char *argv[]), const char *name, int argc, char *argv[]){
+    _create_process(entryPoint, name, argc, argv);
+}
+
+void kill_process(uint64_t pid){
+    _kill_process(pid);
+}
+
+void block_process(uint64_t pid){
+    _block_process(pid);
+}
+
+void unblock_process(uint64_t pid){
+    _unblock_process(pid);
+}
+
+void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps){
+    _get_proc_list(procNames, pids, parentPids, status, rsps);
+}

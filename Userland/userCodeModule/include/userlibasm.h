@@ -1,5 +1,6 @@
 #include <stdint.h>
 
+/*---Arquitectura de Computadoras---*/
 void _print(int fd, char * string, int length);
 int _read(int fd, char * buffer, int length);
 int int_test();
@@ -12,7 +13,16 @@ int _getRegs(uint64_t regs[]);
 void _opError();
 void _beep(uint32_t frequency, int duration);
 
+/*---Sistemas Operativos---*/
+
+//Memory Manager
 void _create_mm();
 void * _alloc(int size);
 void _free(void *address);
 void _status_count(int *status_count);
+//Processes
+void _create_process(int (*entryPoint)(int argc, char *argv[]), const char *name, int argc, char *argv[]);
+void _kill_process(uint64_t pid);
+void _block_process(uint64_t pid);
+void _unblock_process(uint64_t pid);
+void _get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps);

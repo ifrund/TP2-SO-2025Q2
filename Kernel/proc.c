@@ -3,7 +3,7 @@
 #include "lib.c"
 //#include "videoDriver.h"
 
-int createProcess(ProcessEntryPoint entryPoint, const char *name, int argc, char *argv[]){
+int createProcess(ProcessEntryPoint entryPoint, char *name, int argc, char *argv[]){
     int i;
 
     for (i = 0; i < MAX_PROC; i++){

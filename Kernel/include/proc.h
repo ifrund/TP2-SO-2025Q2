@@ -71,7 +71,7 @@ PCB processTable[MAX_PROC];
 //uint64_t next_pid = 1;
 
 //Funciones:
-int createProcess(ProcessEntryPoint entryPoint, const char *name, int argc, char *argv[]);
+int createProcess(ProcessEntryPoint entryPoint, char *name, int argc, char *argv[]);
 int blockProcess(uint64_t pid);
 int unblockProcess(uint64_t pid);
 int killProcess(uint64_t pid);
