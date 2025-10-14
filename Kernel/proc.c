@@ -1,7 +1,9 @@
 #include "proc.h"
 #include "mm/memory_manager.h"
-#include "lib.c"
-//#include "videoDriver.h"
+//#include "lib.c"
+
+//tabla de procesos
+PCB processTable[MAX_PROC]; 
 
 int createProcess(ProcessEntryPoint entryPoint, char *name, int argc, char *argv[]){
     int i;
@@ -34,7 +36,7 @@ int createProcess(ProcessEntryPoint entryPoint, char *name, int argc, char *argv
     PCB * pcb = &processTable[i];
 
     //Informacion
-    strncpy(pcb->name, name, PROCESS_NAME_MAX_LENGTH - 1);
+    memcpy(pcb->name, name, PROCESS_NAME_MAX_LENGTH - 1);
     pcb->name[PROCESS_NAME_MAX_LENGTH - 1] = '\0';
 
     pcb->PID = i;

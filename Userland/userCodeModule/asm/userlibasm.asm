@@ -14,6 +14,11 @@ GLOBAL _create_mm
 GLOBAL _alloc
 GLOBAL _free
 GLOBAL _status_count
+GLOBAL _create_process
+GLOBAL _kill_process
+GLOBAL _block_process
+GLOBAL _unblock_process
+GLOBAL _get_proc_list
 
 section .text
 

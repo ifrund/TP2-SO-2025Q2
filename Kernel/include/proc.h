@@ -67,7 +67,7 @@ typedef struct {
 } PCB;
 
 //Tabla de procesos
-PCB processTable[MAX_PROC];
+//PCB processTable[MAX_PROC];
 //uint64_t next_pid = 1;
 
 //Funciones:

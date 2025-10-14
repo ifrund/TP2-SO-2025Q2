@@ -24,3 +24,9 @@ void sys_create_mm();
 void *sys_alloc(uint64_t size);
 void sys_free(uint64_t address);
 void sys_status_count(uint64_t status_out);
+
+void sys_create_process(uint64_t entryPoint, uint64_t name, uint64_t argc, uint64_t argv);
+void sys_kill_process(uint64_t pid);
+void sys_block_process(uint64_t pid);
+void sys_unblock_process(uint64_t pid);
+void sys_get_proc_list(uint64_t procNames, uint64_t pids, uint64_t parentPids, uint64_t status, uint64_t rsps);
