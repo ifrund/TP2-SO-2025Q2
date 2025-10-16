@@ -30,3 +30,4 @@ int sys_kill_process(uint64_t pid);
 int sys_block_process(uint64_t pid);
 int sys_unblock_process(uint64_t pid);
 void sys_get_proc_list(uint64_t procNames, uint64_t pids, uint64_t parentPids, uint64_t status, uint64_t rsps);
+int sys_get_pid();

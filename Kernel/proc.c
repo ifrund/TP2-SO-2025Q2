@@ -128,3 +128,16 @@ void getProcList(char ** procNames, uint64_t * pids, uint64_t * parentPids, char
         status[i][PROCESS_NAME_MAX_LENGTH - 1] = '\0';
     }
 }
+
+int get_pid(){
+    
+    int pid = -1;
+    for (int i = 0; i < MAX_PROC; i++) {
+        if (processTable[i].state == RUNNING) {
+            pid = i;
+            break;
+        }
+    }
+
+    return pid;
+}

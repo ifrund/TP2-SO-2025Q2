@@ -78,5 +78,6 @@ int blockProcess(uint64_t pid);
 int unblockProcess(uint64_t pid);
 int killProcess(uint64_t pid);
 void getProcList(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps);
+int get_pid();
 
 #endif
