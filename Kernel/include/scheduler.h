@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include <stddef.h>
 // #include "include/proc.h"
-#include "include/lib.h"
+#include "lib.h"
+#include "interrupts.h"
 
 #define QUANTUM 5
 #define MAX_PCS 32
@@ -54,5 +55,6 @@ void * scheduling(void *rsp);
 void add_pcs(PCB *pcb);
 void delete_pcs(PCB *pcb);
 void yield();
+int be_nice(int pid);
 
 #endif

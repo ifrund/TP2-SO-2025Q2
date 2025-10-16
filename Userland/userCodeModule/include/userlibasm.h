@@ -16,3 +16,5 @@ void _create_mm();
 void * _alloc(int size);
 void _free(void *address);
 void _status_count(int *status_count);
+void _yield();
+int _be_nice(int pid);

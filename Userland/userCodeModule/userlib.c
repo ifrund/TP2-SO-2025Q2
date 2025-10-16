@@ -219,3 +219,11 @@ void free(void* address){
 void status_count(int *status_out){
     _status_count(status_out);
 }
+
+void yield(){
+    _yield();
+}
+
+int be_nice(int pid){
+    return _be_nice(pid);
+}

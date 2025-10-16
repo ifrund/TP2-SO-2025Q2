@@ -24,3 +24,5 @@ void sys_create_mm();
 void *sys_alloc(uint64_t size);
 void sys_free(uint64_t address);
 void sys_status_count(uint64_t status_out);
+void sys_yield();
+int sys_be_nice(uint64_t pid);

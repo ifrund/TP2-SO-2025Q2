@@ -24,6 +24,7 @@ static int get_max_time_for_priority(Priorities p) {
 //el primer pcs entra al sch
 //hay 3 ya corriendo
 //hay 3 de diferentes prio
+//el pcs pasa a estar ZOMBIE o BLOCKED
 
 void *scheduling(void *rsp) {
 
@@ -104,6 +105,31 @@ void delete_pcs(PCB *pcb) {
 
 void yield(){
     _yield();
+}
+
+int be_nice(int pid){
+    
+    PCB *curr = NULL;
+
+    for (int i = 0; i < MAX_PCS; i++) {
+        if (process_table[i] && process_table[i]->PID == pid) {
+            curr = process_table[i];
+            break;
+        }
+    }
+
+    if (curr == NULL) {
+        return -1; //Este pid no esta en el sch
+    }    
+
+    if (curr->my_prio > LEVEL_0){
+        curr->my_prio--; //Mejoramos su prio 
+    }
+    else{
+        return -2; //Ya esta en el max de prio
+    }
+
+    return 0;
 }
 
 //proceso basura cuando no hay ninguno ready, llama constantemente a halt, osea al scheduler, osea a q cambie al proximo

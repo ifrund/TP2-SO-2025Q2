@@ -200,4 +200,8 @@ void free(void* address);
 
 void status_count(int *status_out);
 
+void yield();
+
+int be_nice(int pid);
+
 #endif
