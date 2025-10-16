@@ -1,4 +1,4 @@
-#include "memory_manager.h"
+#include "../include/memory_manager.h"
 
 #define TOTAL_MEM_SIZE (1024 * 1024)  //(16 * 1024) 1M de memoria iniciales.
 #define BLOCK_SIZE (4 * 1024)       //Mínimo 4KB, una página. No usamos páginas pero es un lindo numero

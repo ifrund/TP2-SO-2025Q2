@@ -1,6 +1,4 @@
 #include "proc.h"
-#include "mm/memory_manager.h"
-//#include "lib.c"
 
 //tabla de procesos
 PCB processTable[MAX_PROC]; 
@@ -63,7 +61,7 @@ int createProcess(ProcessEntryPoint entryPoint, char *name, int argc, char *argv
 
     memset(pcb->fileDescriptors, 0, sizeof(pcb->fileDescriptors));
 
-    return 0;
+    return pcb->PID;
 }
 
 int blockProcess(uint64_t pid){

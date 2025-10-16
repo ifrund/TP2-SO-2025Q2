@@ -220,20 +220,20 @@ void status_count(int *status_out){
     _status_count(status_out);
 }
 
-void create_process(int (*entryPoint)(int argc, char *argv[]), const char *name, int argc, char *argv[]){
-    _create_process(entryPoint, name, argc, argv);
+int create_process(int (*entryPoint)(int argc, char *argv[]), const char *name, int argc, char *argv[]){
+    return _create_process(entryPoint, name, argc, argv);
 }
 
-void kill_process(uint64_t pid){
-    _kill_process(pid);
+int kill_process(uint64_t pid){
+    return _kill_process(pid);
 }
 
-void block_process(uint64_t pid){
-    _block_process(pid);
+int block_process(uint64_t pid){
+    return _block_process(pid);
 }
 
-void unblock_process(uint64_t pid){
-    _unblock_process(pid);
+int unblock_process(uint64_t pid){
+   return _unblock_process(pid);
 }
 
 void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps){

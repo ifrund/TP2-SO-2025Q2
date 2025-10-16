@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "syscall.h"
 #include "test_util.h"
+#include "../include/userlib.h"
 
 enum State { RUNNING,
              BLOCKED,
@@ -15,7 +15,7 @@ typedef struct P_rq {
 int64_t test_processes(uint64_t argc, char *argv[]) {
   write_out("Esto tdv no fue desarrollado, vuelva más tarde \n");
   return -1;
-/*
+
   uint8_t rq;
   uint8_t alive = 0;
   uint8_t action;
@@ -34,10 +34,10 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 
     // Create max_processes processes
     for (rq = 0; rq < max_processes; rq++) {
-      p_rqs[rq].pid = my_create_process("endless_loop", 0, argvAux);
+      p_rqs[rq].pid = create_process(endless_loop, "endless_loop", 0, argvAux);
 
       if (p_rqs[rq].pid == -1) {
-        printf("test_processes: ERROR creating process\n");
+        write_out("test_processes: ERROR creating process\n");
         return -1;
       } else {
         p_rqs[rq].state = RUNNING;
@@ -54,8 +54,8 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
         switch (action) {
           case 0:
             if (p_rqs[rq].state == RUNNING || p_rqs[rq].state == BLOCKED) {
-              if (my_kill(p_rqs[rq].pid) == -1) {
-                printf("test_processes: ERROR killing process\n");
+              if (kill_process(p_rqs[rq].pid) == -1) {
+                write_out("test_processes: ERROR killing process\n");
                 return -1;
               }
               p_rqs[rq].state = KILLED;
@@ -65,8 +65,8 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 
           case 1:
             if (p_rqs[rq].state == RUNNING) {
-              if (my_block(p_rqs[rq].pid) == -1) {
-                printf("test_processes: ERROR blocking process\n");
+              if (block_process(p_rqs[rq].pid) == -1) {
+                write_out("test_processes: ERROR blocking process\n");
                 return -1;
               }
               p_rqs[rq].state = BLOCKED;
@@ -78,14 +78,13 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
       // Randomly unblocks processes
       for (rq = 0; rq < max_processes; rq++)
         if (p_rqs[rq].state == BLOCKED && GetUniform(100) % 2) {
-          if (my_unblock(p_rqs[rq].pid) == -1) {
-            printf("test_processes: ERROR unblocking process\n");
+          if (unblock_process(p_rqs[rq].pid) == -1) {
+            write_out("test_processes: ERROR unblocking process\n");
             return -1;
           }
           p_rqs[rq].state = RUNNING;
         }
     }
   }
-    */
 }
 

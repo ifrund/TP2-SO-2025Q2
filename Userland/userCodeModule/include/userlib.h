@@ -200,4 +200,14 @@ void free(void* address);
 
 void status_count(int *status_out);
 
+int create_process(int (*entryPoint)(int argc, char *argv[]), const char *name, int argc, char *argv[]);
+
+int kill_process(uint64_t pid);
+
+int block_process(uint64_t pid);
+
+int unblock_process(uint64_t pid);
+
+void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps);
+
 #endif

@@ -1,8 +1,8 @@
 #include "include/userlib.h"
 #include "include/shell.h"
 #include "include/userlibasm.h"
-#include <stdint.h>
 #include "tests/test_util.h"
+#include <stdint.h>
 
 #define COMMANDS 14
 #define TESTS 4

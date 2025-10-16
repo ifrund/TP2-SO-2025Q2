@@ -6,7 +6,7 @@
 #include <time.h>
 #include <registers.h>
 #include <sound.h>
-#include "mm/memory_manager.h"
+#include "include/memory_manager.h"
 #include <proc.h>
 
 #define STDIN 0
@@ -190,20 +190,20 @@ void sys_status_count(uint64_t status_out){
   status_count((int *) status_out);
 }
 
-void sys_create_process(uint64_t entryPoint, uint64_t name, uint64_t argc, uint64_t argv){
-  createProcess((ProcessEntryPoint) entryPoint, (char *) name, (int) argc, (char **) argv);
+int sys_create_process(uint64_t entryPoint, uint64_t name, uint64_t argc, uint64_t argv){
+  return createProcess((ProcessEntryPoint) entryPoint, (char *) name, (int) argc, (char **) argv);
 }
 
-void sys_kill_process(uint64_t pid){
-  killProcess(pid);
+int sys_kill_process(uint64_t pid){
+  return killProcess(pid);
 }
 
-void sys_block_process(uint64_t pid){
-  blockProcess(pid);
+int sys_block_process(uint64_t pid){
+   return blockProcess(pid);
 }
 
-void sys_unblock_process(uint64_t pid){
-  unblockProcess(pid);
+int sys_unblock_process(uint64_t pid){
+  return unblockProcess(pid);
 }
 
 void sys_get_proc_list(uint64_t procNames, uint64_t pids, uint64_t parentPids, uint64_t status, uint64_t rsps){
