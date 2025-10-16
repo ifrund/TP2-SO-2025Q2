@@ -1,7 +1,7 @@
 #ifndef MEMORY_MANAGER_H
 #define MEMORY_MANAGER_H
 
-#include <stddef.h>
+#define NULL ((void *)0)
 
 void create_mm();
 
