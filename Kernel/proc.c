@@ -133,10 +133,10 @@ int get_pid(){
     
     int pid = -1;
     for (int i = 0; i < MAX_PROC; i++) {
-        if (processTable[i].state == RUNNING) {
+        /*if (TODO processTable[i]. != NULL && processTable[i].state == RUNNING) {
             pid = i;
             break;
-        }
+        }*/
     }
 
     return pid;
