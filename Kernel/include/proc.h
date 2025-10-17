@@ -23,7 +23,7 @@ typedef enum {
     RUNNING,
     BLOCKED,
     ZOMBIE,
-    KILLED
+    KILLED //TODO es zombie o killed, pero no las dos, verdad?
 } ProcessState;
 
 //PCB definition

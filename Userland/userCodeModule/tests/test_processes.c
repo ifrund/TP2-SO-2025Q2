@@ -2,6 +2,9 @@
 #include "test_util.h"
 #include "../include/userlib.h"
 
+#define MAX_PCS 128
+#define PROCESS_NAME_MAX_LENGTH 32
+
 enum State { RUNNING,
              BLOCKED,
              KILLED };
@@ -10,6 +13,35 @@ typedef struct P_rq {
   int64_t pid;
   enum State state;
 } p_rq;
+
+void uint_to_str(uint64_t num, char *out) {
+    char temp[20];
+    int i = 0;
+
+    if (num == 0) {
+        out[0] = '0';
+        out[1] = '\0';
+        return;
+    }
+
+    while (num > 0) {
+        temp[i++] = '0' + (num % 10);
+        num /= 10;
+    }
+
+    for (int j = 0; j < i; j++)
+        out[j] = temp[i - j - 1];
+    out[i] = '\0';
+}
+
+// append src to dest
+void strcat(char *dest, const char *src) {
+    while (*dest) dest++;  // move to end of dest
+    while (*src) {
+        *dest++ = *src++;
+    }
+    *dest = '\0';
+}
 
 //recibe un int, que es la cantidad max de pcs
 int64_t test_processes(uint64_t argc, char *argv[]) {
@@ -84,9 +116,52 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
             write_out("test_processes: ERROR unblocking process\n");
             return -1;
           }
-          p_rqs[i].state = RUNNING;
+          p_rqs[i].state = RUNNING; //en realidad lo dejamos en ready, deberiamos mandarlo a running? TODO
         }
     }
+
+    char procNamesStorage[MAX_PCS][PROCESS_NAME_MAX_LENGTH] = {0};
+    char statusStorage[MAX_PCS][PROCESS_NAME_MAX_LENGTH] = {0};
+    char *procNames[MAX_PCS];
+    char *status[MAX_PCS];
+    for (int i = 0; i < MAX_PCS; i++) {
+        procNames[i] = procNamesStorage[i];
+        status[i] = statusStorage[i];
+    }
+
+    uint64_t pids[MAX_PCS] = {0};
+    uint64_t parentPids[MAX_PCS] = {0};
+    uint64_t rsps[MAX_PCS] = {0};
+
+    get_proc_list(procNames, pids, parentPids, status, rsps);
+
+    char buffer[256];
+
+    for (int i = 0; i < MAX_PCS && procNames[i][0] != '\0'; i++) {
+
+      // clear buffer
+      buffer[0] = '\0';
+
+      // convert numbers to strings manually
+      char pid_str[20], ppid_str[20], rsp_str[20];
+      uint_to_str(pids[i], pid_str);
+      uint_to_str(parentPids[i], ppid_str);
+      uint_to_str(rsps[i], rsp_str);
+
+      strcpy(buffer, "PID:[");
+      strcat(buffer, pid_str);
+      strcat(buffer, "] | Name:");
+      strcat(buffer, procNames[i]);
+      strcat(buffer, " | ParentPID=");
+      strcat(buffer, ppid_str);
+      strcat(buffer, " | RSP=");
+      strcat(buffer, rsp_str);
+      strcat(buffer, " | Status:");
+      strcat(buffer, status[i]);
+      strcat(buffer, "\n");
+      write_out(buffer);
+}
+
   }
 }
 

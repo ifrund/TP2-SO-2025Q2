@@ -11,7 +11,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
             myPid = i;
             break;
         }
-       if(processTable[i]->state == KILLED){
+       if(processTable[i]->state == ZOMBIE){
             myPid = i;
             //TODO, cleanup de pcs muerto
             break;
@@ -19,15 +19,13 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     }
 
     if (i >= MAX_PROC){
-        ncPrint("No hay espacio para mas procesos\n");
         return -1;
     }
     
     //Inicializamos PCB:
     PCB * pcb = alloc(sizeof(PCB));
     if (pcb == NULL) {
-        ncPrint("Error en el alloc a el proceso\n");
-        return -1; // Error de memoria
+        return -1;
     }
     processTable[i] = pcb; 
 
@@ -44,7 +42,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     if (stackBase == NULL) {
         free(processTable[i]);
         ncPrint("Error en el alloc a stackBase\n");
-        return -1; // Error de memoria
+        return -1; 
     }
     pcb->stackBase = stackBase;
     pcb->rsp = stackBase + MAX_STACK_SIZE;
@@ -68,15 +66,17 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
 }
 
 int block_process(uint64_t pid){
-    if(pid > MAX_PROC || processTable[pid]->PID == 0)
+    if(pid > MAX_PROC || processTable[pid] == NULL) //TODO modularizar??
         return -1;
 
-    processTable[pid]->state = BLOCKED;
+    if(processTable[pid]->state == READY || processTable[pid]->state == RUNNING)
+        processTable[pid]->state = BLOCKED;
+    
     return 0;
 }
 
 int unblock_process(uint64_t pid){
-    if(pid > MAX_PROC || processTable[pid]->PID == 0)
+    if(pid > MAX_PROC || processTable[pid] == NULL || processTable[pid]->state != BLOCKED )
         return -1;
 
     processTable[pid]->state = READY;
@@ -84,7 +84,7 @@ int unblock_process(uint64_t pid){
 }
 
 int kill_process(uint64_t pid){
-    if(pid > MAX_PROC || processTable[pid]->PID == 0)
+    if(pid > MAX_PROC || processTable[pid] == NULL)
         return -1;
 
     //Liberacion de recursos
@@ -94,12 +94,11 @@ int kill_process(uint64_t pid){
         processTable[pid]->stackBase = NULL;
     }
 
-    processTable[pid]->PID = 0;  
     processTable[pid]->state = ZOMBIE;
     
     //desbloquear al padre si esta esperando      
     uint64_t parentPID = processTable[pid]->ParentPID;
-    if (parentPID < MAX_PROC && processTable[parentPID]->PID != 0) {
+    if (parentPID < MAX_PROC && processTable[parentPID] != NULL) {
         if (processTable[parentPID]->isWaitingForChildren) {
             unblock_process(parentPID);
             processTable[parentPID]->isWaitingForChildren = false;
@@ -110,7 +109,7 @@ int kill_process(uint64_t pid){
 }
 
 void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps){
-    for(int i = 0; processTable[i]->PID != 0; i++){
+    for(int i = 0; processTable[i] != NULL; i++){
         
         memcpy(procNames[i], processTable[i]->name, PROCESS_NAME_MAX_LENGTH - 1);
         procNames[i][PROCESS_NAME_MAX_LENGTH - 1] = '\0';
