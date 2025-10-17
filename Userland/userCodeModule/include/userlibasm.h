@@ -21,7 +21,7 @@ void * _alloc(int size);
 void _free(void *address);
 void _status_count(int *status_count);
 //Processes
-int _create_process(int (*entryPoint)(int argc, char *argv[]), const char *name, int argc, char *argv[]);
+int _create_process(void * rip, const char *name, int argc, char *argv[]);
 int _kill_process(uint64_t pid);
 int _block_process(uint64_t pid);
 int _unblock_process(uint64_t pid);

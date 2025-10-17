@@ -106,7 +106,7 @@ void process_key(char key){
 
 static void remove_extra_spaces(char *str);
 static int split_arguments(char *buffer, char *argv[], int max_args);
-static void remove_first_argument(char *argv[]);
+static int remove_first_argument(char *argv[], int argc);
 
 void process_command(char* buffer){
 
@@ -196,8 +196,8 @@ void process_command(char* buffer){
                     break;
 
                 case 8: 
-                    remove_first_argument(argv);
-                    test_mm(argc-1, argv);
+                    argc = remove_first_argument(argv, argc);
+                    test_mm(argc, argv);
                     break;
 
                 case 9:
@@ -205,12 +205,12 @@ void process_command(char* buffer){
                     break;
 
                 case 10:
-                    remove_first_argument(argv);
+                    argc = remove_first_argument(argv, argc);
                     test_processes(argc, argv);
                     break;
 
                 case 11:
-                    remove_first_argument(argv);
+                    argc = remove_first_argument(argv, argc);
                     test_sync(argc, argv);
                     break;
 
@@ -359,11 +359,13 @@ static int split_arguments(char *buffer, char *argv[], int max_args) {
 }
 
 //La usamos para sacar el comando del argv q le pasamos a los test :)
-void remove_first_argument(char *argv[]) {
+int remove_first_argument(char *argv[], int argc) {
     int i = 0;
 
     while (argv[i] != 0) {
         argv[i] = argv[i + 1];
         i++;
     }
+
+    return argc-1;
 }

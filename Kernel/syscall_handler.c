@@ -194,24 +194,24 @@ void sys_status_count(uint64_t status_out){
   status_count((int *) status_out);
 }
 
-int sys_create_process(uint64_t entryPoint, uint64_t name, uint64_t argc, uint64_t argv){
-  return createProcess((ProcessEntryPoint) entryPoint, (char *) name, (int) argc, (char **) argv);
+int sys_create_process(uint64_t rip, uint64_t name, uint64_t argc, uint64_t argv){
+  return create_process((void *) rip, (char *) name, (int) argc, (char **) argv);
 }
 
 int sys_kill_process(uint64_t pid){
-  return killProcess(pid);
+  return kill_process(pid);
 }
 
 int sys_block_process(uint64_t pid){
-   return blockProcess(pid);
+   return block_process(pid);
 }
 
 int sys_unblock_process(uint64_t pid){
-  return unblockProcess(pid);
+  return unblock_process(pid);
 }
 
 void sys_get_proc_list(uint64_t procNames, uint64_t pids, uint64_t parentPids, uint64_t status, uint64_t rsps){
-  getProcList((char**) procNames, (uint64_t *) pids, (uint64_t *) parentPids, (char **) status, (uint64_t *) rsps);
+  get_proc_list((char**) procNames, (uint64_t *) pids, (uint64_t *) parentPids, (char **) status, (uint64_t *) rsps);
 }
 
 int sys_get_pid(){

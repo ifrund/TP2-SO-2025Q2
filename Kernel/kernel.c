@@ -9,6 +9,7 @@
 #include <idtLoader.h>
 #include <keyboard.h>
 #include <interrupts.h>
+#include "include/memory_manager.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -58,6 +59,7 @@ int main()
 {	
     load_idt();
     flush_buffer();
+	create_mm();
 	_setUser();
 
 //    Esto no hace falta porque el salto se hace en set user

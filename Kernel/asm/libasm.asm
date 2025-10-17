@@ -27,6 +27,8 @@ GLOBAL _saveRegs
 GLOBAL _outb
 GLOBAL _inb
 
+GLOBAL _create_stack
+
 section .text
 	
 cpuVendor:
@@ -429,5 +431,49 @@ _inb:
 	mov edx, edi
 	in	al, dx
 	ret
+
+;================================================================================================================================
+
+;================================================================================================================================
+;_create_stack crea el stack para los procesos, pone cada registro, flag, etc en su correcto lugar
+; recibimos: rdi = stack_pointers (initial rsp); rsi = rip (entry point); edx = argc; rcx = argv
+; si te preguntas porq edx y no rdx, lo vimos asi en gdb :)
+;================================================================================================================================
+;================================================================================================================================
+_create_stack:
+
+	push rbp 
+	mov rbp, rsp
+	mov rsp, rdi ;acomodamos el sp para dsp 
+
+    ; Push initial stack frame for iretq
+    push 0x0                  ; SS 
+    push rdi                   ; RSP 
+    push 0x202                 ; RFLAGS (interrupts enabled)
+    push 0x8                   ; CS 
+    push rsi                   ; RIP 
+
+	;push state a mano para estar seguros
+	push 0x0 ;rax
+	push 0x1 ;rbx 
+	push 0x2 ;rcx
+	push 0x3 ;rdx
+	push rdi ;rbp 
+	push rdx ;rdi  argc
+	push rcx ;rsi  argv
+	push 0x4 ;r8
+	push 0x5 ;r9
+	push 0x6 ;r10
+	push 0x7 ;r11
+	push 0x8 ;r12
+	push 0x9 ;r13
+	push 0x10 ;r14
+	push 0x11 ;r15
+
+    mov rax, rsp ;acomodamos para retornar
+	mov rsp, rbp
+	pop rbp
+
+    ret
 
 ;================================================================================================================================

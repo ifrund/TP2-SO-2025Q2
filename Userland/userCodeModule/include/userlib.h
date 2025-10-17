@@ -200,7 +200,7 @@ void free(void* address);
 
 void status_count(int *status_out);
 
-int create_process(int (*entryPoint)(int argc, char *argv[]), const char *name, int argc, char *argv[]);
+int create_process(void * rip, const char *name, int argc, char *argv[]);
 
 int kill_process(uint64_t pid);
 

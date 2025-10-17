@@ -33,4 +33,6 @@ uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
 
 int pow(int base, int exp);
 
+void* _create_stack(void * stack_top, void * rip, int argc, char ** argv);
+
 #endif

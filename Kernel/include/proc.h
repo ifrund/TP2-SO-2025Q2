@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "lib.h"
 #include "memory_manager.h"
+#include "naiveConsole.h"
 
 //Constants
 #define MAX_FD 128
@@ -21,21 +22,9 @@ typedef enum {
     READY,
     RUNNING,
     BLOCKED,
-    ZOMBIE
+    ZOMBIE,
+    KILLED
 } ProcessState;
-
-//context
-typedef struct {
-    uint64_t rax, rbx, rcx, rdx, rsi, rdi, rbp, rsp;
-    uint64_t r8, r9, r10, r11, r12, r13, r14, r15;
-    uint64_t rip;
-    uint64_t rflags;
-    //TODO: estos se utilizan?
-    // uint16_t cs; 
-    // uint16_t ss; 
-    // uint16_t ds;
-    // uint16_t es;
-} StackFrame;
 
 //PCB definition
 typedef struct {
@@ -50,9 +39,7 @@ typedef struct {
     uint64_t fileDescriptors[MAX_FD];
 
     //Datos
-    uint64_t rsp; 
-    uint64_t rbp;
-    StackFrame * stackFrame;
+    void* rsp; 
     void* stackBase;
 
     //Argumentos que recibe
@@ -73,11 +60,11 @@ typedef struct {
 //uint64_t next_pid = 1;
 
 //Funciones:
-int createProcess(ProcessEntryPoint entryPoint, char *name, int argc, char *argv[]);
-int blockProcess(uint64_t pid);
-int unblockProcess(uint64_t pid);
-int killProcess(uint64_t pid);
-void getProcList(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps);
+int create_process(void * rip, char *name, int argc, char *argv[]);
+int block_process(uint64_t pid);
+int unblock_process(uint64_t pid);
+int kill_process(uint64_t pid);
+void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps);
 int get_pid();
 
 #endif

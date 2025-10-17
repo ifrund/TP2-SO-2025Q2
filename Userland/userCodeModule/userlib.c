@@ -220,8 +220,8 @@ void status_count(int *status_out){
     _status_count(status_out);
 }
 
-int create_process(int (*entryPoint)(int argc, char *argv[]), const char *name, int argc, char *argv[]){
-    return _create_process(entryPoint, name, argc, argv);
+int create_process(void * rip , const char *name, int argc, char *argv[]){
+    return _create_process(rip, name, argc, argv);
 }
 
 int kill_process(uint64_t pid){
