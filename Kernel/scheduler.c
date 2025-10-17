@@ -3,6 +3,7 @@
 static int process_count = 0;
 static int current_index = -1;
 static int idle_running = 0;  //esta en 1 mientras q idle este en READY o RUNNING
+int idle_pid = -1;
 
 static int get_max_time_for_priority(Priorities p) {
     switch (p) {
@@ -21,6 +22,14 @@ static void idle() {
     while(1) {
         _hlt();
     }
+}
+
+int find_index_by_pid(int pid) {
+    for (int i = 0; i < process_count; i++) {
+        if (processTable[i] != NULL && processTable[i]->PID == pid)
+            return i;
+    }
+    return -1;  
 }
 
 //TODO, pensar difernetens situaciones
@@ -65,7 +74,7 @@ void *scheduling(void *rsp) {
         for (int i = 0; i < process_count; i++) {
             PCB *p = processTable[i];
             if (p != NULL && p->state == READY && strcmp(p->name, "idle") != 0) {
-                //kill_process(idle_pid); //TODO q kill te saque de la tabla de processTable 
+                kill_process(idle_pid);
                 idle_running = 0;
                 break;
             }
@@ -101,24 +110,23 @@ void *scheduling(void *rsp) {
 
     //si no existe idle, lo creamos
     PCB *idle_pcb = NULL;
-    int idle_index = -1;
 
     for (int i = 0; i < process_count; i++) {
         PCB *p = processTable[i];
         if (p != NULL && strcmp(p->name, "idle") == 0) {
             idle_pcb = p;
-            idle_index = i;
+            idle_pid = p->PID;
             break;
         }
     }
 
     if(idle_pcb == NULL){
-        idle_index = create_process(&idle, "idle", 0, argvAux);
+        idle_pid = create_process(&idle, "idle", 0, argvAux);
     }
 
     //lo ponemos a correr al idle
     if (idle_pcb != NULL) {
-        current_index = idle_index;
+        current_index = find_index_by_pid(idle_pid);
         idle_pcb->state = RUNNING;
         idle_running = 1;
         return (void *)idle_pcb->rsp;

@@ -11,9 +11,10 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
             myPid = i;
             break;
         }
-       if(processTable[i]->state == ZOMBIE){
+       if(processTable[i]->state == ZOMBIE){ 
+            //si esta en zombie es porq paso por delete y ya se le hicieron los free
+            //TODO seria un puntero a null?
             myPid = i;
-            //TODO, cleanup de pcs muerto
             break;
         }
     }
@@ -73,7 +74,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
 }
 
 int block_process(uint64_t pid){
-    if(pid > MAX_PROC || processTable[pid] == NULL) //TODO modularizar??
+    if(pid > MAX_PROC || processTable[pid] == NULL)
         return -1;
 
     if(processTable[pid]->state == READY || processTable[pid]->state == RUNNING)

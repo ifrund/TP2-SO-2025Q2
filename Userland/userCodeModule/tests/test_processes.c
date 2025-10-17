@@ -116,7 +116,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
             write_out("test_processes: ERROR unblocking process\n");
             return -1;
           }
-          p_rqs[i].state = RUNNING; //en realidad lo dejamos en ready, deberiamos mandarlo a running? TODO
+          p_rqs[i].state = RUNNING;
         }
     }
 
