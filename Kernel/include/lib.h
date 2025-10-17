@@ -35,4 +35,7 @@ uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
 
 int pow(int base, int exp);
 
+//SO 
+int strcmp(const char *str1, const char *str2);
+
 #endif

@@ -24,7 +24,8 @@ typedef enum {
     LEVEL_1 = 1,
     LEVEL_2 = 2,
     LEVEL_3 = 3,
-    LEVEL_4 = 4  //menor prio
+    LEVEL_4 = 4,  //menor prio
+    LEVEL_IDLE = 5
 } Priorities;
 
 //PCB definition
@@ -50,7 +51,6 @@ typedef struct {
 } PCB;
 //TODO eliminar, ya esta en proc.h
 
-void init_sch();
 void * scheduling(void *rsp);
 void add_pcs(PCB *pcb);
 void delete_pcs(PCB *pcb);
