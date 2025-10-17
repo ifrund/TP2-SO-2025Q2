@@ -15,7 +15,6 @@ void _saveRegs();
 void _outb();
 uint8_t _inb();
 
-
 // asm time functions
 int _getSeconds();
 int _getMinutes();
@@ -28,11 +27,16 @@ int _getDayWeek();
 int _getDayMonth();
 int _getDateTimeFormat();
 
+//asm SO functions
+void _yield();
+
 // base changing
 uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
 
 int pow(int base, int exp);
 
+//SO
 void* _create_stack(void * stack_top, void * rip, int argc, char ** argv);
+int strcmp(const char *str1, const char *str2);
 
 #endif

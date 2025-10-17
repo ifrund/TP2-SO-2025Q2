@@ -55,11 +55,16 @@ void * initializeKernelBinary()
 	return getStackBase();
 }
 
+static void* const shell = (void *) 0x400000;
+
 int main()
 {	
     load_idt();
     flush_buffer();
 	create_mm();
+	//TODO init de pipes (?
+	char * argShell[1]={NULL};
+	int shell_pid = create_process(shell, "shell", 0, argShell);
 	_setUser();
 
 //    Esto no hace falta porque el salto se hace en set user

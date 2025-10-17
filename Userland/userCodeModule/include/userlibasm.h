@@ -27,3 +27,6 @@ int _block_process(uint64_t pid);
 int _unblock_process(uint64_t pid);
 void _get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps);
 int _get_pid();
+//Schedulers
+void _yield();
+int _be_nice(int pid);

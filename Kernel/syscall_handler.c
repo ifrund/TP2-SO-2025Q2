@@ -8,6 +8,7 @@
 #include <sound.h>
 #include "include/memory_manager.h"
 #include <proc.h>
+#include <scheduler.h>
 
 #define STDIN 0
 #define STDOUT 1
@@ -70,6 +71,14 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     sys_status_count(rdi);
     break;
 
+  case (0x34):
+    sys_yield();
+    break;
+
+  case (0x35):
+    sys_be_nice(rdi);
+    break;
+    
   case (0xA0):
     sys_create_process(rdi, rsi, rdx, rcx);
     break;
@@ -192,6 +201,14 @@ void sys_free(uint64_t address){
 
 void sys_status_count(uint64_t status_out){
   status_count((int *) status_out);
+}
+
+void sys_yield(){
+  yield();
+}
+
+int sys_be_nice(uint64_t pid){
+    return be_nice(pid);
 }
 
 int sys_create_process(uint64_t rip, uint64_t name, uint64_t argc, uint64_t argv){

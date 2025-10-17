@@ -20,6 +20,8 @@ void sys_speak(uint64_t frequence, uint64_t duration);
 
 void sys_changeSize(uint8_t newSize, uint8_t fd);
 
+//SO 
+
 void sys_create_mm();
 void *sys_alloc(uint64_t size);
 void sys_free(uint64_t address);
@@ -31,3 +33,6 @@ int sys_block_process(uint64_t pid);
 int sys_unblock_process(uint64_t pid);
 void sys_get_proc_list(uint64_t procNames, uint64_t pids, uint64_t parentPids, uint64_t status, uint64_t rsps);
 int sys_get_pid();
+
+void sys_yield();
+int sys_be_nice(uint64_t pid);

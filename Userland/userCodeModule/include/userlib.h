@@ -212,4 +212,8 @@ void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, ch
 
 int get_pid();
 
+void yield();
+
+int be_nice(int pid);
+
 #endif
