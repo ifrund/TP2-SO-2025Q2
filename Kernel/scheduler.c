@@ -1,6 +1,5 @@
 #include "include/scheduler.h"
 
-static PCB *pcs_in_sch[MAX_PCS] = {0};
 static int process_count = 0;
 static int current_index = -1;
 static int idle_running = 0;  //esta en 1 mientras q idle este en READY o RUNNING
@@ -17,6 +16,13 @@ static int get_max_time_for_priority(Priorities p) {
     }
 } 
 
+//proceso basura cuando no hay ninguno ready, llama constantemente a halt, osea al scheduler, osea a q cambie al proximo
+static void idle() {
+    while(1) {
+        _hlt();
+    }
+}
+
 //TODO, pensar difernetens situaciones
 //el primer pcs entra al sch
 //hay 3 ya corriendo
@@ -26,9 +32,9 @@ static int get_max_time_for_priority(Priorities p) {
 
 void *scheduling(void *rsp) {
 
-    if (current_index >= 0 && pcs_in_sch[current_index] != NULL) {
-        PCB *curr = pcs_in_sch[current_index];
-        curr->rsp = (uint64_t)rsp;
+    if (current_index >= 0 && processTable[current_index] != NULL) {
+        PCB *curr = processTable[current_index];
+        curr->rsp = rsp;
 
         if (curr->state == RUNNING){
             curr->time_used++;
@@ -57,9 +63,9 @@ void *scheduling(void *rsp) {
      //si el idle está y aparece un proceso READY
     if (idle_running) {
         for (int i = 0; i < process_count; i++) {
-            PCB *p = pcs_in_sch[i];
+            PCB *p = processTable[i];
             if (p != NULL && p->state == READY && strcmp(p->name, "idle") != 0) {
-                //kill_process(idle_pid); //TODO q kill te saque de la tabla de pcs_in_sch 
+                //kill_process(idle_pid); //TODO q kill te saque de la tabla de processTable 
                 idle_running = 0;
                 break;
             }
@@ -67,8 +73,8 @@ void *scheduling(void *rsp) {
     }
 
     //solo hay un proceso
-    if (process_count == 1 && pcs_in_sch[0]->state == READY) {
-        pcs_in_sch[0]->state = RUNNING;
+    if (process_count == 1 && processTable[0]->state == READY) {
+        processTable[0]->state = RUNNING;
         return rsp;
     }
 
@@ -79,7 +85,7 @@ void *scheduling(void *rsp) {
     do {
         next_index = (next_index + 1) % process_count;
         checked++;
-        PCB *candidate = pcs_in_sch[next_index];
+        PCB *candidate = processTable[next_index];
 
         if (candidate != NULL && candidate->state == READY) {
             current_index = next_index;
@@ -98,7 +104,7 @@ void *scheduling(void *rsp) {
     int idle_index = -1;
 
     for (int i = 0; i < process_count; i++) {
-        PCB *p = pcs_in_sch[i];
+        PCB *p = processTable[i];
         if (p != NULL && strcmp(p->name, "idle") == 0) {
             idle_pcb = p;
             idle_index = i;
@@ -107,8 +113,7 @@ void *scheduling(void *rsp) {
     }
 
     if(idle_pcb == NULL){
-        //idle_pid = create_process(&idle, "idle", 0, argvAux)
-        //TODO iniciar bien el max_time y prio del idle
+        idle_index = create_process(&idle, "idle", 0, argvAux);
     }
 
     //lo ponemos a correr al idle
@@ -122,25 +127,6 @@ void *scheduling(void *rsp) {
     return NULL; //KABOOM
 }
 
-void add_pcs(PCB *pcb) {
-    if (process_count >= MAX_PCS)
-        return;
-
-    pcb->state = READY;
-    pcs_in_sch[process_count++] = pcb;
-}
-
-// Eliminamos (marcamos) un proceso de la tabla
-void delete_pcs(PCB *pcb) {
-    for (int i = 0; i < process_count; i++) {
-        if (pcs_in_sch[i] == pcb) {
-            pcb->state = ZOMBIE;
-            pcs_in_sch[i] = NULL;
-            return;
-        }
-    }
-}
-
 void yield(){
     _yield();
 }
@@ -149,9 +135,9 @@ int be_nice(int pid){
     
     PCB *curr = NULL;
 
-    for (int i = 0; i < MAX_PCS; i++) {
-        if (pcs_in_sch[i] && pcs_in_sch[i]->PID == pid) {
-            curr = pcs_in_sch[i];
+    for (int i = 0; i < MAX_PROC; i++) {
+        if (processTable[i] && processTable[i]->PID == pid) {
+            curr = processTable[i];
             break;
         }
     }
@@ -168,11 +154,4 @@ int be_nice(int pid){
     }
 
     return 0;
-}
-
-//proceso basura cuando no hay ninguno ready, llama constantemente a halt, osea al scheduler, osea a q cambie al proximo
-static void idle() {
-    while(1) {
-        _hlt();
-    }
 }

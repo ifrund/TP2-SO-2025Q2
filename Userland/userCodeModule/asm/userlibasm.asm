@@ -11,7 +11,7 @@ GLOBAL _opError
 GLOBAL _divError
 GLOBAL _beep
 
-//SO
+;SO
 GLOBAL _create_mm
 GLOBAL _alloc
 GLOBAL _free
@@ -198,8 +198,6 @@ _beep:
     
 
 ;================================================================================================================================
-
-
 
 _divError
     int 0

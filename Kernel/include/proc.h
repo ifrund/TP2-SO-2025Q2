@@ -6,16 +6,15 @@
 #include "lib.h"
 #include "memory_manager.h"
 #include "naiveConsole.h"
+#include "scheduler.h"
 
 //Constants
 #define MAX_FD 128
-#define MAX_PROC 128
+#define MAX_PROC 64
 #define MAX_STACK_SIZE 4096 //4KB
 #define PROCESS_NAME_MAX_LENGTH 32
-//TODO: Definir MAX_PRIORITY
-
-//Puntero a funcion
-typedef int (*ProcessEntryPoint)(int argc, char *argv[]);
+#define QUANTUM 5
+#define IDLE_Q 1
 
 //Estados del proceso
 typedef enum {
@@ -25,6 +24,15 @@ typedef enum {
     ZOMBIE,
     KILLED //TODO es zombie o killed, pero no las dos, verdad?
 } ProcessState;
+
+typedef enum {
+    LEVEL_0 = 0, //mayor prio
+    LEVEL_1 = 1,
+    LEVEL_2 = 2,
+    LEVEL_3 = 3,
+    LEVEL_4 = 4,  //menor prio
+    LEVEL_IDLE = 5
+} Priorities;
 
 //PCB definition
 typedef struct {
@@ -46,7 +54,9 @@ typedef struct {
     int argc;
     char** argv;
 
-    //TODO: Prioridad
+    Priorities my_prio;
+    int time_used;
+    int my_max_time;
 
     //Informacion de los hijos:
     int childrenAmount;
@@ -55,9 +65,7 @@ typedef struct {
 
 } PCB;
 
-//Tabla de procesos
-//PCB processTable[MAX_PROC];
-//uint64_t next_pid = 1;
+extern PCB* processTable[MAX_PROC]; 
 
 //Funciones:
 int create_process(void * rip, char *name, int argc, char *argv[]);

@@ -1,8 +1,8 @@
 #include "proc.h"
 
-//tabla de procesos
 PCB* processTable[MAX_PROC]= {NULL}; 
 
+//tabla de procesos
 int create_process(void * rip, char *name, int argc, char *argv[]){
     int i, myPid=-1;
 
@@ -50,8 +50,16 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     pcb->argc = argc;
     pcb->argv = argv;
 
-    //TODO: Prioridad
-
+    pcb->time_used=0;
+    if(strcmp(name, "idle") == 0){
+        pcb->my_max_time = IDLE_Q;
+        pcb->my_prio = LEVEL_IDLE;
+    }
+    else{
+        pcb->my_max_time = QUANTUM;
+        pcb->my_prio = LEVEL_4;
+    }
+    
     //Informacion de los hijos
     pcb->childrenAmount = 0;
     pcb->isWaitingForChildren = false;
@@ -61,7 +69,6 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
 
     memset(pcb->fileDescriptors, 0, sizeof(pcb->fileDescriptors));
 
-    //TODO agregar al sch
     return pcb->PID;
 }
 

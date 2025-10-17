@@ -10,6 +10,7 @@
 #include <keyboard.h>
 #include <interrupts.h>
 #include "include/memory_manager.h"
+#include "include/proc.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -64,7 +65,7 @@ int main()
 	create_mm();
 	//TODO init de pipes (?
 	char * argShell[1]={NULL};
-	int shell_pid = create_process(shell, "shell", 0, argShell);
+	create_process(shell, "shell", 0, argShell);
 	_setUser();
 
 //    Esto no hace falta porque el salto se hace en set user
