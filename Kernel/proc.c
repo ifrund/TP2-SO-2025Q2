@@ -9,11 +9,12 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     for (i = 0; i < MAX_PROC; i++){
         if (processTable[i] == NULL){
             myPid = i;
+            process_count++;
             break;
         }
        if(processTable[i]->state == ZOMBIE){ 
-            //si esta en zombie es porq paso por delete y ya se le hicieron los free
-            //TODO seria un puntero a null?
+            free(processTable[i]->stackBase);
+            free(processTable[i]);
             myPid = i;
             break;
         }
@@ -97,8 +98,6 @@ int kill_process(uint64_t pid){
 
     //Liberacion de recursos
     if (processTable[pid]->stackBase != NULL) {
-        free(processTable[pid]->stackBase);
-        free(processTable[pid]);
         processTable[pid]->stackBase = NULL;
     }
 

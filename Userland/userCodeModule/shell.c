@@ -54,7 +54,6 @@ int shell(){
     init_shell();
     write_out(PROMPT_START);
 
-
     while(!exit_command){
         if (read(char_buffer, 1) == 1){
             process_key(char_buffer[0]);
@@ -109,7 +108,6 @@ static int split_arguments(char *buffer, char *argv[], int max_args);
 static int remove_first_argument(char *argv[], int argc);
 
 void process_command(char* buffer){
-
     char *argv[MAX_ARGS];
 
     if (buffer[0] == '\0'){

@@ -66,6 +66,8 @@ int main()
 	//TODO init de pipes (?
 	char * argShell[1]={NULL};
 	create_process(shell, "shell", 0, argShell);
+	//TODO, esto esta hardcodeado y habria q resolverlo en un futuro xd
+	current_index = 0;
 	_setUser();
 
 //    Esto no hace falta porque el salto se hace en set user

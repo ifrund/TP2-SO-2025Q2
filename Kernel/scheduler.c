@@ -1,21 +1,9 @@
 #include "include/scheduler.h"
 
-static int process_count = 0;
-static int current_index = -1;
+int process_count = 0;
+int current_index = -1;
 static int idle_running = 0;  //esta en 1 mientras q idle este en READY o RUNNING
 int idle_pid = -1;
-
-static int get_max_time_for_priority(Priorities p) {
-    switch (p) {
-        case LEVEL_0: return QUANTUM * 5; // 25
-        case LEVEL_1: return QUANTUM * 4; // 20
-        case LEVEL_2: return QUANTUM * 3; // 15
-        case LEVEL_3: return QUANTUM * 2; // 10
-        case LEVEL_4: return QUANTUM * 1; // 5
-        case LEVEL_IDLE: return 1;
-        default: return QUANTUM; //5
-    }
-} 
 
 //proceso basura cuando no hay ninguno ready, llama constantemente a halt, osea al scheduler, osea a q cambie al proximo
 static void idle() {
@@ -41,6 +29,9 @@ int find_index_by_pid(int pid) {
 
 void *scheduling(void *rsp) {
 
+    if (process_count == 0)
+        return rsp; // No hay pcs
+
     if (current_index >= 0 && processTable[current_index] != NULL) {
         PCB *curr = processTable[current_index];
         curr->rsp = rsp;
@@ -53,9 +44,7 @@ void *scheduling(void *rsp) {
             //esto quiere decir q si le aplicas nice a un pcs recien se va a ver el efecto una vez q consuma su tiempo 
             //y pase por get_max_time_for_priority
             if(curr->time_used >= max_time){
-            
                 curr->time_used = 0;                
-                max_time = get_max_time_for_priority(curr->my_prio);
                 curr->state = READY;
             }
             else{
@@ -65,9 +54,6 @@ void *scheduling(void *rsp) {
             
         }
     }
-
-    if (process_count == 0)
-        return rsp; // No hay pcs
 
      //si el idle está y aparece un proceso READY
     if (idle_running) {
@@ -122,10 +108,17 @@ void *scheduling(void *rsp) {
 
     if(idle_pcb == NULL){
         idle_pid = create_process(&idle, "idle", 0, argvAux);
+        for (int i = 0; i < process_count; i++) {
+            PCB *p1 = processTable[i];
+            if (p1 != NULL && strcmp(p1->name, "idle") == 0) {
+                idle_pcb = p1;
+                break;
+            }
+        }
     }
 
     //lo ponemos a correr al idle
-    if (idle_pcb != NULL) {
+    if (idle_pcb != NULL) { //TODO en teoria este if siempre entra
         current_index = find_index_by_pid(idle_pid);
         idle_pcb->state = RUNNING;
         idle_running = 1;
@@ -139,12 +132,24 @@ void yield(){
     _yield();
 }
 
+static int get_max_time_for_priority(Priorities p) {
+    switch (p) {
+        case LEVEL_0: return QUANTUM * 5; // 25
+        case LEVEL_1: return QUANTUM * 4; // 20
+        case LEVEL_2: return QUANTUM * 3; // 15
+        case LEVEL_3: return QUANTUM * 2; // 10
+        case LEVEL_4: return QUANTUM * 1; // 5
+        case LEVEL_IDLE: return 1;
+        default: return QUANTUM; //5
+    }
+} 
+
 int be_nice(int pid){
     
     PCB *curr = NULL;
 
     for (int i = 0; i < MAX_PROC; i++) {
-        if (processTable[i] && processTable[i]->PID == pid) {
+        if (processTable[i] && processTable[i]->PID == pid && processTable[i]->state != KILLED) {
             curr = processTable[i];
             break;
         }
@@ -160,6 +165,8 @@ int be_nice(int pid){
     else{
         return -2; //Ya esta en el max de prio
     }
+
+    curr->my_max_time = get_max_time_for_priority(curr->my_prio);
 
     return 0;
 }
