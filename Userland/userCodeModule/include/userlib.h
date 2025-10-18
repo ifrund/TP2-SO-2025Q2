@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#define ERROR -1
+#define EXIT 0
+#define NULL ((void *)0)
+
 //================================================================================================================================
 // Writting
 //================================================================================================================================
@@ -202,7 +206,9 @@ void status_count(int *status_out);
 
 int create_process(void * rip, const char *name, int argc, char *argv[]);
 
-int kill_process(uint64_t pid);
+int kill_process(char * argv[], int argc);
+
+void exit_pcs(int ret);
 
 int block_process(uint64_t pid);
 

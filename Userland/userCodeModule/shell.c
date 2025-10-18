@@ -44,6 +44,7 @@ int cantRegs = 18;
 uint64_t regs[18];
 char* regsNames[18] = {"rax:", "rbx:", "rcx:", "rdx:", "rsi:", "rdi:", "rbp:", "rsp:", "r8:", "r9:",
                        "r10:", "r11:", "r12:", "r13:", "r14:", "r15:", "rip:", "rflags:"};
+char* bye[MAX_ARGS];
 
 int shell(){
     cursor_x = 0;
@@ -126,9 +127,10 @@ void process_command(char* buffer){
         if (!strcmp(buffer, commands[i])){
             switch (i) {
                 case 0:
-                    exit_command = 1;
-                    write_out("Bye now! Hope you enjoyed your stay!");
-                    sleep(2, 0);
+                    write_out("Nos vemos, esperamos que la hayas pasado bien! ");
+                    bye[0]= "0";
+                    bye[1]= NULL;
+                    exit_pcs(EXIT);
                     break;
                 case 1:
                     clearScreen(); 

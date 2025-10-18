@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "test_util.h"
+#include "../include/userlibasm.h"
 #include "../include/userlib.h"
 
 #define MAX_PCS 128
@@ -68,7 +69,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 
     // Create max_processes processes
     for (i = 0; i < max_processes; i++) {
-      p_rqs[i].pid = create_process(&endless_loop, "endless_loop", 0, argvAux);
+      p_rqs[i].pid = _create_process(&endless_loop, "endless_loop", 0, argvAux);
 
       if (p_rqs[i].pid == -1) {
         write_out("test_processes: ERROR creating process\n");
@@ -88,7 +89,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
         switch (action) {
           case 0:
             if (p_rqs[i].state == RUNNING || p_rqs[i].state == BLOCKED) {
-              if (kill_process(p_rqs[i].pid) == -1) {
+              if (_kill_process(p_rqs[i].pid) == -1) {
                 write_out("test_processes: ERROR killing process\n");
                 return -1;
               }
@@ -99,7 +100,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 
           case 1:
             if (p_rqs[i].state == RUNNING) {
-              if (block_process(p_rqs[i].pid) == -1) {
+              if (_block_process(p_rqs[i].pid) == -1) {
                 write_out("test_processes: ERROR blocking process\n");
                 return -1;
               }
@@ -112,7 +113,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
       // Randomly unblocks processes
       for (i = 0; i < max_processes; i++)
         if (p_rqs[i].state == BLOCKED && GetUniform(100) % 2) {
-          if (unblock_process(p_rqs[i].pid) == -1) {
+          if (_unblock_process(p_rqs[i].pid) == -1) {
             write_out("test_processes: ERROR unblocking process\n");
             return -1;
           }

@@ -112,6 +112,8 @@ int kill_process(uint64_t pid){
         }
     }
 
+    yield();
+
     return 0;
 }
 

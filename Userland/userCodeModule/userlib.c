@@ -1,6 +1,7 @@
 #include "include/userlib.h"
 #include "include/userlibasm.h"
 #include "include/file_descriptors.h"
+#include "include/shell.h"
 #include <stdint.h>
 
 static char buffer[64] = {'0'};
@@ -134,6 +135,35 @@ int mod(int val, int base){
     return val % base;
 }
 
+int is_digit(char c) {
+    return (c >= '0' && c <= '9') ? 1 : 0;
+}
+
+int char_to_int(const char* str) {
+    int result = 0;
+
+    if (str == NULL || *str == '\0') {
+        write_out("Parametro invalido: la cadena esta vacia o es nula.\n");
+        exit_pcs(ERROR);
+    }
+
+    while (*str != '\0') {
+        if (!is_digit(*str)) {
+            write_out("Parametro invalido: se esperaba un numero entero positivo.\n");
+            exit_pcs(ERROR);
+        }
+        uint32_t digit = *str - '0';
+        if (result > (UINT32_MAX - digit) / 10) {
+            write_out("Parametro invalido: el numero es demasiado grande.\n");
+            exit_pcs(ERROR);
+        }
+        result = result * 10 + digit;
+        str++;
+    }
+
+    return result;
+}
+
 //================================================================================================================================
 // Sleep
 //================================================================================================================================
@@ -224,8 +254,56 @@ int create_process(void * rip , const char *name, int argc, char *argv[]){
     return _create_process(rip, name, argc, argv);
 }
 
-int kill_process(uint64_t pid){
-    return _kill_process(pid);
+void kill_dummy(int argc, char ** argv){
+
+    if (argc != 1){
+        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        exit_pcs(ERROR);    
+    }
+
+    int toKill = char_to_int(argv[0]);
+    if(toKill == 0){
+        write_out("Para matar la shell tenes que usar Exit. \n");
+        exit_pcs(EXIT);
+    }
+    if(toKill == _get_pid()){ //Estas matando al propio proceso kill que creaste
+        write_out("Kill al kill ?? ... okay\n");
+        exit_pcs(EXIT);
+    }
+    else{
+        write_out("Chau chau al proceso de pid: ");
+        write_out(argv[0]);
+        write_out("\n");
+    }
+
+    _kill_process(toKill); 
+    exit_pcs(EXIT);
+}
+
+//recibe el pid de a quien matar por argv
+int kill_process(char * argv[], int argc){
+    return create_process(&kill_dummy, "name", argc, argv);
+}
+
+//cada proceso cuando termina se debe "matar" a si mismo, osea dejar marcado con KILLED
+void exit_pcs(int ret){
+    
+    int pid = _get_pid(); 
+
+   /* TODO, esto debe imprimir en terminal, no en pantalla
+    if(ret == ERROR){
+        write_out("El proceso de pid ");
+        printDec(pid);
+        write_out(" cerro con error\n");
+    }
+    else if(ret == EXIT){
+        write_out("Proceso de pid ");
+        printDec(pid);
+        write_out(" cerro bien :)\n");
+    }
+    */
+
+    _kill_process(pid);
 }
 
 int block_process(uint64_t pid){
@@ -240,6 +318,7 @@ void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, ch
     _get_proc_list(procNames, pids, parentPids, status, rsps);
 }
 
+//ésta no es proceso, es built-in porq sino devolveria su propio pid xd
 int get_pid(){
     return _get_pid();
 }
