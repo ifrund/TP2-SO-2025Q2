@@ -49,6 +49,7 @@ uint64_t regs[18];
 char* regsNames[18] = {"rax:", "rbx:", "rcx:", "rdx:", "rsi:", "rdi:", "rbp:", "rsp:", "r8:", "r9:",
                        "r10:", "r11:", "r12:", "r13:", "r14:", "r15:", "rip:", "rflags:"};
 char* bye[MAX_ARGS];
+void exit_shell();
 
 int shell(){
     cursor_x = 0;
@@ -98,6 +99,22 @@ void process_key(char key){
         return;
     }
 
+    if (key == '\x04') { //Ctrl+D
+        write_out("Esto es ctrl+d, tdv no esta desarrollado.\n");
+        if (command_cursor == 0) {
+            write_out("\nExit shell\n");
+            exit_shell();
+        } else {
+            
+            //TODO
+        }
+    }
+
+    if (key == '\x03') { //Ctrl+C
+        //TODO 
+        write_out("Esto es ctrl+c, tdv no esta desarrollado.\n");
+    }
+
     // a partir de aca si esta lleno el buffer nos vamos
     if (command_cursor == BUFFER_SIZE - 1) 
         return;
@@ -132,10 +149,7 @@ void process_command(char* buffer){
         if (!strcmp(buffer, commands[i])){
             switch (i) {
                 case 0:
-                    write_out("Nos vemos, esperamos que la hayas pasado bien! \n");
-                    bye[0]= "0";
-                    bye[1]= NULL;
-                    exit_pcs(EXIT);
+                    exit_shell();
                     break;
                 case 1:
                     clearScreen(); 
@@ -382,4 +396,11 @@ int remove_first_argument(char *argv[], int argc) {
     }
 
     return argc-1;
+}
+
+void exit_shell(){
+    write_out("Nos vemos, esperamos que la hayas pasado bien! \n");
+    bye[0]= "0";
+    bye[1]= NULL;
+    exit_pcs(EXIT);
 }
