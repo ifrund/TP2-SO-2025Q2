@@ -534,5 +534,73 @@ void loopDummy(int argc, char ** argv){
 }
 
 int loop(int argc, char ** argv){
-    return create_process(&loopDummy,"Loop", argc, argv);
+    return create_process(&loopDummy,"loop", argc, argv);
+}
+
+//TODO aplicar pipes
+void wc_dummy(int argc, char ** argv){
+    
+    char buffer[BUFFER_SIZE];
+    int n;
+    int line_count = 0;
+
+    while ((n = read_input(buffer, sizeof(buffer))) > 0) {
+        for (int i = 0; i < n; i++) {
+            if (buffer[i] == '\n') line_count++;
+        }
+    }
+
+    char number[12];
+    uintToBase(line_count, number, 10);
+    write_out("Cantidad de lineas: ");
+    write_out(number);
+    write_out("\n");
+
+    exit_pcs(EXIT);
+}
+
+int wc(int argc, char ** argv){
+    return create_process(&wc_dummy, "WC", argc, argv);
+}
+
+//TODO aplicar pipes, donde usa argv deberia ser el input
+void cat_dummy(int argc, char ** argv){
+    for(int i = 0; argv[i] != NULL; i++){
+        write_out(argv[i]);
+        write_out(" ");
+    }
+    write_out("\n");
+    exit_pcs(EXIT);
+}
+
+int cat(int argc, char ** argv){
+    return create_process(&cat_dummy, "cat", argc, argv);
+}
+
+//TODO aplicar pipes, donde dice argv deberia ser el input
+void filter_dummy(int argc, char ** argv){
+    for(int i = 0; argv[i] != NULL; i++){
+        for(int j = 0; argv[i][j] != '\0'; j++){
+            if(argv[i][j] == 'a' || argv[i][j] == 'e' || argv[i][j] == 'i' || argv[i][j] == 'o' || argv[i][j] == 'u' 
+            || argv[i][j] == 'A' || argv[i][j] == 'E' || argv[i][j] == 'I' || argv[i][j] == 'O' || argv[i][j] == 'U'){
+                char vocal[2] = {argv[i][j], '\0'};
+                write_out(vocal);
+            }
+        }
+    }
+    write_out("\n");
+    exit_pcs(EXIT);
+}
+
+int filter(int argc, char ** argv){
+    return create_process(&filter_dummy, "filter", argc, argv);
+}
+
+void mvar_dummy(int argc, char ** argv){
+    write_out("Tdv no hay nada aca.\n");
+    exit_pcs(EXIT);
+}
+
+int mvar(int argc, char ** argv){
+    return create_process(&mvar_dummy, "mvar", argc, argv);
 }

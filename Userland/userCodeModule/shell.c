@@ -3,7 +3,7 @@
 #include "include/userlibasm.h"
 #include <stdint.h>
 
-#define COMMANDS 21
+#define COMMANDS 25
 #define TESTS 4
 #define SOCOMS 1
 #define VERT_SIZE 32
@@ -19,10 +19,11 @@ char PROMPT_START[] = {127, 0};
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
 static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
-    "test-mm", "test-prio", "test-pcs", "test-sync", "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock", "loop"};
+    "test-mm", "test-prio", "test-pcs", "test-sync", "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock",
+    "loop", "wc", "cat", "filter", "mvar"};
 static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
 static char* help[COMMANDS-TESTS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
-    "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock", "loop"};
+    "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock", "loop", "wc", "cat", "filter", "mvar"};
 static char* SOcommands[SOCOMS]= {
     "Aca tiene q ir como funciona cada comando de SO"
 };
@@ -274,6 +275,22 @@ void process_command(char* buffer){
                 case 20:
                     loop(argc, argv);
                     break;
+
+                case 21:
+                    wc(argc, argv);
+                    break;
+
+                case 22:
+                    cat(argc, argv);
+                    break;
+            
+                case 23:
+                    filter(argc, argv);
+                    break;
+
+                case 24:
+                    mvar(argc, argv);
+                    break;
             }   
             return;
         }
@@ -416,4 +433,19 @@ void exit_shell(){
     bye[0]= "0";
     bye[1]= NULL;
     exit_pcs(EXIT);
+}
+
+int read_input(char *buffer, int max_len) {
+    int count = 0;
+    int fake_c_c = command_cursor;
+    char* fake_c_b = command_buffer;
+
+    while (fake_c_c > 0 && count < max_len) {
+        buffer[count++] = fake_c_b[0];
+        for (int i = 1; i < fake_c_c; i++)
+            fake_c_b[i-1] = fake_c_b[i];
+        fake_c_c--;
+    }
+
+    return count;
 }

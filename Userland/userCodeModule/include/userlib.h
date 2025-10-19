@@ -12,6 +12,7 @@
 #define NULL ((void *)0)
 #define MAX_PCS 64
 #define PROCESS_NAME_MAX_LENGTH 32
+#define BUFFER_SIZE 128
 
 //================================================================================================================================
 // Writting
@@ -234,5 +235,9 @@ int test_pcs(int argc, char **argv);
 int test_sync(int argc, char **argv);
 
 int loop(int argc, char **argv);
+int wc(int argc, char **argv);
+int cat(int argc, char **argv);
+int filter(int argc, char **argv);
+int mvar(int argc, char ** argv);
 
 #endif

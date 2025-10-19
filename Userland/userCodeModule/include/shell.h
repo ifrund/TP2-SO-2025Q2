@@ -5,3 +5,4 @@ void shift();
 int check_shift();
 void write_out(char* string);
 void init_shell();
+int read_input(char *buffer, int max_len);
