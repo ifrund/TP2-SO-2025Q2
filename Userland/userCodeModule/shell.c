@@ -12,8 +12,8 @@
 #define MAX_ARGS 10
 
 // Esto es un "string" manual para poder imprimir el caracter 128 de nuestro font de kernel usando lsa funciones estandar
-char PROMPT_START[] = {127, 0};
 #define ERROR_PROMPT "Unknown command: "
+char PROMPT_START[] = {127, 0};
 
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
@@ -217,6 +217,7 @@ void process_command(char* buffer){
                     break;
 
                 case 12:
+                    argc = remove_first_argument(argv, argc);
                     status_count(argc, argv);
                     break;
                     

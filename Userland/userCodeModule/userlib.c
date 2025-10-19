@@ -2,6 +2,7 @@
 
 static char buffer[64] = {'0'};
 static char* char_buffer = " ";
+char PROMPT_START1[] = {127, 0};
 
 //================================================================================================================================
 // Writting
@@ -9,6 +10,7 @@ static char* char_buffer = " ";
 //================================================================================================================================
 void printChar(char charToPrint){
     buffer[0] = charToPrint;
+    buffer[1] = '\0';
     print(buffer);
 }
 
@@ -284,6 +286,8 @@ void status_count_dummy(int argc, char ** argv){
     write_out("\nBloques libres: ");
     printDec(status[2]);
     write_out("\n");
+
+    write_out(PROMPT_START1);
 
     exit_pcs(EXIT);
 }
