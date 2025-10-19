@@ -13,6 +13,9 @@
 #define MAX_STACK_SIZE 4096 //4KB
 #define PROCESS_NAME_MAX_LENGTH 32
 //TODO: Definir MAX_PRIORITY
+#define MAX_ARGUMENTS 16
+#define MAX_ARG_LENGTH 64 
+
 
 //Puntero a funcion
 typedef int (*ProcessEntryPoint)(int argc, char *argv[]);
@@ -22,7 +25,8 @@ typedef enum {
     READY,
     RUNNING,
     BLOCKED,
-    ZOMBIE
+    ZOMBIE,
+    INVALID
 } ProcessState;
 
 //PCB definition
@@ -56,6 +60,29 @@ typedef struct {
     uint64_t childProc[MAX_PROC];
 
 } PCB;
+
+//Para el get_proc_list
+typedef struct {
+    char name[PROCESS_NAME_MAX_LENGTH];
+    uint64_t pid;
+    uint64_t parentPid;
+    bool isForeground;
+    char state[16];            // "READY", etc.
+    uint64_t rsp;
+    
+    int argc;
+    char argv[MAX_ARGUMENTS][MAX_ARG_LENGTH];  
+
+    uint64_t externWaitingPID;
+    bool isWaitingForExtern;
+
+    int childrenAmount;
+    uint64_t children[MAX_PROC];
+
+    // Podrías incluir file descriptors si querés: los ids nada más.
+    uint64_t fileDescriptors[MAX_FD];
+    int fileDescriptorCount;  // Número de FDs válidos
+} ProcessInfo;
 
 
 //Funciones:

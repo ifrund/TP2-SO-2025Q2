@@ -161,31 +161,98 @@ int kill_process(uint64_t pid){
     return 0;
 }
 
-void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps){
-    for (int i = 0; i < MAX_PROC; i++) {
-        if (processTable[i] == NULL)
-            continue;
+// void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps){
+//     for (int i = 0; i < MAX_PROC; i++) {
+//         if (processTable[i] == NULL)
+//             continue;
 
-        memcpy(procNames[i], processTable[i]->name, PROCESS_NAME_MAX_LENGTH - 1);
-        procNames[i][PROCESS_NAME_MAX_LENGTH - 1] = '\0';
+//         memcpy(procNames[i], processTable[i]->name, PROCESS_NAME_MAX_LENGTH - 1);
+//         procNames[i][PROCESS_NAME_MAX_LENGTH - 1] = '\0';
         
-        pids[i] = processTable[i]->PID;
-        parentPids[i] = processTable[i]->ParentPID;
+//         pids[i] = processTable[i]->PID;
+//         parentPids[i] = processTable[i]->ParentPID;
 
-        rsps[i] = (uint64_t) processTable[i]->rsp;
+//         rsps[i] = (uint64_t) processTable[i]->rsp;
 
-        if(processTable[i]->state == RUNNING){
-            memcpy(status[i], "RUNNING", PROCESS_NAME_MAX_LENGTH - 1);
-        } else if (processTable[i]->state == BLOCKED){
-            memcpy(status[i], "BLOCKED", PROCESS_NAME_MAX_LENGTH - 1);
-        } else if (processTable[i]->state == READY) {
-            memcpy(status[i], "READY", PROCESS_NAME_MAX_LENGTH - 1);
-        } else {
-            memcpy(status[i], "ZOMBIE", PROCESS_NAME_MAX_LENGTH - 1);
+//         if(processTable[i]->state == RUNNING){
+//             memcpy(status[i], "RUNNING", PROCESS_NAME_MAX_LENGTH - 1);
+//         } else if (processTable[i]->state == BLOCKED){
+//             memcpy(status[i], "BLOCKED", PROCESS_NAME_MAX_LENGTH - 1);
+//         } else if (processTable[i]->state == READY) {
+//             memcpy(status[i], "READY", PROCESS_NAME_MAX_LENGTH - 1);
+//         } else {
+//             memcpy(status[i], "ZOMBIE", PROCESS_NAME_MAX_LENGTH - 1);
+//         }
+//         status[i][PROCESS_NAME_MAX_LENGTH - 1] = '\0';
+//     }
+// }
+
+ProcessInfo* get_proc_list() {
+    ProcessInfo* list = alloc(sizeof(ProcessInfo) * MAX_PROC);
+    if (list == NULL)
+        return NULL;
+
+    for (int i = 0; i < MAX_PROC; i++) {
+        PCB* p = processTable[i];
+        ProcessInfo* info = &list[i];
+
+        if (p == NULL) {
+            // Proceso vacío
+            info->pid = -1;
+            strncpy(info->state, "INVALID", 15);
+            continue;
         }
-        status[i][PROCESS_NAME_MAX_LENGTH - 1] = '\0';
+
+        // General
+        strncpy(info->name, p->name, PROCESS_NAME_MAX_LENGTH - 1);
+        info->name[PROCESS_NAME_MAX_LENGTH - 1] = '\0';
+
+        info->pid = p->PID;
+        info->parentPid = p->ParentPID;
+        info->isForeground = p->isForeground;
+
+        switch (p->state) {
+            case RUNNING: strncpy(info->state, "RUNNING", 15); break;
+            case BLOCKED: strncpy(info->state, "BLOCKED", 15); break;
+            case READY:   strncpy(info->state, "READY", 15);   break;
+            case ZOMBIE:  strncpy(info->state, "ZOMBIE", 15);  break;
+            default:      strncpy(info->state, "UNKNOWN", 15); break;
+        }
+
+        info->state[15] = '\0';
+        info->rsp = (uint64_t)p->rsp;
+
+        // Args
+        info->argc = p->argc;
+        for (int j = 0; j < p->argc && j < MAX_ARGUMENTS; j++) {
+            if (p->argv[j])
+                strncpy(info->argv[j], p->argv[j], MAX_ARG_LENGTH - 1);
+            else
+                info->argv[j][0] = '\0';
+
+            info->argv[j][MAX_ARG_LENGTH - 1] = '\0';
+        }
+
+        info->externWaitingPID = p->externWaitingPID;
+        info->isWaitingForExtern = p->isWaitingForExtern;
+
+        info->childrenAmount = p->childrenAmount;
+        for (int j = 0; j < MAX_PROC; j++)
+            info->children[j] = p->childProc[j];
+
+        // File descriptors
+        int fdCount = 0;
+        for (int j = 0; j < MAX_FD; j++) {
+            info->fileDescriptors[j] = p->fileDescriptors[j];
+            if (p->fileDescriptors[j] != 0)
+                fdCount++;
+        }
+        info->fileDescriptorCount = fdCount;
     }
+
+    return list;
 }
+
 
 int get_pid(){
     
