@@ -142,17 +142,20 @@ int char_to_int(const char* str) {
 
     if (str == NULL || *str == '\0') {
         write_out("Parametro invalido: la cadena esta vacia o es nula.\n");
+        write_out(PROMPT_START1);
         exit_pcs(ERROR);
     }
 
     while (*str != '\0') {
         if (!is_digit(*str)) {
             write_out("Parametro invalido: se esperaba un numero entero positivo.\n");
+            write_out(PROMPT_START1);
             exit_pcs(ERROR);
         }
         uint32_t digit = *str - '0';
         if (result > (UINT32_MAX - digit) / 10) {
             write_out("Parametro invalido: el numero es demasiado grande.\n");
+            write_out(PROMPT_START1);
             exit_pcs(ERROR);
         }
         result = result * 10 + digit;
@@ -238,12 +241,14 @@ void alloc_dummy(int argc, char ** argv){
 
     if(argc != 1){
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        write_out(PROMPT_START1);
         exit_pcs(ERROR);     
     }
 
     int size = char_to_int(argv[0]);
 
     _alloc(size);
+    write_out(PROMPT_START1);
     exit_pcs(EXIT);
 }
 
@@ -256,10 +261,12 @@ void free_dummy(int argc, char ** argv){
 
     if(argc != 1){
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        write_out(PROMPT_START1);
         exit_pcs(ERROR);     
     }
 
     _free((void*) argv[0]);
+    write_out(PROMPT_START1);
     exit_pcs(EXIT);
 }
 
@@ -272,13 +279,14 @@ void status_count_dummy(int argc, char ** argv){
 
     if (argc != 0) {
         write_out("No tenias que mandar argumentos para este comando.\n");
+        write_out(PROMPT_START1);
         exit_pcs(ERROR);
     }
 
     int status[3];
     _status_count(status);
 
-    write_out("=== Estado del sistema de memoria ===\n");
+    write_out("\n=== Estado del sistema de memoria ===\n");
     write_out("Bloques totales: ");
     printDec(status[0]);
     write_out("\nBloques usados: ");
@@ -288,7 +296,6 @@ void status_count_dummy(int argc, char ** argv){
     write_out("\n");
 
     write_out(PROMPT_START1);
-
     exit_pcs(EXIT);
 }
 
@@ -304,16 +311,19 @@ void kill_dummy(int argc, char ** argv){
 
     if (argc != 1){
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        write_out(PROMPT_START1);
         exit_pcs(ERROR);    
     }
 
     int toKill = char_to_int(argv[0]);
     if(toKill == 0){
         write_out("Para matar la shell tenes que usar Exit. \n");
+        write_out(PROMPT_START1);
         exit_pcs(EXIT);
     }
     if(toKill == _get_pid()){ //Estas matando al propio proceso kill que creaste
         write_out("Kill al kill ?? ... okay\n");
+        write_out(PROMPT_START1);
         exit_pcs(EXIT);
     }
     else{
@@ -356,6 +366,7 @@ void block_process_dummy(int argc, char ** argv){
 
     if (argc != 1){
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        write_out(PROMPT_START1);
         exit_pcs(ERROR);    
     }
 
@@ -363,11 +374,13 @@ void block_process_dummy(int argc, char ** argv){
     
     int ret = _block_process(pid);
 
-    if(ret != 0){
+    if(ret != 0){ //TODO especificar q error
         write_out("Ocurrio un error al querer bloquear un proceso\n");
+        write_out(PROMPT_START1);
         exit_pcs(ERROR);
     }
 
+    write_out(PROMPT_START1);
     exit_pcs(EXIT);
 }
 
@@ -378,6 +391,7 @@ int block_process(int argc, char ** argv){
 void unblock_process_dummy(int argc, char ** argv){
    if (argc != 1){
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        write_out(PROMPT_START1);
         exit_pcs(ERROR);    
     }
 
@@ -385,11 +399,13 @@ void unblock_process_dummy(int argc, char ** argv){
     
     int ret = _unblock_process(pid);
 
-    if(ret != 0){
+    if(ret != 0){//TODO especificar q error
         write_out("Ocurrio un error al querer desbloquear un proceso\n");
+        write_out(PROMPT_START1);
         exit_pcs(ERROR);
     }
 
+    write_out(PROMPT_START1);
     exit_pcs(EXIT);
 }
 
@@ -417,7 +433,7 @@ void get_proc_list_dummy(char ** procNames, uint64_t * pids, uint64_t * parentPi
     _get_proc_list(procNamesArr, pidsArr, parentPidsArr, statusArr, rspsArr);
 
     //encabezado
-    write_out("=== Lista de procesos ===\n");
+    write_out("\n=== Lista de procesos ===\n");
     write_out("PID\tNombre\tEstado\tPPID\tRSP\t\n");
     write_out("---------------------------------------------\n");
 
@@ -426,15 +442,18 @@ void get_proc_list_dummy(char ** procNames, uint64_t * pids, uint64_t * parentPi
         printDec(pidsArr[i]);
         write_out("\t");
         write_out(procNamesArr[i]);
-        write_out("\n");
+        write_out("\t");
         write_out(statusArr[i]);
         write_out("\t");
-        printDec(parentPidsArr[i]);
+        if (parentPidsArr[i] == (uint64_t)-1) write_out("-1");
+        else printDec(parentPidsArr[i]);
         write_out("\t");
         printHex(rspsArr[i]);  
         write_out("\t");
+        write_out("\n");
     }
 
+    write_out(PROMPT_START1);
     exit_pcs(EXIT);
 }
 
@@ -449,6 +468,7 @@ int get_pid(){
 
 void yield_dummy(int argc, char ** argv){
     _yield();
+    write_out(PROMPT_START1);
     exit_pcs(EXIT);
 }
 
@@ -459,11 +479,13 @@ int yield(int argc, char ** argv){
 void be_nice_dummy(int argc, char ** argv){
     if (argc != 1){
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        write_out(PROMPT_START1);
         exit_pcs(ERROR);    
     }
 
     int pid = char_to_int(argv[0]);
     _be_nice(pid);
+    write_out(PROMPT_START1);
     exit_pcs(EXIT);
 }
 

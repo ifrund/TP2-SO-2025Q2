@@ -3,9 +3,9 @@
 #include "include/userlibasm.h"
 #include <stdint.h>
 
-#define COMMANDS 14
+#define COMMANDS 18
 #define TESTS 4
-#define HELP 10
+#define SOCOMS 1
 #define VERT_SIZE 32
 #define LINE_SIZE 63
 #define BUFFER_SIZE 128
@@ -19,9 +19,12 @@ char PROMPT_START[] = {127, 0};
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
 static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
-    "test-mm", "test-prio", "test-pcs", "test-sync", "mem", "Tests"};
+    "test-mm", "test-prio", "test-pcs", "test-sync", "mem-info", "Tests", "kill", "ps", "nice", "help-SO"};
 static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
-static char* help[HELP] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", "mem", "Tests"};
+static char* help[COMMANDS-TESTS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", "mem-info", "Tests", "kill", "ps", "nice", "help-SO"};
+static char* SOcommands[SOCOMS]= {
+    "Aca tiene q ir como funciona cada comando de SO"
+};
 char char_buffer[1];
 
 // Cursors & flags
@@ -123,6 +126,7 @@ void process_command(char* buffer){
     }
 
     int argc = split_arguments(buffer, argv, MAX_ARGS);
+    argc = remove_first_argument(argv, argc);
 
    for(int i = 0; i < COMMANDS; i++){
         if (!strcmp(buffer, commands[i])){
@@ -149,7 +153,7 @@ void process_command(char* buffer){
                     break;
                 case 4:
                     write_out("Los comandos existentes son:\n");
-                    for(int i=0; i<HELP; i++){
+                    for(int i=0; i<(COMMANDS-TESTS); i++){
                         write_out(help[i]);
                         write_out("\n");
                     }
@@ -197,27 +201,22 @@ void process_command(char* buffer){
                     break;
 
                 case 8: 
-                    argc = remove_first_argument(argv, argc);
                     test_mm(argc, argv);
                     break;
 
                 case 9:
-                    argc = remove_first_argument(argv, argc);
                     test_prio(argc, argv);
                     break;
 
                 case 10:
-                    argc = remove_first_argument(argv, argc);
                     test_pcs(argc, argv);
                     break;
 
                 case 11:
-                    argc = remove_first_argument(argv, argc);
                     test_sync(argc, argv);
                     break;
 
                 case 12:
-                    argc = remove_first_argument(argv, argc);
                     status_count(argc, argv);
                     break;
                     
@@ -225,6 +224,26 @@ void process_command(char* buffer){
                     write_out("Los Tests existentes son:\n");
                     for(int i=0; i<TESTS; i++){
                         write_out(tests[i]);
+                        write_out("\n");
+                    }
+                    break;
+                
+                case 14:
+                    kill_process(argc,argv);
+                    break;
+
+                case 15:
+                    get_proc_list(argc, argv);
+                    break;
+
+                case 16:
+                    be_nice(argc, argv);
+                    break;
+
+                case 17:
+                    write_out("Info de los comandos de SO:\n");
+                    for(int i=0; i<(SOCOMS); i++){
+                        write_out(SOcommands[i]);
                         write_out("\n");
                     }
                     break;
