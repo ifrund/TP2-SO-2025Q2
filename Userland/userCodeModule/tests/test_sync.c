@@ -51,15 +51,17 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
 }
 */
 
-uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
+void test_sync_dummy(int argc, char **argv) { //{n, use_sem, 0}
   
- write_out("Esto tdv no fue desarrollado, vuelva más tarde \n");
-    return -1;
+  write_out("Esto tdv no fue desarrollado, vuelva más tarde \n");
+  exit_pcs(ERROR);
   /*
   uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
 
-  if (argc != 2)
-    return -1;
+  if (argc != 2){
+    write_out("argc incorrecto\n");
+    exit_pcs(ERROR);
+  }
 
   char *argvDec[] = {argv[0], "-1", argv[1], NULL};
   char *argvInc[] = {argv[0], "1", argv[1], NULL};
@@ -77,9 +79,10 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
     my_wait(pids[i + TOTAL_PAIR_PROCESSES]);
   }
 
-  printf("Final value: %d\n", global);
+  write_out("Final value: %d\n", global);
 
-  return 0;
   */
+
+  exit_pcs(EXIT);
 }
 

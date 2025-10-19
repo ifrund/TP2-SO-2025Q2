@@ -1,5 +1,4 @@
 #include "test_util.h"
-#include "../include/userlib.h" //create_mm lib, not sure why this was commented
 
 #define MAX_BLOCKS 128
 
@@ -24,7 +23,7 @@ void * memset2(void * destiation, int32_t c, uint64_t length) {
 }
 
 //Toma como parámetro la cantidad máxima de memoria a utilizar en bytes.
-uint64_t test_mm(uint64_t argc, char *argv[]) {
+void test_mm_dummy(int argc, char **argv) {
 
   create_mm();
 
@@ -35,12 +34,17 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
 
   if (argc != 1){
     write_out("argc incorrecto\n");
-    return -1;
+    exit_pcs(ERROR);
   }
 
   if ((max_memory = satoi(argv[0])) <= 0){
+    write_out("argv:");
+    write_out(argv[0]);
+    write_out("\n");
+
+    
     write_out("error en el satoi\n");
-    return -1;
+    exit_pcs(ERROR);
   }
 
   while (1) {
@@ -77,7 +81,7 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
       if (mm_rqs[i].address)
         if (!memcheck(mm_rqs[i].address, i, mm_rqs[i].size)) {
           write_out("test_mm ERROR\n");
-          return -1;
+          exit_pcs(ERROR);
         }
     write_out("Terminamos de hacer memCheck\n"); 
       

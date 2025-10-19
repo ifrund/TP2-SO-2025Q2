@@ -1,8 +1,4 @@
 #include "include/userlib.h"
-#include "include/userlibasm.h"
-#include "include/file_descriptors.h"
-#include "include/shell.h"
-#include <stdint.h>
 
 static char buffer[64] = {'0'};
 static char* char_buffer = " ";
@@ -336,6 +332,7 @@ void exit_pcs(int ret){
     
     int pid = _get_pid(); 
 
+    /* TODO estos write_out tienen q ir a la terminal, no a pantalla
     if(ret == ERROR){
         write_out("El proceso de pid ");
         printDec(pid);
@@ -346,6 +343,7 @@ void exit_pcs(int ret){
         printDec(pid);
         write_out(" cerro bien :)\n");
     }
+    */
 
     _kill_process(pid);
 }
@@ -467,4 +465,20 @@ void be_nice_dummy(int argc, char ** argv){
 
 int be_nice(int argc, char ** argv){
     return create_process(&be_nice_dummy, "nice", argc, argv);
+}
+
+int test_mm(int argc, char ** argv){
+    return create_process(&test_mm_dummy, "test mm", argc, argv);
+}
+
+int test_prio(int argc, char ** argv){
+    return create_process(&test_prio_dummy, "test prio", argc, argv);
+}
+
+int test_sync(int argc, char ** argv){
+    return create_process(&test_sync_dummy, "test sync", argc, argv);
+}
+
+int test_pcs(int argc, char ** argv){
+    return create_process(&test_processes_dummy, "test processes", argc, argv);
 }

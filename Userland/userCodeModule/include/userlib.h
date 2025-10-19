@@ -1,6 +1,10 @@
 #ifndef _OURLIB_H_
 #define _OURLIB_H_
 
+#include "userlibasm.h"
+#include "file_descriptors.h"
+#include "shell.h"
+#include "../tests/test_util.h"
 #include <stdint.h>
 
 #define ERROR -1
@@ -223,5 +227,10 @@ int get_pid();
 int yield(int argc, char ** argv);
 
 int be_nice(int argc, char ** argv);
+
+int test_mm(int argc, char **argv);
+int test_prio(int argc, char **argv);
+int test_pcs(int argc, char **argv);
+int test_sync(int argc, char **argv);
 
 #endif

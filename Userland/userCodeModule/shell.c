@@ -1,7 +1,6 @@
 #include "include/userlib.h"
 #include "include/shell.h"
 #include "include/userlibasm.h"
-#include "tests/test_util.h"
 #include <stdint.h>
 
 #define COMMANDS 14
@@ -129,7 +128,7 @@ void process_command(char* buffer){
         if (!strcmp(buffer, commands[i])){
             switch (i) {
                 case 0:
-                    write_out("Nos vemos, esperamos que la hayas pasado bien! ");
+                    write_out("Nos vemos, esperamos que la hayas pasado bien! \n");
                     bye[0]= "0";
                     bye[1]= NULL;
                     exit_pcs(EXIT);
@@ -203,12 +202,13 @@ void process_command(char* buffer){
                     break;
 
                 case 9:
-                    test_prio();
+                    argc = remove_first_argument(argv, argc);
+                    test_prio(argc, argv);
                     break;
 
                 case 10:
                     argc = remove_first_argument(argv, argc);
-                    test_processes(argc, argv);
+                    test_pcs(argc, argv);
                     break;
 
                 case 11:

@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include "test_util.h"
-#include "../include/userlibasm.h"
-#include "../include/userlib.h"
 
 enum State { RUNNING,
              BLOCKED,
@@ -42,7 +40,7 @@ void strcat(char *dest, const char *src) {
 }
 
 //recibe un int, que es la cantidad max de pcs
-int64_t test_processes(uint64_t argc, char *argv[]) {
+void test_processes_dummy(int argc, char **argv) {
 
   uint8_t i;
   uint8_t alive = 0;
@@ -52,12 +50,12 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 
   if (argc != 1){
     write_out("argc incorrecto\n");
-    return -1;
+    exit_pcs(ERROR);
   }
 
   if ((max_processes = satoi(argv[0])) <= 0){
     write_out("error en el satoi\n");
-    return -1;
+    exit_pcs(ERROR);
   }
 
   p_rq p_rqs[max_processes];
@@ -70,7 +68,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 
       if (p_rqs[i].pid == -1) {
         write_out("test_processes: ERROR creating process\n");
-        return -1;
+        exit_pcs(ERROR);
       } else {
         p_rqs[i].state = RUNNING;
         alive++;
@@ -88,7 +86,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
             if (p_rqs[i].state == RUNNING || p_rqs[i].state == BLOCKED) {
               if (_kill_process(p_rqs[i].pid) == -1) {
                 write_out("test_processes: ERROR killing process\n");
-                return -1;
+                exit_pcs(ERROR);
               }
               p_rqs[i].state = KILLED;
               alive--;
@@ -99,7 +97,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
             if (p_rqs[i].state == RUNNING) {
               if (_block_process(p_rqs[i].pid) == -1) {
                 write_out("test_processes: ERROR blocking process\n");
-                return -1;
+                exit_pcs(ERROR);
               }
               p_rqs[i].state = BLOCKED;
             }
@@ -112,7 +110,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
         if (p_rqs[i].state == BLOCKED && GetUniform(100) % 2) {
           if (_unblock_process(p_rqs[i].pid) == -1) {
             write_out("test_processes: ERROR unblocking process\n");
-            return -1;
+            exit_pcs(ERROR);
           }
           p_rqs[i].state = RUNNING;
         }
