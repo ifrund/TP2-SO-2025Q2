@@ -22,8 +22,7 @@ typedef enum {
     READY,
     RUNNING,
     BLOCKED,
-    ZOMBIE,
-    KILLED //TODO es zombie o killed, pero no las dos, verdad?
+    ZOMBIE
 } ProcessState;
 
 //PCB definition
@@ -48,16 +47,16 @@ typedef struct {
 
     //TODO: Prioridad
 
+    //Por si espera otro proceso
+    uint64_t externWaitingPID;
+    bool isWaitingForExtern;
+
     //Informacion de los hijos:
     int childrenAmount;
     uint64_t childProc[MAX_PROC];
-    bool isWaitingForChildren;
 
 } PCB;
 
-//Tabla de procesos
-//PCB processTable[MAX_PROC];
-//uint64_t next_pid = 1;
 
 //Funciones:
 int create_process(void * rip, char *name, int argc, char *argv[]);
@@ -66,5 +65,7 @@ int unblock_process(uint64_t pid);
 int kill_process(uint64_t pid);
 void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps);
 int get_pid();
+int wait(uint64_t pid);
+int wait_for_all_children();
 
 #endif
