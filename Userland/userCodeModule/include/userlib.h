@@ -233,4 +233,6 @@ int test_prio(int argc, char **argv);
 int test_pcs(int argc, char **argv);
 int test_sync(int argc, char **argv);
 
+int loop(int argc, char **argv);
+
 #endif

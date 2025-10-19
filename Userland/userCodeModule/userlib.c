@@ -508,3 +508,31 @@ int test_sync(int argc, char ** argv){
 int test_pcs(int argc, char ** argv){
     return create_process(&test_processes_dummy, "test processes", argc, argv);
 }
+
+static int cloop=0;
+
+void loopDummy(int argc, char ** argv){
+  
+    int pid = get_pid(); //agarro mi priopio pid
+    if(argc!=1){
+        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        write_out(PROMPT_START1);
+        exit_pcs(ERROR);
+    }
+
+    int tiempo = char_to_int(argv[0]);
+    while (1){
+        write_out("Hola soy el loop, y mi pid es: ");
+        printDec(pid);
+        write_out(".\t Esta es mi vuelta ");
+        printDec(cloop);
+        cloop++;
+        write_out(".\n");
+        write_out(PROMPT_START1);
+        sleep(tiempo, 0);
+    }
+}
+
+int loop(int argc, char ** argv){
+    return create_process(&loopDummy,"Loop", argc, argv);
+}

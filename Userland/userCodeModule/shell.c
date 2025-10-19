@@ -3,7 +3,7 @@
 #include "include/userlibasm.h"
 #include <stdint.h>
 
-#define COMMANDS 18
+#define COMMANDS 21
 #define TESTS 4
 #define SOCOMS 1
 #define VERT_SIZE 32
@@ -19,9 +19,10 @@ char PROMPT_START[] = {127, 0};
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
 static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
-    "test-mm", "test-prio", "test-pcs", "test-sync", "mem-info", "Tests", "kill", "ps", "nice", "help-SO"};
+    "test-mm", "test-prio", "test-pcs", "test-sync", "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock", "loop"};
 static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
-static char* help[COMMANDS-TESTS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", "mem-info", "Tests", "kill", "ps", "nice", "help-SO"};
+static char* help[COMMANDS-TESTS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
+    "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock", "loop"};
 static char* SOcommands[SOCOMS]= {
     "Aca tiene q ir como funciona cada comando de SO"
 };
@@ -260,6 +261,18 @@ void process_command(char* buffer){
                         write_out(SOcommands[i]);
                         write_out("\n");
                     }
+                    break;
+
+                case 18:
+                    block_process(argc, argv);
+                    break;
+
+                case 19:
+                    unblock_process(argc, argv);
+                    break;
+
+                case 20:
+                    loop(argc, argv);
                     break;
             }   
             return;
