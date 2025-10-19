@@ -6,6 +6,8 @@
 #define ERROR -1
 #define EXIT 0
 #define NULL ((void *)0)
+#define MAX_PCS 64
+#define PROCESS_NAME_MAX_LENGTH 32
 
 //================================================================================================================================
 // Writting
@@ -198,28 +200,28 @@ void beep(uint32_t frequency, int duration);
 
 void create_mm();
 
-void *alloc(int size);
+int alloc(int argc, char ** argv);
 
-void free(void* address);
+int free(int argc, char ** argv);
 
-void status_count(int *status_out);
+int status_count(int argc, char ** argv);
 
 int create_process(void * rip, const char *name, int argc, char *argv[]);
 
-int kill_process(char * argv[], int argc);
+int kill_process(int argc, char ** argv);
 
 void exit_pcs(int ret);
 
-int block_process(uint64_t pid);
+int block_process(int argc, char ** argv);
 
-int unblock_process(uint64_t pid);
+int unblock_process(int argc, char ** argv);
 
-void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps);
+int get_proc_list(int argc, char ** argv);
 
 int get_pid();
 
-void yield();
+int yield(int argc, char ** argv);
 
-int be_nice(int pid);
+int be_nice(int argc, char ** argv);
 
 #endif

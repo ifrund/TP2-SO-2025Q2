@@ -236,18 +236,64 @@ void create_mm(){
 }
 
 // Ocupa espacio en la memoria
-void *alloc(int size){
-    return _alloc(size);
+void alloc_dummy(int argc, char ** argv){
+
+    if(argc != 1){
+        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        exit_pcs(ERROR);     
+    }
+
+    int size = char_to_int(argv[0]);
+
+    _alloc(size);
+    exit_pcs(EXIT);
+}
+
+int alloc(int argc, char ** argv){
+    return create_process(&alloc_dummy, "alloc", argc, argv);
 }
 
 // Libera espacio de la memoria
-void free(void* address){
-    _free(address);
+void free_dummy(int argc, char ** argv){
+
+    if(argc != 1){
+        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        exit_pcs(ERROR);     
+    }
+
+    _free((void*) argv[0]);
+    exit_pcs(EXIT);
+}
+
+int free(int argc, char ** argv){
+    return create_process(&free_dummy, "free", argc, argv);
 }
 
 // Llena el array con los datos block_count, free_space, y used_space 
-void status_count(int *status_out){
-    _status_count(status_out);
+void status_count_dummy(int argc, char ** argv){
+
+    if (argc != 0) {
+        write_out("No tenias que mandar argumentos para este comando.\n");
+        exit_pcs(ERROR);
+    }
+
+    int status[3];
+    _status_count(status);
+
+    write_out("=== Estado del sistema de memoria ===\n");
+    write_out("Bloques totales: ");
+    printDec(status[0]);
+    write_out("\nBloques usados: ");
+    printDec(status[1]);
+    write_out("\nBloques libres: ");
+    printDec(status[2]);
+    write_out("\n");
+
+    exit_pcs(EXIT);
+}
+
+int status_count(int argc, char ** argv){
+    return create_process(&status_count_dummy, "status count", argc, argv);
 }
 
 int create_process(void * rip , const char *name, int argc, char *argv[]){
@@ -281,7 +327,7 @@ void kill_dummy(int argc, char ** argv){
 }
 
 //recibe el pid de a quien matar por argv
-int kill_process(char * argv[], int argc){
+int kill_process(int argc, char ** argv){
     return create_process(&kill_dummy, "name", argc, argv);
 }
 
@@ -290,7 +336,6 @@ void exit_pcs(int ret){
     
     int pid = _get_pid(); 
 
-   /* TODO, esto debe imprimir en terminal, no en pantalla
     if(ret == ERROR){
         write_out("El proceso de pid ");
         printDec(pid);
@@ -301,21 +346,98 @@ void exit_pcs(int ret){
         printDec(pid);
         write_out(" cerro bien :)\n");
     }
-    */
 
     _kill_process(pid);
 }
 
-int block_process(uint64_t pid){
-    return _block_process(pid);
+void block_process_dummy(int argc, char ** argv){
+
+    if (argc != 1){
+        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        exit_pcs(ERROR);    
+    }
+
+    int pid = char_to_int(argv[0]);
+    
+    int ret = _block_process(pid);
+
+    if(ret != 0){
+        write_out("Ocurrio un error al querer bloquear un proceso\n");
+        exit_pcs(ERROR);
+    }
+
+    exit_pcs(EXIT);
 }
 
-int unblock_process(uint64_t pid){
-   return _unblock_process(pid);
+int block_process(int argc, char ** argv){
+    return create_process(&block_process_dummy, "block", argc, argv);
 }
 
-void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps){
-    _get_proc_list(procNames, pids, parentPids, status, rsps);
+void unblock_process_dummy(int argc, char ** argv){
+   if (argc != 1){
+        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        exit_pcs(ERROR);    
+    }
+
+    int pid = char_to_int(argv[0]);
+    
+    int ret = _unblock_process(pid);
+
+    if(ret != 0){
+        write_out("Ocurrio un error al querer desbloquear un proceso\n");
+        exit_pcs(ERROR);
+    }
+
+    exit_pcs(EXIT);
+}
+
+int unblock_process(int argc, char ** argv){
+    return create_process(&unblock_process_dummy, "unblock", argc, argv);
+}
+
+void get_proc_list_dummy(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps){
+
+    char procNamesStorage[MAX_PCS][PROCESS_NAME_MAX_LENGTH] = {0};
+    char statusStorage[MAX_PCS][PROCESS_NAME_MAX_LENGTH] = {0};
+
+    //punteros a cada dato
+    char *procNamesArr[MAX_PCS];
+    char *statusArr[MAX_PCS];
+    uint64_t pidsArr[MAX_PCS];
+    uint64_t parentPidsArr[MAX_PCS];
+    uint64_t rspsArr[MAX_PCS];
+
+    for (int i = 0; i < MAX_PCS; i++) {
+        procNamesArr[i] = procNamesStorage[i];
+        statusArr[i] = statusStorage[i];
+    }
+
+    _get_proc_list(procNamesArr, pidsArr, parentPidsArr, statusArr, rspsArr);
+
+    //encabezado
+    write_out("=== Lista de procesos ===\n");
+    write_out("PID\tNombre\tEstado\tPPID\tRSP\t\n");
+    write_out("---------------------------------------------\n");
+
+    //los pcs
+    for (int i = 0; i < MAX_PCS && procNamesArr[i][0] != '\0'; i++) {
+        printDec(pidsArr[i]);
+        write_out("\t");
+        write_out(procNamesArr[i]);
+        write_out("\n");
+        write_out(statusArr[i]);
+        write_out("\t");
+        printDec(parentPidsArr[i]);
+        write_out("\t");
+        printHex(rspsArr[i]);  
+        write_out("\t");
+    }
+
+    exit_pcs(EXIT);
+}
+
+int get_proc_list(int argc, char ** argv){
+    return create_process(&get_proc_list_dummy, "ps", argc, argv);
 }
 
 //ésta no es proceso, es built-in porq sino devolveria su propio pid xd
@@ -323,10 +445,26 @@ int get_pid(){
     return _get_pid();
 }
 
-void yield(){
+void yield_dummy(int argc, char ** argv){
     _yield();
+    exit_pcs(EXIT);
 }
 
-int be_nice(int pid){
-    return _be_nice(pid);
+int yield(int argc, char ** argv){
+    return create_process(&yield_dummy, "yield", argc, argv);
+}
+
+void be_nice_dummy(int argc, char ** argv){
+    if (argc != 1){
+        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        exit_pcs(ERROR);    
+    }
+
+    int pid = char_to_int(argv[0]);
+    _be_nice(pid);
+    exit_pcs(EXIT);
+}
+
+int be_nice(int argc, char ** argv){
+    return create_process(&be_nice_dummy, "nice", argc, argv);
 }

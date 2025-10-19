@@ -148,7 +148,7 @@ int be_nice(int pid){
     
     PCB *curr = NULL;
 
-    for (int i = 0; i < MAX_PROC; i++) {
+    for (int i = 0; i <MAX_PCS; i++) {
         if (processTable[i] && processTable[i]->PID == pid && processTable[i]->state != KILLED) {
             curr = processTable[i];
             break;

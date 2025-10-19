@@ -6,6 +6,7 @@
 
 #define COMMANDS 14
 #define TESTS 4
+#define HELP 10
 #define VERT_SIZE 32
 #define LINE_SIZE 63
 #define BUFFER_SIZE 128
@@ -21,6 +22,7 @@ char command_buffer[BUFFER_SIZE];
 static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
     "test-mm", "test-prio", "test-pcs", "test-sync", "mem", "Tests"};
 static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
+static char* help[HELP] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", "mem", "Tests"};
 char char_buffer[1];
 
 // Cursors & flags
@@ -148,8 +150,8 @@ void process_command(char* buffer){
                     break;
                 case 4:
                     write_out("Los comandos existentes son:\n");
-                    for(int i=0; i<COMMANDS; i++){
-                        write_out(commands[i]);
+                    for(int i=0; i<HELP; i++){
+                        write_out(help[i]);
                         write_out("\n");
                     }
                     break;
@@ -215,15 +217,7 @@ void process_command(char* buffer){
                     break;
 
                 case 12:
-                    int status[3];
-                    status_count(status);
-                    write_out("Bloques totales: ");
-                    printDec(status[0]);
-                    write_out("\nBloques libres: ");
-                    printDec(status[1]);
-                    write_out("\nBloques en uso: ");
-                    printDec(status[2]);
-                    write_out("\n");
+                    status_count(argc, argv);
                     break;
                     
                 case 13:

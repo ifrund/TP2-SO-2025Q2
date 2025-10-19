@@ -3,9 +3,6 @@
 #include "../include/userlibasm.h"
 #include "../include/userlib.h"
 
-#define MAX_PCS 128
-#define PROCESS_NAME_MAX_LENGTH 32
-
 enum State { RUNNING,
              BLOCKED,
              KILLED };
@@ -67,8 +64,8 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 
   while (1) {
 
-    // Create max_processes processes
-    for (i = 0; i < max_processes; i++) {
+    // Createmax_processes processes
+    for (i = 0; i <max_processes; i++) {
       p_rqs[i].pid = _create_process(&endless_loop, "endless_loop", 0, argvAux);
 
       if (p_rqs[i].pid == -1) {
@@ -83,7 +80,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
     // Randomly kills, blocks or unblocks processes until every one has been killed
     while (alive > 0) {
 
-      for (i = 0; i < max_processes; i++) {
+      for (i = 0; i <max_processes; i++) {
         action = GetUniform(100) % 2;
 
         switch (action) {
@@ -111,7 +108,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
       }
 
       // Randomly unblocks processes
-      for (i = 0; i < max_processes; i++)
+      for (i = 0; i <max_processes; i++)
         if (p_rqs[i].state == BLOCKED && GetUniform(100) % 2) {
           if (_unblock_process(p_rqs[i].pid) == -1) {
             write_out("test_processes: ERROR unblocking process\n");
@@ -134,7 +131,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
     uint64_t parentPids[MAX_PCS] = {0};
     uint64_t rsps[MAX_PCS] = {0};
 
-    get_proc_list(procNames, pids, parentPids, status, rsps);
+    _get_proc_list(procNames, pids, parentPids, status, rsps);
 
     char buffer[256];
 

@@ -1,12 +1,12 @@
 #include "proc.h"
 
-PCB* processTable[MAX_PROC]= {NULL}; 
+PCB* processTable[MAX_PCS]= {NULL}; 
 
 //tabla de procesos
 int create_process(void * rip, char *name, int argc, char *argv[]){
     int i, myPid=-1;
 
-    for (i = 0; i < MAX_PROC; i++){
+    for (i = 0; i <MAX_PCS; i++){
         if (processTable[i] == NULL){
             myPid = i;
             process_count++;
@@ -20,7 +20,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
         }
     }
 
-    if (i >= MAX_PROC){
+    if (i >=MAX_PCS){
         return -1;
     }
     
@@ -65,7 +65,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     //Informacion de los hijos
     pcb->childrenAmount = 0;
     pcb->isWaitingForChildren = false;
-    for(int i = 0; i < MAX_PROC-1; i++) {
+    for(int i = 0; i <MAX_PCS-1; i++) {
         pcb->childProc[i] = -1;
     } 
 
@@ -75,7 +75,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
 }
 
 int block_process(uint64_t pid){
-    if(pid > MAX_PROC || processTable[pid] == NULL)
+    if(pid >MAX_PCS || processTable[pid] == NULL)
         return -1;
 
     if(processTable[pid]->state == READY || processTable[pid]->state == RUNNING)
@@ -85,7 +85,7 @@ int block_process(uint64_t pid){
 }
 
 int unblock_process(uint64_t pid){
-    if(pid > MAX_PROC || processTable[pid] == NULL || processTable[pid]->state != BLOCKED )
+    if(pid >MAX_PCS || processTable[pid] == NULL || processTable[pid]->state != BLOCKED )
         return -1;
 
     processTable[pid]->state = READY;
@@ -93,7 +93,7 @@ int unblock_process(uint64_t pid){
 }
 
 int kill_process(uint64_t pid){
-    if(pid > MAX_PROC || processTable[pid] == NULL)
+    if(pid >MAX_PCS || processTable[pid] == NULL)
         return -1;
 
     //Liberacion de recursos
@@ -105,7 +105,7 @@ int kill_process(uint64_t pid){
     
     //desbloquear al padre si esta esperando      
     uint64_t parentPID = processTable[pid]->ParentPID;
-    if (parentPID < MAX_PROC && processTable[parentPID] != NULL) {
+    if (parentPID <MAX_PCS && processTable[parentPID] != NULL) {
         if (processTable[parentPID]->isWaitingForChildren) {
             unblock_process(parentPID);
             processTable[parentPID]->isWaitingForChildren = false;
@@ -117,6 +117,7 @@ int kill_process(uint64_t pid){
     return 0;
 }
 
+//TODO le faltan datos q tdv no existen
 void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps){
     for(int i = 0; processTable[i] != NULL; i++){
         
@@ -144,7 +145,7 @@ void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, ch
 int get_pid(){
     
     int pid = -1;
-    for (int i = 0; i < MAX_PROC; i++) {
+    for (int i = 0; i <MAX_PCS; i++) {
         if (processTable[i] != NULL && processTable[i]->state == RUNNING) {
             pid = i;
             break;

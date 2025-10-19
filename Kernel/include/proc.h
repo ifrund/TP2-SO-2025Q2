@@ -10,7 +10,7 @@
 
 //Constants
 #define MAX_FD 128
-#define MAX_PROC 64
+#define MAX_PCS 64
 #define MAX_STACK_SIZE 4096 //4KB
 #define PROCESS_NAME_MAX_LENGTH 32
 #define QUANTUM 5
@@ -60,12 +60,12 @@ typedef struct {
 
     //Informacion de los hijos:
     int childrenAmount;
-    uint64_t childProc[MAX_PROC];
+    uint64_t childProc[MAX_PCS];
     bool isWaitingForChildren;
 
 } PCB;
 
-extern PCB* processTable[MAX_PROC]; 
+extern PCB* processTable[MAX_PCS]; 
 
 //Funciones:
 int create_process(void * rip, char *name, int argc, char *argv[]);
