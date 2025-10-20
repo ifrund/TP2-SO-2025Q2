@@ -2,8 +2,9 @@
 
 int process_count = 0;
 int current_index = -1;
-static int idle_running = 0;  //esta en 1 mientras q idle este en READY o RUNNING
 int idle_pid = -1;
+int idle_running = 0;  //esta en 1 mientras q idle este en READY o RUNNING
+int yielding =0;
 
 //proceso basura cuando no hay ninguno ready, llama constantemente a halt, osea al scheduler, osea a q cambie al proximo
 static void idle() {
@@ -38,16 +39,21 @@ void *scheduling(void *rsp) {
 
         if (curr->state == RUNNING){
             curr->time_used++;
-            int max_time = curr->my_max_time;
 
             //si consumio su tiempo, resetiamos su tiempo y lo dejamos en ready 
             //esto quiere decir q si le aplicas nice a un pcs recien se va a ver el efecto una vez q consuma su tiempo 
             //y pase por get_max_time_for_priority
-            if(curr->time_used >= max_time){
+            if(curr->time_used >= curr->my_max_time){
                 curr->time_used = 0;                
                 curr->state = READY;
             }
             else{
+                if(yielding){
+                    //aunque le queda tiempo, lo sacamos porq viene de un yield
+                    yielding=0;
+                    curr->state = READY;
+                }
+
                 //seguimos en el mismo porq no consumio su tiempo
                 return rsp;
             }
@@ -129,6 +135,7 @@ void *scheduling(void *rsp) {
 }
 
 void yield(){
+    yielding = 1;
     _yield();
 }
 

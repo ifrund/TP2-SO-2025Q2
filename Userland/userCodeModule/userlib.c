@@ -417,8 +417,6 @@ void get_proc_list_dummy(char ** procNames, uint64_t * pids, uint64_t * parentPi
 
     char procNamesStorage[MAX_PCS][PROCESS_NAME_MAX_LENGTH] = {0};
     char statusStorage[MAX_PCS][PROCESS_NAME_MAX_LENGTH] = {0};
-
-    //punteros a cada dato
     char *procNamesArr[MAX_PCS];
     char *statusArr[MAX_PCS];
     uint64_t pidsArr[MAX_PCS];
@@ -509,7 +507,6 @@ int test_pcs(int argc, char ** argv){
     return create_process(&test_processes_dummy, "test processes", argc, argv);
 }
 
-static int cloop=0;
 
 void loopDummy(int argc, char ** argv){
   
@@ -519,7 +516,8 @@ void loopDummy(int argc, char ** argv){
         write_out(PROMPT_START1);
         exit_pcs(ERROR);
     }
-
+    
+    int cloop=0;
     int tiempo = char_to_int(argv[0]);
     while (1){
         write_out("Hola soy el loop, y mi pid es: ");

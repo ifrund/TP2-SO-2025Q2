@@ -1,5 +1,8 @@
 #include <stdint.h>
 #include <stdio.h>
+#include "test_util.h"
+
+#define WAIT 100000 //Change this value to make the wait long enough to see theese processes beeing run at least twice
 
 // Random
 static uint32_t m_z = 362436069;
@@ -64,11 +67,13 @@ void endless_loop() {
 }
 
 void endless_loop_print(uint64_t wait) {
-  /*int64_t pid = my_getpid();
+  //int64_t pid = _get_pid();
+  int wait1 = WAIT;
 
+  //write_out("\n");
   while (1) {
-    write_out("%d ", pid);
-    bussy_wait(wait);
+    _yield();
+   // printDec(pid);
+   // bussy_wait(wait1);
   }
-    */
 }

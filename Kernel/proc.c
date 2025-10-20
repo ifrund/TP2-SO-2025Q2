@@ -32,8 +32,9 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     processTable[i] = pcb; 
 
     //Informacion
+    memset(pcb->name, 0, PROCESS_NAME_MAX_LENGTH);
     memcpy(pcb->name, name, PROCESS_NAME_MAX_LENGTH - 1);
-    pcb->name[PROCESS_NAME_MAX_LENGTH - 1] = '\0';
+    pcb->name[PROCESS_NAME_MAX_LENGTH-1] = '\0';
     pcb->PID = myPid;
     pcb->ParentPID = get_pid();
     pcb->isForeground = true;
