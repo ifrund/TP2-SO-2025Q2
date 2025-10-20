@@ -128,13 +128,10 @@ void process_key(char key){
 }
 
 static void remove_extra_spaces(char *str);
-static int split_arguments(char *buffer, char *argv[], int max_args);
-static int remove_first_argument(char *argv[], int argc);
 
 void process_command(char* buffer){
     char *argv[MAX_ARGS];
-    //solo detectamos el & si es el último token
-    int foreground = 1, j=0, wait_pid=-1;
+    int foreground = 1, argc=0, wait_pid=-1;
 
     if (buffer[0] == '\0') {
         write_out(PROMPT_START);
@@ -146,22 +143,22 @@ void process_command(char* buffer){
     for (int i = 0; buffer[i] != '\0'; i++) {
         if (buffer[i] == ' ' && i != 0) {
             buffer[i] = '\0';
-            argv[j++] = &buffer[i + 1];
+            argv[argc++] = &buffer[i + 1];
         }
     }
-    argv[j] = NULL;
+    argv[argc] = NULL;
 
     //si & es el último argumento, y hay al menos un argumento (comando) adelante significa q queremos activar el flag
-    if (j > 1 && argv[j - 1] != NULL && !strcmp(argv[j - 1], "&")) {
+    if (argc > 1 && argv[argc - 1] != NULL && !strcmp(argv[argc - 1], "&")) {
         foreground = 0;
-        argv[j - 1] = NULL;
+        argv[argc - 1] = NULL;
     }
 
+    if(!foreground){ //este argc es el q usan las func, asiq le descontamos uno que es el & q solo nos importa a nosotros
+        argc--;
+    }
 
-    int argc = split_arguments(buffer, argv, MAX_ARGS);
-    argc = remove_first_argument(argv, argc);
-
-   for(int i = 0; i < COMMANDS; i++){
+    for(int i = 0; i < COMMANDS; i++){
         if (!strcmp(buffer, commands[i])){
             switch (i) {
                 case 0:
@@ -308,6 +305,7 @@ void process_command(char* buffer){
             }  
 
             if(foreground){
+                write_out("Jeje fg no esta desarrollado\n");
                //TODO wait(wait_pid);
             } 
 
@@ -401,50 +399,6 @@ static void remove_extra_spaces(char *str) {
         j--;
 
     str[j] = '\0';
-}
-
-// Llenamos argv[]
-static int split_arguments(char *buffer, char *argv[], int max_args) {
-    int argc = 0;
-    int i = 0;
-    char *start = 0;
-    int in_token = 0;
-
-    while (buffer[i]) {
-        char c = buffer[i];
-        if (c != ' ') {
-            if (!in_token) {
-                start = &buffer[i];
-                in_token = 1;
-            }
-        } else {
-            if (in_token) {
-                buffer[i] = '\0';
-                if (argc < max_args - 1)
-                    argv[argc++] = start;
-                in_token = 0;
-            }
-        }
-        i++;
-    }
-
-    if (in_token && argc < max_args - 1)
-        argv[argc++] = start;
-
-    argv[argc] = 0;
-    return argc;
-}
-
-//La usamos para sacar el comando del argv q le pasamos a los test :)
-int remove_first_argument(char *argv[], int argc) {
-    int i = 0;
-
-    while (argv[i] != 0) {
-        argv[i] = argv[i + 1];
-        i++;
-    }
-
-    return argc-1;
 }
 
 void exit_shell(){
