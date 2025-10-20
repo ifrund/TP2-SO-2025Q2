@@ -90,7 +90,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]);
 int block_process(uint64_t pid);
 int unblock_process(uint64_t pid);
 int kill_process(uint64_t pid);
-void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps);
+ProcessInfo* get_proc_list();
 int get_pid();
 int wait(uint64_t pid);
 int wait_for_all_children();
