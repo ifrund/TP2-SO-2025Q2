@@ -254,7 +254,13 @@ int wait(uint64_t pid){
     current->externWaitingPID = pid;
     block_process(currentPID);
 
-    // yield();
+    // #################################################################################
+    //  ESPERA ACTIVA - BORRAR SI QUERES BORRAR A BARRACAS CENTRAL
+    // ##################################################################################
+    while (isValid(pid) && processTable[pid]->state != ZOMBIE) {
+        
+    }
+    // #################################################################################
 
     return 0;
 }
@@ -287,7 +293,30 @@ int wait_for_all_children(){
     //Si tiene hijos, bloquear hasta que estos terminens
     block_process(currentPID);
 
-    //yield();
+    
+    // #################################################################################
+    //  ESPERA ACTIVA - BORRAR SI QUERES BORRAR A DEPORTIVO CAMIONEROS
+    // ##################################################################################
+    while (true) {
+        int remaining = 0;
+
+        for (int i = 0; i < MAX_PROC; i++) {
+            int childPID = current->childProc[i];
+            if (childPID != -1 && isValid(childPID)) {
+                if (processTable[childPID]->state == ZOMBIE) {
+                    cleanup_process(childPID);
+                    current->childProc[i] = -1;
+                    current->childrenAmount--;
+                } else {
+                    remaining++;
+                }
+            }
+        }
+        
+        if (remaining == 0)
+            break;
+    }
+    // #################################################################################
 
     return 0;
 }
