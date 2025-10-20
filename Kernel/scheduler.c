@@ -135,6 +135,8 @@ void *scheduling(void *rsp) {
 }
 
 void yield(){
+    //forzamos un tick y al proceso q esta forzando el tick aka cediendo el CPU
+    //y activamos el flag, para que el sch sepa que lo tiene que sacar de ready
     yielding = 1;
     _yield();
 }

@@ -72,7 +72,6 @@ void endless_loop_print(uint64_t wait) {
 
   write_out("\n");
   while (1) {
-    _yield();
     printDec(pid);
    // bussy_wait(wait1);
   }

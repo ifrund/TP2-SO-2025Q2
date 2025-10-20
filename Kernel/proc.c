@@ -37,7 +37,6 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     pcb->name[PROCESS_NAME_MAX_LENGTH-1] = '\0';
     pcb->PID = myPid;
     pcb->ParentPID = get_pid();
-    pcb->isForeground = true;
     pcb->state = READY;
 
     //Reservamos el espacio
@@ -50,8 +49,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     pcb->stackBase = stackBase;
     pcb->rsp = stackBase + MAX_STACK_SIZE;
     pcb->rsp = _create_stack(pcb->rsp, rip, argc, argv);
-    pcb->argc = argc;
-    pcb->argv = argv;
+
 
     pcb->time_used=0;
     if(strcmp(name, "idle") == 0){

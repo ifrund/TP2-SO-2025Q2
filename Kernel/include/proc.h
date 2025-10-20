@@ -40,7 +40,6 @@ typedef struct {
     char name[PROCESS_NAME_MAX_LENGTH];
     uint64_t PID;
     uint64_t ParentPID;
-    bool isForeground;
     ProcessState state;
 
     //File Descriptors
@@ -49,10 +48,6 @@ typedef struct {
     //Datos
     void* rsp; 
     void* stackBase;
-
-    //Argumentos que recibe
-    int argc;
-    char** argv;
 
     Priorities my_prio;
     int time_used;

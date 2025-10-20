@@ -133,16 +133,30 @@ static int remove_first_argument(char *argv[], int argc);
 
 void process_command(char* buffer){
     char *argv[MAX_ARGS];
+    //solo detectamos el & si es el último token
+    int foreground = 1, j=0, wait_pid=-1;
 
-    if (buffer[0] == '\0'){
-        return;
-    }
-
-    remove_extra_spaces(buffer);
     if (buffer[0] == '\0') {
         write_out(PROMPT_START);
         return;
     }
+
+    remove_extra_spaces(buffer);
+   
+    for (int i = 0; buffer[i] != '\0'; i++) {
+        if (buffer[i] == ' ' && i != 0) {
+            buffer[i] = '\0';
+            argv[j++] = &buffer[i + 1];
+        }
+    }
+    argv[j] = NULL;
+
+    //si & es el último argumento, y hay al menos un argumento (comando) adelante significa q queremos activar el flag
+    if (j > 1 && argv[j - 1] != NULL && !strcmp(argv[j - 1], "&")) {
+        foreground = 0;
+        argv[j - 1] = NULL;
+    }
+
 
     int argc = split_arguments(buffer, argv, MAX_ARGS);
     argc = remove_first_argument(argv, argc);
@@ -217,23 +231,23 @@ void process_command(char* buffer){
                     break;
 
                 case 8: 
-                    test_mm(argc, argv);
+                    wait_pid = test_mm(argc, argv);
                     break;
 
                 case 9:
-                    test_prio(argc, argv);
+                    wait_pid = test_prio(argc, argv);
                     break;
 
                 case 10:
-                    test_pcs(argc, argv);
+                    wait_pid = test_pcs(argc, argv);
                     break;
 
                 case 11:
-                    test_sync(argc, argv);
+                    wait_pid = test_sync(argc, argv);
                     break;
 
                 case 12:
-                    status_count(argc, argv);
+                    wait_pid = status_count(argc, argv);
                     break;
                     
                 case 13:
@@ -245,15 +259,15 @@ void process_command(char* buffer){
                     break;
                 
                 case 14:
-                    kill_process(argc,argv);
+                    wait_pid = kill_process(argc,argv);
                     break;
 
                 case 15:
-                    get_proc_list(argc, argv);
+                    wait_pid = get_proc_list(argc, argv);
                     break;
 
                 case 16:
-                    be_nice(argc, argv);
+                    wait_pid = be_nice(argc, argv);
                     break;
 
                 case 17:
@@ -265,33 +279,38 @@ void process_command(char* buffer){
                     break;
 
                 case 18:
-                    block_process(argc, argv);
+                    wait_pid = block_process(argc, argv);
                     break;
 
                 case 19:
-                    unblock_process(argc, argv);
+                    wait_pid = unblock_process(argc, argv);
                     break;
 
                 case 20:
-                    loop(argc, argv);
+                    wait_pid = loop(argc, argv);
                     break;
 
                 case 21:
-                    wc(argc, argv);
+                    wait_pid = wc(argc, argv);
                     break;
 
                 case 22:
-                    cat(argc, argv);
+                    wait_pid = cat(argc, argv);
                     break;
             
                 case 23:
-                    filter(argc, argv);
+                    wait_pid = filter(argc, argv);
                     break;
 
                 case 24:
-                    mvar(argc, argv);
+                    wait_pid = mvar(argc, argv);
                     break;
-            }   
+            }  
+
+            if(foreground){
+               //TODO wait(wait_pid);
+            } 
+
             return;
         }
     }
