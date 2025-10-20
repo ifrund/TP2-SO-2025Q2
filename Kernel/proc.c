@@ -122,10 +122,6 @@ int kill_process(uint64_t pid){
 
     PCB* proc = processTable[pid];    
 
-    //Aca iria: wait for all children. Hasta entonces no podes morir en paz. Quedaria "ciclando" en si mismo, hasta que childrenAmount=0?
-    //TODO: Checkear que esto no de deadlocks
-    wait_for_all_children();
-
     processTable[pid]->state = ZOMBIE;
 
     uint64_t parentPID = proc->ParentPID;
@@ -152,11 +148,6 @@ int kill_process(uint64_t pid){
             unblock_process(parentPID);
         }
     }
-
-    //Liberacion de recursos
-    //TODO: La liberacion de recursos esta bien aca o habria que hacerla en el wait?
-    cleanup_process(pid);
-   
 
     return 0;
 }
@@ -254,6 +245,7 @@ int wait(uint64_t pid){
 
     //si el target termino primero, lo terminamos
     if (target->state == ZOMBIE) {
+        cleanup_process(pid);
         return 0;
     }
 
@@ -300,7 +292,6 @@ int wait_for_all_children(){
     return 0;
 }
 
-//TODO: Consulta: espera activa en el wait_for_all_children
 
 void cleanup_process(uint64_t pid) {
     if (!isValid(pid))
