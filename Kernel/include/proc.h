@@ -74,5 +74,6 @@ int unblock_process(uint64_t pid);
 int kill_process(uint64_t pid);
 void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps);
 int get_pid();
+int is_pid_valid(int pid);
 
 #endif

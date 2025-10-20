@@ -76,7 +76,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
 }
 
 int block_process(uint64_t pid){
-    if(pid >MAX_PCS || processTable[pid] == NULL)
+    if(!is_pid_valid(pid))
         return -1;
 
     if(processTable[pid]->state == READY || processTable[pid]->state == RUNNING)
@@ -86,7 +86,9 @@ int block_process(uint64_t pid){
 }
 
 int unblock_process(uint64_t pid){
-    if(pid >MAX_PCS || processTable[pid] == NULL || processTable[pid]->state != BLOCKED )
+    if(!is_pid_valid(pid))
+        return -1;
+    if(processTable[pid]->state != BLOCKED )
         return -1;
 
     processTable[pid]->state = READY;
@@ -94,11 +96,12 @@ int unblock_process(uint64_t pid){
 }
 
 int kill_process(uint64_t pid){
-    if(pid >MAX_PCS || processTable[pid] == NULL)
+
+    if(!is_pid_valid(pid))
         return -1;
 
     //Liberacion de recursos
-    if (processTable[pid]->stackBase != NULL) {
+    if(processTable[pid]->stackBase != NULL) {
         processTable[pid]->stackBase = NULL;
     }
 
@@ -154,4 +157,8 @@ int get_pid(){
     }
 
     return pid;
+}
+
+int is_pid_valid(int pid){
+    return (pid > MAX_PCS || processTable[pid] == NULL) ? -1 : 1;
 }
