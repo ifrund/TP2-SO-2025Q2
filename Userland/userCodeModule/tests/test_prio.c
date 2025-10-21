@@ -9,12 +9,13 @@
 #define MEDIUM 1  
 #define HIGHEST 2 
 
-char PROMPT_START2[] = {127, 0};
+static char PROMPT_START2[] = {127, 0};
 
 int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
 void test_prio_dummy(int argc, char **argv) {
-  
+  write_out("ESTE ES EL VIEJO \n");
+
   if (argc != 0){
     write_out("argc incorrecto\n");
     write_out(PROMPT_START2);
