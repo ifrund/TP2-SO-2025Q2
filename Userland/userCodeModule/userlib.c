@@ -329,7 +329,7 @@ void kill_dummy(int argc, char ** argv){
         write_out(PROMPT_START1);
         exit_pcs(EXIT);
     }
-    if(toKill == _get_pid()){ //Estas matando al propio proceso kill que creaste
+    if(toKill == _get_pid()){
         write_out("Kill al kill ?? ... okay\n");
         write_out(PROMPT_START1);
         exit_pcs(EXIT);
@@ -337,19 +337,19 @@ void kill_dummy(int argc, char ** argv){
     else{
         write_out("Chau chau al proceso de pid: ");
         write_out(argv[0]);
-        write_out("\n");
     }
 
     int ret = _kill_process(toKill); 
     if(ret == ERROR){
-        write_out("El pid ");
+        write_out("... O no\nEl pid ");
         printDec(toKill);
         write_out(" no es valido, asique no podemos matar a ningun proceso de ese pid... bobo.\n");
         write_out(PROMPT_START1);
         //TODO esto deberia ser un exit de error o normal??
         exit_pcs(ERROR);
     }
-    
+
+    write_out("\n");
     write_out(PROMPT_START1);
     exit_pcs(EXIT);
 }
