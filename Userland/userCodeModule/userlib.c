@@ -518,7 +518,7 @@ void loopDummy(int argc, char ** argv){
     }
     
     int cloop=0;
-    int tiempo =  5;// char_to_int(argv[0]);
+    int tiempo = char_to_int(argv[0]);
     while (1){
         write_out("Hola soy el loop, y mi pid es: ");
         printDec(pid);

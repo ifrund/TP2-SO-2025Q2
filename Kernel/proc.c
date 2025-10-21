@@ -2,6 +2,11 @@
 
 PCB* processTable[MAX_PCS]= {NULL}; 
 
+static int strlen(char * string){
+    int i=0;
+    while(string[i++]!=0);
+    return i;
+}
 //tabla de procesos
 int create_process(void * rip, char *name, int argc, char *argv[]){
     int i, myPid=-1;
@@ -31,6 +36,45 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     }
     processTable[i] = pcb; 
 
+    //Reservamos espacio para el stack
+    void* stackBase = alloc(MAX_STACK_SIZE);
+    if (stackBase == NULL) {
+        free(processTable[i]);
+        return -1; 
+    }    
+    pcb->stackBase = stackBase;
+
+    //Preparamos argv
+    char **argv_copy = NULL;
+    if (argc > 0 && argv != NULL) {
+        argv_copy = alloc(sizeof(char*) * (argc + 1)); // +1 para NULL final
+        if (argv_copy == NULL) {
+            free(stackBase);
+            free(processTable[i]);
+            return -1;
+        }
+
+        for (int k = 0; k < argc; k++) {
+            int len = strlen(argv[k]) + 1;
+            argv_copy[k] = alloc(len);
+            if (argv_copy[k] == NULL) {
+                //rollback en caso de error
+                for (int m = 0; m < k; m++)
+                    free(argv_copy[m]);
+                free(argv_copy);
+                free(stackBase);
+                free(processTable[i]);
+                return -1;
+            }
+            memcpy(argv_copy[k], argv[k], len);
+        }
+        argv_copy[argc] = NULL;
+    }
+
+    //Stack
+    pcb->rsp = stackBase + MAX_STACK_SIZE;
+    pcb->rsp = _create_stack(pcb->rsp, rip, argc, argv_copy);
+
     //Informacion
     memset(pcb->name, 0, PROCESS_NAME_MAX_LENGTH);
     memcpy(pcb->name, name, PROCESS_NAME_MAX_LENGTH - 1);
@@ -38,17 +82,6 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     pcb->PID = myPid;
     pcb->ParentPID = get_pid();
     pcb->state = READY;
-
-    //Reservamos el espacio
-    void* stackBase = alloc(MAX_STACK_SIZE);
-    if (stackBase == NULL) {
-        free(processTable[i]);
-        ncPrint("Error en el alloc a stackBase\n");
-        return -1; 
-    }
-    pcb->stackBase = stackBase;
-    pcb->rsp = stackBase + MAX_STACK_SIZE;
-    pcb->rsp = _create_stack(pcb->rsp, rip, argc, argv);
 
 
     pcb->time_used=0;
