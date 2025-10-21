@@ -4,14 +4,18 @@
 
 #define MINOR_WAIT_S "1000" 
 #define WAIT 21000      //Change this value to make the wait long enough to see theese processes beeing run at least twice
-#define TOTAL_PROCESSES 3
+/*
+
 #define LOWEST 0  
 #define MEDIUM 1  
-#define HIGHEST 2 
+#define MEDIUM_2 2
+#define MEDIUM_3 3
+#define HIGHEST 4
+#define TOTAL_PROCESSES 5
+
+int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, MEDIUM_2, MEDIUM_3, HIGHEST};
 
 static char PROMPT_START2[] = {127, 0};
-
-int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
 void test_prio_dummy(int argc, char **argv) {
   write_out("ESTE ES EL VIEJO \n");
@@ -41,8 +45,10 @@ void test_prio_dummy(int argc, char **argv) {
       if(action){ //a algunos los subimos de prio, a otros no xd
             write_out("Cambiando la prio de ");
             printDec(pids[i]);
+            write_out(" a la prio: ");
+            printDec(prio[i]);
             write_out("\n");
-            _be_nice(pids[i]);
+            _be_nice(pids[i], prio[i]);
       }
   }
 
@@ -87,7 +93,7 @@ void test_prio_dummy(int argc, char **argv) {
   write_out("CHANGING PRIORITIES (de todos) WHILE BLOCKED...\n");
 
   for (i = 0; i < TOTAL_PROCESSES; i++)
-    _be_nice(pids[i]);
+    _be_nice(pids[i], prio[i]);
 
   _get_proc_list(procNamesArr, pidsArr, parentPidsArr, statusArr, rspsArr);
   write_out("\n=== Lista de procesos ===\n");
@@ -142,3 +148,5 @@ void test_prio_dummy(int argc, char **argv) {
   write_out(PROMPT_START2);
   exit_pcs(EXIT);
 }
+
+*/

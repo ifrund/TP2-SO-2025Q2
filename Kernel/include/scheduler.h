@@ -12,6 +12,6 @@ extern int current_index;
 
 void * scheduling(void *rsp);
 void yield();
-int be_nice(int pid);
+int be_nice(int pid, int new_prio);
 
 #endif

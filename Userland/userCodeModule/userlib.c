@@ -476,15 +476,28 @@ int yield(int argc, char ** argv){
 }
 
 void be_nice_dummy(int argc, char ** argv){
-    if (argc != 1){
-        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+
+    if (argc != 2){
+        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 2 argumentos.\n");
         write_out(PROMPT_START1);
         exit_pcs(ERROR);    
     }
 
     int pid = char_to_int(argv[0]);
-    _be_nice(pid);
-    write_out(PROMPT_START1);
+    int new_prio = char_to_int(argv[1]);
+
+    if(new_prio < 0 || new_prio > 4){
+        write_out("Mandaste una prioridad inexistente, porfavor acordate que las prioridades son de 0 a 4, siendo 0 la mayor\n");
+        write_out(PROMPT_START1);
+        exit_pcs(ERROR);
+    }
+
+    int ret = _be_nice(pid, new_prio);
+    if(ret == -2){
+        write_out("Epa, intentas cambiar la prioridad del idle, nonono\n");
+        exit_pcs(EXIT);
+    }
+    
     exit_pcs(EXIT);
 }
 
@@ -497,7 +510,7 @@ int test_mm(int argc, char ** argv){
 }
 
 int test_prio(int argc, char ** argv){
-    return create_process(&test_prio_dummy, "test prio", argc, argv);
+    return create_process(&test_prio_new, "test prio", argc, argv);
 }
 
 int test_sync(int argc, char ** argv){

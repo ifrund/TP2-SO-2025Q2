@@ -35,4 +35,4 @@ void sys_get_proc_list(uint64_t procNames, uint64_t pids, uint64_t parentPids, u
 int sys_get_pid();
 
 void sys_yield();
-int sys_be_nice(uint64_t pid);
+int sys_be_nice(uint64_t pid, uint64_t newPrio);

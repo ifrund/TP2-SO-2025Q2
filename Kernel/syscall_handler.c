@@ -76,7 +76,7 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     break;
 
   case (0x35):
-    sys_be_nice(rdi);
+    sys_be_nice(rdi, rsi);
     break;
     
   case (0xA0):
@@ -207,8 +207,8 @@ void sys_yield(){
   yield();
 }
 
-int sys_be_nice(uint64_t pid){
-    return be_nice(pid);
+int sys_be_nice(uint64_t pid, uint64_t newPrio){
+    return be_nice(pid, newPrio);
 }
 
 int sys_create_process(uint64_t rip, uint64_t name, uint64_t argc, uint64_t argv){

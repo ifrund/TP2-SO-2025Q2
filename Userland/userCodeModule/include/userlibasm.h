@@ -14,7 +14,6 @@ void _opError();
 void _beep(uint32_t frequency, int duration);
 
 /*---Sistemas Operativos---*/
-
 //Memory Manager
 void _create_mm();
 void * _alloc(int size);
@@ -29,4 +28,4 @@ void _get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, c
 int _get_pid();
 //Schedulers
 void _yield();
-int _be_nice(int pid);
+int _be_nice(int pid, int newPrio);

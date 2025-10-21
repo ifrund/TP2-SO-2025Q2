@@ -153,8 +153,16 @@ static int get_max_time_for_priority(Priorities p) {
     }
 } 
 
-int be_nice(int pid){
+Priorities int_to_priority(int n) {
+    return (Priorities)n;
+}
+
+int be_nice(int pid, int new_prio){
     
+    if(!is_pid_valid(pid)){
+        return -1;
+    }
+
     PCB *curr = NULL;
 
     for (int i = 0; i <MAX_PCS; i++) {
@@ -162,19 +170,16 @@ int be_nice(int pid){
             curr = processTable[i];
             break;
         }
+    }  
+
+    if(strcmp(curr->name, "idle") == 0){ //el idle no lo podes cambiar xd
+        return -2;
     }
 
-    if (curr == NULL) {
-        return -1; //Este pid no esta en el sch
-    }    
+    Priorities new = int_to_priority(new_prio);
 
-    if (curr->my_prio > LEVEL_0){
-        curr->my_prio--; //Mejoramos su prio 
-    }
-    else{
-        return -2; //Ya esta en el max de prio
-    }
-
+    curr->my_prio = new;
+    //actualizamso su max_time
     curr->my_max_time = get_max_time_for_priority(curr->my_prio);
 
     return 0;
