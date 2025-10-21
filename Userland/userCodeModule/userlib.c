@@ -333,12 +333,13 @@ void kill_dummy(int argc, char ** argv){
     }
 
     _kill_process(toKill); 
+    write_out(PROMPT_START1);
     exit_pcs(EXIT);
 }
 
 //recibe el pid de a quien matar por argv
 int kill_process(int argc, char ** argv){
-    return create_process(&kill_dummy, "name", argc, argv);
+    return create_process(&kill_dummy, "kill", argc, argv);
 }
 
 //cada proceso cuando termina se debe "matar" a si mismo, osea dejar marcado con KILLED
