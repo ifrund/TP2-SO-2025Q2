@@ -1,5 +1,8 @@
 #include "include/userlib.h"
 
+#define SHELL_PID 0
+#define IDLE_PID 1
+
 static char buffer[64] = {'0'};
 static char* char_buffer = " ";
 char PROMPT_START1[] = {127, 0};
@@ -316,8 +319,13 @@ void kill_dummy(int argc, char ** argv){
     }
 
     int toKill = char_to_int(argv[0]);
-    if(toKill == 0){
+    if(toKill == SHELL_PID){
         write_out("Para matar la shell tenes que usar Exit. \n");
+        write_out(PROMPT_START1);
+        exit_pcs(EXIT);
+    }
+    if(toKill == IDLE_PID){
+        write_out("No te podemos permitir matar el idle ¯\\_(ツ)_/¯\n");
         write_out(PROMPT_START1);
         exit_pcs(EXIT);
     }

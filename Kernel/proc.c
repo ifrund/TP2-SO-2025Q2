@@ -14,7 +14,6 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     for (i = 0; i <MAX_PCS; i++){
         if (processTable[i] == NULL){
             myPid = i;
-            process_count++;
             break;
         }
        if(processTable[i]->state == ZOMBIE){ 
@@ -81,17 +80,18 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     pcb->name[PROCESS_NAME_MAX_LENGTH-1] = '\0';
     pcb->PID = myPid;
     pcb->ParentPID = get_pid();
-    pcb->state = READY;
-
 
     pcb->time_used=0;
     if(strcmp(name, "idle") == 0){
         pcb->my_max_time = IDLE_Q;
         pcb->my_prio = LEVEL_IDLE;
+        //No lo dejamos ni en ready, eso se hara en el sch cuando se necesite
+        pcb->state= BLOCKED;
     }
     else{
         pcb->my_max_time = QUANTUM;
         pcb->my_prio = LEVEL_4;
+        pcb->state = READY;
     }
     
     //Informacion de los hijos
@@ -102,7 +102,10 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     } 
 
     memset(pcb->fileDescriptors, 0, sizeof(pcb->fileDescriptors));
-
+    
+    //TODO aca un yield ?? sino el padre va a consumir sus ticks en vez de dejar ser al hijo
+    
+    process_count++;
     return pcb->PID;
 }
 

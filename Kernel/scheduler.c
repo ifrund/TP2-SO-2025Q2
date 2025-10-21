@@ -1,17 +1,10 @@
 #include "include/scheduler.h"
 
+#define IDLE_PID 1
 int process_count = 0;
 int current_index = -1;
-int idle_pid = -1;
-int idle_running = 0;  //esta en 1 mientras q idle este en READY o RUNNING
 int yielding =0;
 
-//proceso basura cuando no hay ninguno ready, llama constantemente a halt, osea al scheduler, osea a q cambie al proximo
-static void idle() {
-    while(1) {
-        _hlt();
-    }
-}
 
 int find_index_by_pid(int pid) {
     for (int i = 0; i < process_count; i++) {
@@ -44,8 +37,13 @@ void *scheduling(void *rsp) {
             //esto quiere decir q si le aplicas nice a un pcs recien se va a ver el efecto una vez q consuma su tiempo 
             //y pase por get_max_time_for_priority
             if(curr->time_used >= curr->my_max_time){
-                curr->time_used = 0;                
-                curr->state = READY;
+                curr->time_used = 0;
+                if(strcmp(curr->name, "idle") == 0){ //Si sos el idle te volvemos a bloquear, sino queda ready
+                    curr->state = BLOCKED;
+                }   
+                else{
+                    curr->state = READY;
+                }           
             }
             else{
                 if(yielding){
@@ -59,24 +57,6 @@ void *scheduling(void *rsp) {
             }
             
         }
-    }
-
-     //si el idle está y aparece un proceso READY
-    if (idle_running) {
-        for (int i = 0; i < process_count; i++) {
-            PCB *p = processTable[i];
-            if (p != NULL && p->state == READY && strcmp(p->name, "idle") != 0) {
-                kill_process(idle_pid);
-                idle_running = 0;
-                break;
-            }
-        }
-    }
-
-    //solo hay un proceso
-    if (process_count == 1 && processTable[0]->state == READY) {
-        processTable[0]->state = RUNNING;
-        return rsp;
     }
 
     //buscamos READY
@@ -96,40 +76,11 @@ void *scheduling(void *rsp) {
     } while (checked < process_count);
 
     //como no hay ningun proceso en ready, tenemos q dejar algo corriendo en el sch
-    //asiq vamos con el idle
+    //asiq vamos con el idle, q sabemos q siempre es el de pid 1
     
-    char *argvAux[] = {0};
-
-    //si no existe idle, lo creamos
-    PCB *idle_pcb = NULL;
-
-    for (int i = 0; i < process_count; i++) {
-        PCB *p = processTable[i];
-        if (p != NULL && strcmp(p->name, "idle") == 0) {
-            idle_pcb = p;
-            idle_pid = p->PID;
-            break;
-        }
-    }
-
-    if(idle_pcb == NULL){
-        idle_pid = create_process(&idle, "idle", 0, argvAux);
-        for (int i = 0; i < process_count; i++) {
-            PCB *p1 = processTable[i];
-            if (p1 != NULL && strcmp(p1->name, "idle") == 0) {
-                idle_pcb = p1;
-                break;
-            }
-        }
-    }
-
-    //lo ponemos a correr al idle
-    if (idle_pcb != NULL) { //TODO en teoria este if siempre entra
-        current_index = find_index_by_pid(idle_pid);
-        idle_pcb->state = RUNNING;
-        idle_running = 1;
-        return (void *)idle_pcb->rsp;
-    }
+    processTable[IDLE_PID]->state = RUNNING;
+    current_index = IDLE_PID; 
+    return (void *)processTable[IDLE_PID]->rsp;
 
     return NULL; //KABOOM
 }
