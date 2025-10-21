@@ -115,6 +115,9 @@ int block_process(uint64_t pid){
 
     if(processTable[pid]->state == READY || processTable[pid]->state == RUNNING)
         processTable[pid]->state = BLOCKED;
+    else{
+        return -2;
+    }
     
     return 0;
 }
@@ -123,7 +126,7 @@ int unblock_process(uint64_t pid){
     if(!is_pid_valid(pid))
         return -1;
     if(processTable[pid]->state != BLOCKED )
-        return -1;
+        return -2;
 
     processTable[pid]->state = READY;
     return 0;
@@ -194,5 +197,5 @@ int get_pid(){
 }
 
 int is_pid_valid(int pid){
-    return (pid > MAX_PCS || processTable[pid] == NULL) ? -1 : 1;
+    return (pid > MAX_PCS || processTable[pid] == NULL) ? 0 : 1;
 }

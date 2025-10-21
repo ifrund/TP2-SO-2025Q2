@@ -340,7 +340,16 @@ void kill_dummy(int argc, char ** argv){
         write_out("\n");
     }
 
-    _kill_process(toKill); 
+    int ret = _kill_process(toKill); 
+    if(ret == ERROR){
+        write_out("El pid ");
+        printDec(toKill);
+        write_out(" no es valido, asique no podemos matar a ningun proceso de ese pid... bobo.\n");
+        write_out(PROMPT_START1);
+        //TODO esto deberia ser un exit de error o normal??
+        exit_pcs(ERROR);
+    }
+    
     write_out(PROMPT_START1);
     exit_pcs(EXIT);
 }
@@ -355,12 +364,14 @@ void exit_pcs(int ret){
     
     int pid = _get_pid(); 
 
-    /* TODO estos write_out tienen q ir a la terminal, no a pantalla
     if(ret == ERROR){
         write_out("El proceso de pid ");
         printDec(pid);
         write_out(" cerro con error\n");
+        write_out(PROMPT_START1);
+        exit_pcs(EXIT);
     }
+    /* TODO estos write_out tienen q ir a la terminal, no a pantalla
     else if(ret == EXIT){
         write_out("Proceso de pid ");
         printDec(pid);
@@ -368,7 +379,14 @@ void exit_pcs(int ret){
     }
     */
 
-    _kill_process(pid);
+    int ret_del_kill = _kill_process(pid);
+    if(ret_del_kill == ERROR){
+        write_out("Hubo un error en el exit ya que el pid ");
+        printDec(pid);
+        write_out(" no es valido... big problem, no deberias llegar a aca nunca\n");
+        write_out(PROMPT_START1);
+        exit_pcs(EXIT);
+    }
 }
 
 void block_process_dummy(int argc, char ** argv){
@@ -380,13 +398,27 @@ void block_process_dummy(int argc, char ** argv){
     }
 
     int pid = char_to_int(argv[0]);
-    
+    if(pid == 0){
+        write_out("Por ahora la shell no es bloqueante, asiq... adios\n");
+    }
+
+    if(pid == get_pid()){
+        write_out("Que haces loco, nos vas a meter en problemas raja de aca.\n");
+        write_out(PROMPT_START1);
+        exit_pcs(ERROR); 
+    }
+
     int ret = _block_process(pid);
 
-    if(ret != 0){ //TODO especificar q error
-        write_out("Ocurrio un error al querer bloquear un proceso\n");
+    if(ret == ERROR){
+        write_out("Este pid no es valido\n");
         write_out(PROMPT_START1);
         exit_pcs(ERROR);
+    }
+    if(ret == SECOND_ERROR){
+        write_out("Este pid ya estaba bloqueado\n");
+        write_out(PROMPT_START1);
+        exit_pcs(ERROR); 
     }
 
     write_out(PROMPT_START1);
@@ -405,11 +437,19 @@ void unblock_process_dummy(int argc, char ** argv){
     }
 
     int pid = char_to_int(argv[0]);
-    
+
+    if(pid == IDLE_PID){
+        write_out("Que estas haciendo?? esto no sirve de nada, va a volver estar blocked cuando hagas ps.\n");
+    }
     int ret = _unblock_process(pid);
 
-    if(ret != 0){//TODO especificar q error
-        write_out("Ocurrio un error al querer desbloquear un proceso\n");
+    if(ret == ERROR){ 
+        write_out("Este pid no es valido\n");
+        write_out(PROMPT_START1);
+        exit_pcs(ERROR);
+    }
+    if(ret == SECOND_ERROR){ 
+        write_out("Este proceso no esta bloqueado, asique no lo podemos desbloquear\n");
         write_out(PROMPT_START1);
         exit_pcs(ERROR);
     }
@@ -501,11 +541,19 @@ void be_nice_dummy(int argc, char ** argv){
     }
 
     int ret = _be_nice(pid, new_prio);
-    if(ret == -2){
-        write_out("Epa, intentas cambiar la prioridad del idle, nonono\n");
+
+    if(ret == ERROR){ 
+        write_out("Este pid no es valido\n");
+        write_out(PROMPT_START1);
+        exit_pcs(ERROR);
+    }
+    if(ret == SECOND_ERROR){
+        write_out("Epa, intentaste cambiar la prioridad del idle, nonono\n");
+        write_out(PROMPT_START1);
         exit_pcs(EXIT);
     }
-    
+
+    write_out(PROMPT_START1);
     exit_pcs(EXIT);
 }
 

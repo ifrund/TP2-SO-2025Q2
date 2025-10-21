@@ -7,6 +7,7 @@
 #include "../tests/test_util.h"
 #include <stdint.h>
 
+#define SECOND_ERROR -2
 #define ERROR -1
 #define EXIT 0
 #define NULL ((void *)0)
