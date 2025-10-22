@@ -96,7 +96,7 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     break;
   
   case (0xA4):
-    sys_get_proc_list(rdi, rsi, rdx, rcx, r8);
+    sys_get_proc_list();
     break;
 
   case (0XA5):
@@ -227,8 +227,8 @@ int sys_unblock_process(uint64_t pid){
   return unblock_process(pid);
 }
 
-void sys_get_proc_list(uint64_t procNames, uint64_t pids, uint64_t parentPids, uint64_t status, uint64_t rsps){
-  get_proc_list((char**) procNames, (uint64_t *) pids, (uint64_t *) parentPids, (char **) status, (uint64_t *) rsps);
+ProcessInfo* sys_get_proc_list(){
+  return get_proc_list();
 }
 
 int sys_get_pid(){

@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "proc.h"
 
 void syscall_handler();
 void sys_write(uint64_t fd, uint64_t message, uint64_t length);
@@ -31,7 +32,7 @@ int sys_create_process(uint64_t rip, uint64_t name, uint64_t argc, uint64_t argv
 int sys_kill_process(uint64_t pid);
 int sys_block_process(uint64_t pid);
 int sys_unblock_process(uint64_t pid);
-void sys_get_proc_list(uint64_t procNames, uint64_t pids, uint64_t parentPids, uint64_t status, uint64_t rsps);
+ProcessInfo* sys_get_proc_list();
 int sys_get_pid();
 
 void sys_yield();

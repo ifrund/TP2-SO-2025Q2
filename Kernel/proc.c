@@ -205,7 +205,7 @@ char *strncpy(char *dest, const char *src, unsigned int n) {
 }
 
 ProcessInfo* get_proc_list() {
-    ProcessInfo* list = alloc(sizeof(ProcessInfo) * MAX_PCS);
+    ProcessInfo* list = alloc(sizeof(ProcessInfo) * MAX_PCS); //TODO y si en vez de MAX_PCS pondemos process_count
     if (list == NULL)
         return NULL;
 
@@ -237,6 +237,18 @@ ProcessInfo* get_proc_list() {
 
         info->state[15] = '\0';
         info->rsp = (uint64_t)p->rsp;
+
+        switch (p->my_prio) {
+            case LEVEL_0: memcpy(info->my_prio, "LEVEL_0", 15); break;
+            case LEVEL_1: memcpy(info->my_prio, "LEVEL_1", 15); break;
+            case LEVEL_2: memcpy(info->my_prio, "LEVEL_2", 15); break;
+            case LEVEL_3: memcpy(info->my_prio, "LEVEL_3", 15); break;
+            case LEVEL_4: memcpy(info->my_prio, "LEVEL_4", 15); break;
+            case LEVEL_IDLE: memcpy(info->my_prio, "LEVEL_IDLE", 15); break;
+            default: memcpy(info->my_prio, "UNKNOWN", 15); break;
+        }
+
+        info->my_prio[15] = '\0';
 
         info->externWaitingPID = p->externWaitingPID;
         info->isWaitingForExtern = p->isWaitingForExtern;

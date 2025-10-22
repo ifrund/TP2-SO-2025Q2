@@ -76,7 +76,8 @@ typedef struct {
     uint64_t parentPid;
     char state[16];            // "READY", etc.
     uint64_t rsp;
-    
+    char my_prio[16];
+
     //TODO probablmente borrarlas
     uint64_t externWaitingPID;
     bool isWaitingForExtern;
@@ -97,6 +98,5 @@ ProcessInfo* get_proc_list();
 int get_pid();
 int is_pid_valid(int pid);
 int wait(uint64_t pid);
-int wait_for_all_children();
 
 #endif

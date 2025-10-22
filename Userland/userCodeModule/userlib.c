@@ -461,44 +461,49 @@ int unblock_process(int argc, char ** argv){
     return create_process(&unblock_process_dummy, "unblock", argc, argv);
 }
 
-void get_proc_list_dummy(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps){
+void get_proc_list_dummy(){
 
-    char procNamesStorage[MAX_PCS][PROCESS_NAME_MAX_LENGTH] = {0};
-    char statusStorage[MAX_PCS][PROCESS_NAME_MAX_LENGTH] = {0};
-    char *procNamesArr[MAX_PCS];
-    char *statusArr[MAX_PCS];
-    uint64_t pidsArr[MAX_PCS];
-    uint64_t parentPidsArr[MAX_PCS];
-    uint64_t rspsArr[MAX_PCS];
-
-    for (int i = 0; i < MAX_PCS; i++) {
-        procNamesArr[i] = procNamesStorage[i];
-        statusArr[i] = statusStorage[i];
+    ProcessInfo* list = _get_proc_list();
+    if (list == NULL) {
+        write_out("Error, no se pudo obtener la lista de procesos.\n");
+        write_out(PROMPT_START1);
+        exit_pcs(ERROR);
+        return;
     }
-
-    _get_proc_list(procNamesArr, pidsArr, parentPidsArr, statusArr, rspsArr);
 
     //encabezado
     write_out("\n=== Lista de procesos ===\n");
-    write_out("PID\tNombre\tEstado\tPPID\tRSP\t\n");
-    write_out("---------------------------------------------\n");
+    write_out("PID\tNombre\tEstado\tPPID\tRSP\tPrio\tChilds\tFD\n");
+    write_out("-------------------------------------------------------------\n");
 
-    //los pcs
-    for (int i = 0; i < MAX_PCS && procNamesArr[i][0] != '\0'; i++) {
-        printDec(pidsArr[i]);
+    //iterar sobre la lista
+    for (int i = 0; i < MAX_PCS; i++) {
+        ProcessInfo* p = &list[i];
+        if (p->pid == -1)  // Slot vacío
+            continue;
+
+        printDec(p->pid);
         write_out("\t");
-        write_out(procNamesArr[i]);
+        write_out(p->name);
         write_out("\t");
-        write_out(statusArr[i]);
+        write_out(p->state);
         write_out("\t");
-        if (parentPidsArr[i] == (uint64_t)-1) write_out("-1");
-        else printDec(parentPidsArr[i]);
+        if (p->parentPid == (uint64_t)-1) write_out("-1");
+        else printDec(p->parentPid);
+        write_out("\t0x");
+        printHex((uint64_t)p->rsp); 
         write_out("\t");
-        printHex(rspsArr[i]);  
+        write_out(p->my_prio);
         write_out("\t");
+        printDec(p->childrenAmount);
+        write_out("\t");
+        //printDec(p->fileDescriptorCount);
         write_out("\n");
     }
 
+    write_out("-------------------------------------------------------------\n");
+
+    _free(list);
     write_out(PROMPT_START1);
     exit_pcs(EXIT);
 }
