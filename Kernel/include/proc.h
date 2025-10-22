@@ -15,6 +15,9 @@
 #define PROCESS_NAME_MAX_LENGTH 32
 #define QUANTUM 5
 #define IDLE_Q 1
+#define MAX_ARGUMENTS 16
+#define MAX_ARG_LENGTH 64 
+
 
 //Estados del proceso
 typedef enum {
@@ -22,7 +25,7 @@ typedef enum {
     RUNNING,
     BLOCKED,
     ZOMBIE,
-    KILLED //TODO es zombie o killed, pero no las dos, verdad?
+    INVALID
 } ProcessState;
 
 typedef enum {
@@ -54,22 +57,46 @@ typedef struct {
     int time_used;
     int my_max_time;
 
+    //Por si espera otro proceso
+    uint64_t externWaitingPID;
+    bool isWaitingForExtern;
+
     //Informacion de los hijos:
     int childrenAmount;
     uint64_t childProc[MAX_PCS];
-    bool isWaitingForChildren;
 
 } PCB;
 
 extern PCB* processTable[MAX_PCS]; 
+  
+//Para el get_proc_list
+typedef struct {
+    char name[PROCESS_NAME_MAX_LENGTH];
+    uint64_t pid;
+    uint64_t parentPid;
+    char state[16];            // "READY", etc.
+    uint64_t rsp;
+    
+    //TODO probablmente borrarlas
+    uint64_t externWaitingPID;
+    bool isWaitingForExtern;
+    int childrenAmount;
+    uint64_t children[MAX_PCS];
+    // Podrías incluir file descriptors si querés: los ids nada más.
+    uint64_t fileDescriptors[MAX_FD];
+    int fileDescriptorCount;  // Número de FDs válidos
+} ProcessInfo;
+
 
 //Funciones:
 int create_process(void * rip, char *name, int argc, char *argv[]);
 int block_process(uint64_t pid);
 int unblock_process(uint64_t pid);
 int kill_process(uint64_t pid);
-void get_proc_list(char ** procNames, uint64_t * pids, uint64_t * parentPids, char ** status, uint64_t * rsps);
+ProcessInfo* get_proc_list();
 int get_pid();
 int is_pid_valid(int pid);
+int wait(uint64_t pid);
+int wait_for_all_children();
 
 #endif
