@@ -284,6 +284,9 @@ void process_command(char* buffer){
                     break;
 
                 case 20:
+                    if(foreground == 1){
+                       write_out("Estas creando un loop en foreground, despedite de la shell.\n");
+                    }
                     wait_pid = loop(argc, argv);
                     break;
 
