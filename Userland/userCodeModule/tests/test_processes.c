@@ -49,7 +49,7 @@ void test_processes_dummy(int argc, char **argv) {
   char *argvAux[] = {0};
 
   if (argc != 1){
-    write_out("argc incorrecto\n");
+    write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 argumento.\n");
     exit_pcs(ERROR);
   }
 
@@ -95,8 +95,13 @@ void test_processes_dummy(int argc, char **argv) {
 
           case 1:
             if (p_rqs[i].state == RUNNING) {
-              if (_block_process(p_rqs[i].pid) == -1) {
-                write_out("test_processes: ERROR blocking process\n");
+              int ret = _block_process(p_rqs[i].pid);
+              if (ret == -1) {
+                write_out("test_processes: ERROR blocking process, pid no existe\n");
+                exit_pcs(ERROR);
+              }
+              if (ret == -1) {
+                write_out("test_processes: ERROR blocking process, ya esta bloqueado\n");
                 exit_pcs(ERROR);
               }
               p_rqs[i].state = BLOCKED;
@@ -108,7 +113,7 @@ void test_processes_dummy(int argc, char **argv) {
       // Randomly unblocks processes
       for (i = 0; i <max_processes; i++)
         if (p_rqs[i].state == BLOCKED && GetUniform(100) % 2) {
-          if (_unblock_process(p_rqs[i].pid) == -1) {
+          if (_unblock_process(p_rqs[i].pid) == -1) { //si o si esta bloqueado por el if de arriba
             write_out("test_processes: ERROR unblocking process\n");
             exit_pcs(ERROR);
           }

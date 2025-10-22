@@ -31,7 +31,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
     uint64_t i;
 
     if (argc != 1){
-        write_out("argc incorrecto\n");
+        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 argumento.\n");
         write_out(PROMPT_START2);
         exit_pcs(ERROR);
     }

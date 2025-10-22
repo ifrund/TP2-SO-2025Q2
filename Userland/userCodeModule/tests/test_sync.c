@@ -59,7 +59,7 @@ void test_sync_dummy(int argc, char **argv) { //{n, use_sem, 0}
   uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
 
   if (argc != 2){
-    write_out("argc incorrecto\n");
+    write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 2 argumentos.\n");
     exit_pcs(ERROR);
   }
 

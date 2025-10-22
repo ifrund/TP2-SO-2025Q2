@@ -33,7 +33,7 @@ void test_mm_dummy(int argc, char **argv) {
   uint64_t max_memory;
 
   if (argc != 1){
-    write_out("argc incorrecto\n");
+    write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 argumento.\n");
     exit_pcs(ERROR);
   }
 
