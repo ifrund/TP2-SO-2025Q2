@@ -49,6 +49,7 @@ void *scheduling(void *rsp) {
                 if(yielding){
                     //aunque le queda tiempo, lo sacamos porq viene de un yield
                     yielding=0;
+                    curr->time_used=0;
                     curr->state = READY;
                 }
 
@@ -81,8 +82,6 @@ void *scheduling(void *rsp) {
     processTable[IDLE_PID]->state = RUNNING;
     current_index = IDLE_PID; 
     return (void *)processTable[IDLE_PID]->rsp;
-
-    return NULL; //KABOOM
 }
 
 void yield(){
@@ -125,6 +124,10 @@ int be_nice(int pid, int new_prio){
 
     if(strcmp(curr->name, "idle") == 0){ //el idle no lo podes cambiar xd
         return -2;
+    }
+
+    if(new_prio < 0 || new_prio > 4){
+        return -3;
     }
 
     Priorities new = int_to_priority(new_prio);

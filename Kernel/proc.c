@@ -7,6 +7,7 @@ static int strlen(char * string){
     while(string[i++]!=0);
     return i;
 }
+
 //tabla de procesos
 int create_process(void * rip, char *name, int argc, char *argv[]){
     int i, myPid=-1;
@@ -19,6 +20,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
        if(processTable[i]->state == ZOMBIE){ 
             free(processTable[i]->stackBase);
             free(processTable[i]);
+            free(processTable[i]->argv);
             myPid = i;
             break;
         }
@@ -69,6 +71,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
         }
         argv_copy[argc] = NULL;
     }
+    processTable[myPid]->argv = argv_copy;
 
     //Stack
     pcb->rsp = stackBase + MAX_STACK_SIZE;

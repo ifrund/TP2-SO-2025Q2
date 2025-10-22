@@ -48,6 +48,7 @@ typedef struct {
     //Datos
     void* rsp; 
     void* stackBase;
+    char** argv; //solo existe para poder hacerle free
 
     Priorities my_prio;
     int time_used;

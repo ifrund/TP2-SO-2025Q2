@@ -345,8 +345,7 @@ void kill_dummy(int argc, char ** argv){
         printDec(toKill);
         write_out(" no es valido, asique no podemos matar a ningun proceso de ese pid... bobo.\n");
         write_out(PROMPT_START1);
-        //TODO esto deberia ser un exit de error o normal??
-        exit_pcs(ERROR);
+        exit_pcs(EXIT);
     }
 
     write_out("\n");
@@ -534,12 +533,6 @@ void be_nice_dummy(int argc, char ** argv){
     int pid = char_to_int(argv[0]);
     int new_prio = char_to_int(argv[1]);
 
-    if(new_prio < 0 || new_prio > 4){
-        write_out("Mandaste una prioridad inexistente, porfavor acordate que las prioridades son de 0 a 4, siendo 0 la mayor\n");
-        write_out(PROMPT_START1);
-        exit_pcs(ERROR);
-    }
-
     int ret = _be_nice(pid, new_prio);
 
     if(ret == ERROR){ 
@@ -551,6 +544,11 @@ void be_nice_dummy(int argc, char ** argv){
         write_out("Epa, intentaste cambiar la prioridad del idle, nonono\n");
         write_out(PROMPT_START1);
         exit_pcs(EXIT);
+    }
+    if(ret == -3){
+        write_out("Mandaste una prioridad inexistente, porfavor acordate que las prioridades son de 0 a 4, siendo 0 la mayor\n");
+        write_out(PROMPT_START1);
+        exit_pcs(ERROR);
     }
 
     write_out(PROMPT_START1);
@@ -605,7 +603,7 @@ int loop(int argc, char ** argv){
     return create_process(&loopDummy,"loop", argc, argv);
 }
 
-//TODO aplicar pipes
+//TODO aplicar pipes, donde usa argv deberia se el input
 void wc_dummy(int argc, char ** argv){
     
     char buffer[BUFFER_SIZE];
