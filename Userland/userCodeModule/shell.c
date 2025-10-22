@@ -306,8 +306,20 @@ void process_command(char* buffer){
 
             if(foreground){
                 write_out("Jeje fg no esta desarrollado\n");
-                wait_pid++; //sacarlo, solo esta para q no aparezca la flag de q no se usa
-               //TODO wait(wait_pid);
+                /*
+                char pid_str[16];
+                int_to_str(wait_pid, pid_str);
+                char *argv[1];
+                argv[0] = pid_str;
+
+                int argc = 0;
+                while (argc < 1 || argv[argc] != 0) {
+                    argc++;
+                    if (argc == 1) break;
+                }
+
+                wait(argc, argv);
+                */
             } 
 
             return;

@@ -57,5 +57,6 @@ int _get_pid();
 //Schedulers
 void _yield();
 int _be_nice(int pid, int newPrio);
+int _wait(int pid);
 
 #endif // USERLIBASM_H

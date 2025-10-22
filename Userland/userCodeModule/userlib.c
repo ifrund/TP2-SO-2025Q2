@@ -168,6 +168,30 @@ int char_to_int(const char* str) {
     return result;
 }
 
+void int_to_str(int value, char *str) {
+    int i = 0, j;
+    char temp[16];
+    bool isNeg = false;
+
+    if (value < 0) {
+        isNeg = true;
+        value = -value;
+    }
+
+    do {
+        temp[i++] = '0' + (value % 10);
+        value /= 10;
+    } while (value > 0);
+
+    if (isNeg)
+        temp[i++] = '-';
+
+    for (j = 0; j < i; j++)
+        str[j] = temp[i - j - 1];
+    str[i] = '\0';
+}
+
+
 //================================================================================================================================
 // Sleep
 //================================================================================================================================
@@ -497,7 +521,7 @@ void get_proc_list_dummy(){
         write_out("\t");
         printDec(p->childrenAmount);
         write_out("\t");
-        //printDec(p->fileDescriptorCount);
+        printDec(p->fileDescriptorCount);
         write_out("\n");
     }
 
@@ -581,7 +605,7 @@ int test_pcs(int argc, char ** argv){
 }
 
 
-void loopDummy(int argc, char ** argv){
+void loop_dummy(int argc, char ** argv){
   
     int pid = get_pid(); //agarro mi priopio pid
     if(argc!=1){
@@ -605,7 +629,37 @@ void loopDummy(int argc, char ** argv){
 }
 
 int loop(int argc, char ** argv){
-    return create_process(&loopDummy,"loop", argc, argv);
+    return create_process(&loop_dummy,"loop", argc, argv);
+}
+
+void wait_dummy(int argc, char ** argv){
+    
+    if(argc!=1){
+        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        write_out(PROMPT_START1);
+        exit_pcs(ERROR);
+    }
+
+    int pid = char_to_int(argv[0]);
+    int ret = _wait(pid);
+
+    if(ret == ERROR){
+        write_out("Este pid no es valido\n");
+        write_out(PROMPT_START1);
+        exit_pcs(ERROR);
+    }
+    if(ret == SECOND_ERROR){
+        write_out("Como llegaste a aca?? se rompio todo\n");
+        write_out(PROMPT_START1);
+        exit_pcs(ERROR);
+    }
+
+    write_out(PROMPT_START1);
+    exit_pcs(EXIT);
+}
+
+int wait(int argc, char ** argv){
+    return create_process(&wait_dummy, "wait", argc, argv);
 }
 
 //TODO aplicar pipes, donde usa argv deberia se el input

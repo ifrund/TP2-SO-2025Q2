@@ -200,35 +200,23 @@ void beep(uint32_t frequency, int duration);
 // SISTEMAS OPERATIVOS
 //================================================================================================================================
 
-//================================================================================================================================
-// Funciones de manejo de memoria
-//================================================================================================================================
+void int_to_str(int value, char *str);
 
 void create_mm();
-
 int alloc(int argc, char ** argv);
-
 int free(int argc, char ** argv);
-
 int status_count(int argc, char ** argv);
 
 int create_process(void * rip, const char *name, int argc, char *argv[]);
-
 int kill_process(int argc, char ** argv);
-
 void exit_pcs(int ret);
-
 int block_process(int argc, char ** argv);
-
 int unblock_process(int argc, char ** argv);
-
 int get_proc_list(int argc, char ** argv);
-
 int get_pid();
-
 int yield(int argc, char ** argv);
-
 int be_nice(int argc, char ** argv);
+int wait(int argc, char **argv);
 
 int test_mm(int argc, char **argv);
 int test_prio(int argc, char **argv);

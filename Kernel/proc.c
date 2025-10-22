@@ -306,11 +306,12 @@ void cleanup_process(uint64_t pid) {
 }
 
 int wait(uint64_t pid){
+    
     if (!is_pid_valid(pid))
         return -1;
     
     int currentPID = get_pid();
-    if (!is_pid_valid(currentPID))
+    if (!is_pid_valid(currentPID)) //TODO cuando entra a aca?? este if no es "che yo existo??" xd
         return -2;
 
     PCB* current = processTable[currentPID];

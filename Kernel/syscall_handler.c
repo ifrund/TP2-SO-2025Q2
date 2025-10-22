@@ -103,6 +103,10 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     sys_get_pid();
     break;
 
+  case (0X46):
+    sys_wait(rdi);
+    break;
+
   }
 }
 
@@ -233,4 +237,8 @@ ProcessInfo* sys_get_proc_list(){
 
 int sys_get_pid(){
   return get_pid();
+}
+
+int sys_wait(int pid){
+  return wait(pid);
 }
