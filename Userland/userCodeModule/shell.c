@@ -14,7 +14,7 @@
 // Esto es un "string" manual para poder imprimir el caracter 128 de nuestro font de kernel usando lsa funciones estandar
 #define ERROR_PROMPT "Unknown command: "
 char PROMPT_START[] = {127, 0};
-
+int kill_from_shell = 0;
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
@@ -131,7 +131,7 @@ static void remove_extra_spaces(char *str);
 
 void process_command(char* buffer){
     char *argv[MAX_ARGS];
-    int foreground = 1, argc=0, wait_pid=-1;
+    int foreground = 1, argc=0, wait_pid=-1, not_command = 0;
 
     remove_extra_spaces(buffer);
    
@@ -158,20 +158,24 @@ void process_command(char* buffer){
             switch (i) {
                 case 0:
                     exit_shell();
+                    not_command = 1;
                     break;
                 case 1:
                     clearScreen(); 
                     cursor_y = 0;
                     cursor_x = 0;
                     limit_index = VERT_SIZE/font_size - 1;
+                    not_command = 1;
                     break;
                 case 2:
                     write_out("Vamos a esperar 4 segundos... ");
                     sleep(4, 0);
                     write_out("Listo!\n");
+                    not_command = 1;
                     break;
                 case 3:
                     write_out("El comando sleep efectuara una espera de 4 segundos para demostrar el funcionamiento de la syscall. Los comandos milisleep y nanosleep haran algo equivalente pero con sus respectivas unidades\n");
+                    not_command = 1;
                     break;
                 case 4:
                     write_out("Los comandos existentes son:\n");
@@ -179,6 +183,7 @@ void process_command(char* buffer){
                         write_out(help[i]);
                         write_out("\n");
                     }
+                    not_command = 1;
                     break;
                 case 5:
                     if(getRegs(regs)==0){
@@ -195,6 +200,7 @@ void process_command(char* buffer){
                             write_out("\n");
                         }
                     }
+                    not_command = 1;
                     break;
          
                 case 6:
@@ -209,6 +215,7 @@ void process_command(char* buffer){
                     int b = 0;
                     if (a/b ==1)
                         write_out("You really shouldnt be here chief... medio que rompiste la matematica\n");
+                    not_command = 1;
                     break;
 
                 case 7:
@@ -219,7 +226,8 @@ void process_command(char* buffer){
                     sleep(1, 0);
                     write_out("1...\n");
                     sleep(1, 0);
-                    _opError();    
+                    _opError();
+                    not_command = 1;    
                     break;
 
                 case 8: 
@@ -251,6 +259,7 @@ void process_command(char* buffer){
                     break;
                 
                 case 14:
+                    kill_from_shell = 1; 
                     wait_pid = kill_process(argc,argv);
                     break;
 
@@ -302,9 +311,9 @@ void process_command(char* buffer){
                     break;
             }  
 
-            if(foreground){
-                write_out("Jeje fg no esta desarrollado\n");
-                /*
+            if(foreground && !not_command){
+                //write_out("Jeje fg no esta desarrollado\n");
+                
                 char pid_str[16];
                 int_to_str(wait_pid, pid_str);
                 char *argv[1];
@@ -317,7 +326,7 @@ void process_command(char* buffer){
                 }
 
                 wait(argc, argv);
-                */
+                
             } 
 
             return;
