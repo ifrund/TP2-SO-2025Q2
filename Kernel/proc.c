@@ -129,12 +129,23 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     return pcb->PID;
 }
 
-int block_process(uint64_t pid){
+int get_process_index_by_pid(int pid) {
+    for (int i = 0; i < process_count; i++) {
+        if (processTable[i] != NULL && processTable[i]->PID == pid) {
+            return i;
+        }
+    }
+    return -1; // no encontrado
+}
+
+int block_process(int pid){
     if(!is_pid_valid(pid))
         return -1;
 
-    if(processTable[pid]->state == READY || processTable[pid]->state == RUNNING)
-        processTable[pid]->state = BLOCKED;
+    int index = get_process_index_by_pid(pid);
+
+    if(processTable[index]->state == READY || processTable[index]->state == RUNNING)
+        processTable[index]->state = BLOCKED;
     else{
         return -2;
     }
@@ -145,10 +156,13 @@ int block_process(uint64_t pid){
 int unblock_process(uint64_t pid){
     if(!is_pid_valid(pid))
         return -1;
-    if(processTable[pid]->state != BLOCKED )
+    
+    int index = get_process_index_by_pid(pid);
+
+    if(processTable[index]->state != BLOCKED )
         return -2;
 
-    processTable[pid]->state = READY;
+    processTable[index]->state = READY;
     return 0;
 }
 
@@ -157,12 +171,15 @@ int kill_process(uint64_t pid){
         return -1;
 
     PCB* proc = processTable[pid];    
+    int index = get_process_index_by_pid(pid);
 
-    processTable[pid]->state = ZOMBIE;
+    processTable[index]->state = ZOMBIE;
 
     uint64_t parentPID = proc->ParentPID;
-    if (parentPID < MAX_PCS && processTable[parentPID] != NULL) {
-        PCB* parent = processTable[parentPID];
+    int index_parent = get_process_index_by_pid(parentPID);
+
+    if (index_parent < MAX_PCS && processTable[index_parent] != NULL) {
+        PCB* parent = processTable[index_parent];
 
         //me elimino del padre
         for (int i = 0; i < MAX_PCS; i++) {

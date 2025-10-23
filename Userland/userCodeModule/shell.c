@@ -133,11 +133,6 @@ void process_command(char* buffer){
     char *argv[MAX_ARGS];
     int foreground = 1, argc=0, wait_pid=-1;
 
-    if (buffer[0] == '\0') {
-        write_out(PROMPT_START);
-        return;
-    }
-
     remove_extra_spaces(buffer);
    
     for (int i = 0; buffer[i] != '\0'; i++) {

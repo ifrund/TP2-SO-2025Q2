@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "test_util.h"
 
+char PROMPT_START3[] = {127, 0};
+
 enum State { RUNNING,
              BLOCKED,
              KILLED };
@@ -58,6 +60,9 @@ void test_processes_dummy(int argc, char **argv) {
     exit_pcs(ERROR);
   }
 
+  write_out("max_processes es ");
+  printDec(max_processes);
+  write_out("\n");
   p_rq p_rqs[max_processes];
 
   while (1) {
@@ -88,6 +93,9 @@ void test_processes_dummy(int argc, char **argv) {
                 write_out("test_processes: ERROR killing process\n");
                 exit_pcs(ERROR);
               }
+              write_out("Matamos a ");
+              printDec(p_rqs[i].pid);
+              write_out("\n");
               p_rqs[i].state = KILLED;
               alive--;
             }
@@ -97,13 +105,14 @@ void test_processes_dummy(int argc, char **argv) {
             if (p_rqs[i].state == RUNNING) {
               int ret = _block_process(p_rqs[i].pid);
               if (ret == -1) {
-                write_out("test_processes: ERROR blocking process, pid no existe\n");
+                write_out("test_processes: ERROR blocking process, pid no existe ");
+                printDec(p_rqs[i].pid);
+                write_out(". \n");
                 exit_pcs(ERROR);
               }
-              if (ret == -1) {
-                write_out("test_processes: ERROR blocking process, ya esta bloqueado\n");
-                exit_pcs(ERROR);
-              }
+              write_out("Bloqueamos a ");
+              printDec(p_rqs[i].pid);
+              write_out("\n");
               p_rqs[i].state = BLOCKED;
             }
             break;
@@ -117,51 +126,48 @@ void test_processes_dummy(int argc, char **argv) {
             write_out("test_processes: ERROR unblocking process\n");
             exit_pcs(ERROR);
           }
+          write_out("Desbloqueamos a ");
+          printDec(p_rqs[i].pid);
+          write_out("\n");
           p_rqs[i].state = RUNNING;
         }
     }
 
-    char procNamesStorage[MAX_PCS][PROCESS_NAME_MAX_LENGTH] = {0};
-    char statusStorage[MAX_PCS][PROCESS_NAME_MAX_LENGTH] = {0};
-    char *procNames[MAX_PCS];
-    char *status[MAX_PCS];
+    ProcessInfo* list = _get_proc_list();
+    write_out("\n=== Lista de procesos ===\n");
+    write_out("PID\tNombre\tEstado\tPPID\tRSP\tPrio\tChilds\tFD\n");
+    write_out("-------------------------------------------------------------\n");
+
+    //iterar sobre la lista
     for (int i = 0; i < MAX_PCS; i++) {
-        procNames[i] = procNamesStorage[i];
-        status[i] = statusStorage[i];
+        ProcessInfo* p = &list[i];
+        if (p->pid == -1)  // Slot vacío
+            continue;
+
+        printDec(p->pid);
+        write_out("\t");
+        write_out(p->name);
+        write_out("\t");
+        write_out(p->state);
+        write_out("\t");
+        if (p->parentPid == (uint64_t)-1) write_out("-1");
+        else printDec(p->parentPid);
+        write_out("\t0x");
+        printHex((uint64_t)p->rsp); 
+        write_out("\t");
+        write_out(p->my_prio);
+        write_out("\t");
+        printDec(p->childrenAmount);
+        write_out("\t");
+        printDec(p->fileDescriptorCount);
+        write_out("\n");
     }
 
-    uint64_t pids[MAX_PCS] = {0};
-    uint64_t parentPids[MAX_PCS] = {0};
-    uint64_t rsps[MAX_PCS] = {0};
+    write_out("-------------------------------------------------------------\n");
 
-    _get_proc_list(procNames, pids, parentPids, status, rsps);
-
-    char buffer[256];
-
-    for (int i = 0; i < MAX_PCS && procNames[i][0] != '\0'; i++) {
-
-      // clear buffer
-      buffer[0] = '\0';
-
-      // convert numbers to strings manually
-      char pid_str[20], ppid_str[20], rsp_str[20];
-      uint_to_str(pids[i], pid_str);
-      uint_to_str(parentPids[i], ppid_str);
-      uint_to_str(rsps[i], rsp_str);
-
-      strcpy(buffer, "PID:[");
-      strcat(buffer, pid_str);
-      strcat(buffer, "] | Name:");
-      strcat(buffer, procNames[i]);
-      strcat(buffer, " | ParentPID=");
-      strcat(buffer, ppid_str);
-      strcat(buffer, " | RSP=");
-      strcat(buffer, rsp_str);
-      strcat(buffer, " | Status:");
-      strcat(buffer, status[i]);
-      strcat(buffer, "\n");
-      write_out(buffer);
-}
+    _free(list);
+    write_out(PROMPT_START3);
+    exit_pcs(EXIT);
 
   }
 }
