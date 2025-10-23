@@ -293,7 +293,7 @@ int get_pid(){
     int pid = -1;
     for (int i = 0; i <MAX_PCS; i++) {
         if (processTable[i] != NULL && processTable[i]->state == RUNNING) {
-            pid = i;
+            pid = processTable[i]->PID;
             break;
         }
     }

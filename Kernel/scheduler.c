@@ -52,9 +52,10 @@ void *scheduling(void *rsp) {
                     curr->time_used=0;
                     curr->state = READY;
                 }
-
-                //seguimos en el mismo porq no consumio su tiempo
-                return rsp;
+                else{
+                    //seguimos en el mismo porq no consumio su tiempo ni esta en yield
+                    return rsp;
+                }
             }
             
         }
