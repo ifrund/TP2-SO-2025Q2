@@ -149,7 +149,7 @@ void process_command(char* buffer){
     argv[argc] = NULL;
 
     //si & es el último argumento, y hay al menos un argumento (comando) adelante significa q queremos activar el flag
-    if (argc > 1 && argv[argc - 1] != NULL && !strcmp(argv[argc - 1], "&")) {
+    if (argc >= 1 && argv[argc - 1] != NULL && !strcmp(argv[argc - 1], "&")) {
         foreground = 0;
         argv[argc - 1] = NULL;
     }
