@@ -15,14 +15,12 @@
 
 int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, MEDIUM_2, MEDIUM_3, HIGHEST};
 
-static char PROMPT_START2[] = {127, 0};
-
 void test_prio_dummy(int argc, char **argv) {
   write_out("ESTE ES EL VIEJO \n");
 
   if (argc != 0){
     write_out("argc incorrecto\n");
-    write_out(PROMPT_START2);
+    write_out(PROMPT_START);
     exit_pcs(ERROR);
   }
 
@@ -145,7 +143,7 @@ void test_prio_dummy(int argc, char **argv) {
   for (i = 0; i < TOTAL_PROCESSES; i++)
     _kill_process(pids[i]);
 
-  write_out(PROMPT_START2);
+  write_out(PROMPT_START);
   exit_pcs(EXIT);
 }
 

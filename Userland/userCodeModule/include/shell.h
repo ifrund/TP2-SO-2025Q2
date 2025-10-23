@@ -1,3 +1,6 @@
+
+extern char PROMPT_START[];
+
 int shell();
 void process_key(char key);
 void process_command(char* buffer);

@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include "test_util.h"
 
-char PROMPT_START3[] = {127, 0};
-
 enum State { RUNNING,
              BLOCKED,
              KILLED };

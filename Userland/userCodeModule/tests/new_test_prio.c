@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "test_util.h"
 
-char PROMPT_START2[] = {127, 0};
 #define LOWEST 0  
 #define MEDIUM 1  
 #define MEDIUM_2 2
@@ -32,7 +31,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
 
     if (argc != 1){
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 argumento.\n");
-        write_out(PROMPT_START2);
+        write_out(PROMPT_START);
         exit_pcs(ERROR);
     }
 
@@ -42,7 +41,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
         write_out(argv[0]);
         write_out("\n");
         write_out("error en el satoi\n");
-        write_out(PROMPT_START2);
+        write_out(PROMPT_START);
         exit_pcs(ERROR);
     }
 
@@ -96,7 +95,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
 
 
     write_out("Termino el test prio ;) \n");
-    write_out(PROMPT_START2);
+    write_out(PROMPT_START);
     exit_pcs(EXIT);
     return 0;
 }
