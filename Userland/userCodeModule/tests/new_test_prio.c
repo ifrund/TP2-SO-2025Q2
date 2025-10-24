@@ -21,6 +21,7 @@ void zero_to_max() {
   write_out("PROCESS ");
   printDec(_get_pid());
   write_out(" DONE!\n");
+  exit_pcs(EXIT);
 }
 
 uint64_t test_prio_new(uint64_t argc, char *argv[]) {
@@ -47,30 +48,35 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
 
     write_out("SAME PRIORITY...\n");
 
-    for (i = 0; i < TOTAL_PROCESSES; i++)
+    for (i = 0; i < TOTAL_PROCESSES; i++){
         pids[i] = _create_process(&zero_to_max, "zero_to_max", 0, ztm_argv);
+        write_out("CREATED: ");
+        printDec(pids[i]);
+        write_out("  ");
+    }
+    write_out("\n");
 
     // Expect to see them finish at the same time
-
+    int my_pid = _get_pid();
     for (i = 0; i < TOTAL_PROCESSES; i++)
-        //_wait(pids[i]);
+        _wait(pids[i], my_pid);
 
     write_out("SAME PRIORITY, THEN CHANGE IT...\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++) {
         pids[i] = _create_process(&zero_to_max, "zero_to_max", 0, ztm_argv);
         _be_nice(pids[i], prio[i]);
-        write_out("  PROCESS ");
+        write_out("PROCESS ");
         printDec(pids[i]);
         write_out(" NEW PRIORITY:");
         printDec(prio[i]);
-        write_out("\n");
+        write_out("  ");
     }
-
+    write_out("\n");
     // Expect the priorities to take effect
 
     for (i = 0; i < TOTAL_PROCESSES; i++)
-        //_wait(pids[i]);
+        _wait(pids[i], my_pid);
 
     write_out("SAME PRIORITY, THEN CHANGE IT WHILE BLOCKED...\n");
 
@@ -78,12 +84,14 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
         pids[i] = _create_process(&zero_to_max, "zero_to_max", 0, ztm_argv);
         _block_process(pids[i]);
         _be_nice(pids[i], prio[i]);
-        write_out("  PROCESS ");
+        write_out("PROCESS ");
         printDec(pids[i]);
         write_out(" NEW PRIORITY:");
         printDec(prio[i]);
-        write_out("\n");
+        write_out("  ");
     }
+    write_out("\n");
+
 
     for (i = 0; i < TOTAL_PROCESSES; i++)
         _unblock_process(pids[i]);
@@ -91,7 +99,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
     // Expect the priorities to take effect
 
     for (i = 0; i < TOTAL_PROCESSES; i++)
-        //_wait(pids[i]);
+        _wait(pids[i], my_pid);
 
 
     write_out("Termino el test prio ;) \n");
