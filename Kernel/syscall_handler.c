@@ -103,8 +103,8 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     sys_get_pid();
     break;
 
-  case (0x46):
-    sys_wait(rdi);
+  case (0xA6):
+    sys_wait(rdi, rsi);
     break;
 
   }
@@ -239,6 +239,6 @@ int sys_get_pid(){
   return get_pid();
 }
 
-int sys_wait(int pid){
-  return wait(pid);
+int sys_wait(uint64_t target_pid, uint64_t my_pid){
+  return wait(target_pid, my_pid);
 }

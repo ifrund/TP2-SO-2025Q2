@@ -14,7 +14,7 @@
 // Esto es un "string" manual para poder imprimir el caracter 128 de nuestro font de kernel usando lsa funciones estandar
 #define ERROR_PROMPT "Unknown command: "
 char PROMPT_START[] = {127, 0};
-int kill_from_shell = 0;
+int kill_from_shell = 0, foreground = 1;
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
@@ -84,8 +84,10 @@ void process_key(char key){
         process_command(command_buffer);
 
         command_cursor = 0;
-        
-        write_out(PROMPT_START);
+        if(foreground){
+            write_out(PROMPT_START);
+        }
+
         return;
     }
 
@@ -131,7 +133,7 @@ static void remove_extra_spaces(char *str);
 
 void process_command(char* buffer){
     char *argv[MAX_ARGS];
-    int foreground = 1, argc=0, wait_pid=-1, not_command = 0;
+    int argc=0, wait_pid=-1, not_command = 0;
 
     remove_extra_spaces(buffer);
    
@@ -149,7 +151,7 @@ void process_command(char* buffer){
         argv[argc - 1] = NULL;
     }
 
-    if(!foreground){ //este argc es el q usan las func, asiq le descontamos uno que es el & q solo nos importa a nosotros
+    if(foreground == 0){ //este argc es el q usan las func, asiq le descontamos uno que es el & q solo nos importa a nosotros
         argc--;
     }
 
