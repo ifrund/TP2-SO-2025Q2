@@ -10,7 +10,7 @@ int64_t satoi(char *str);
 void bussy_wait(uint64_t n);
 void endless_loop();
 void endless_loop_print(uint64_t wait);
-
+void uint_to_str(uint64_t num, char *out);
 void test_mm_dummy(int argc, char **argv);
 //void test_prio_dummy(int argc, char **argv);
 void test_processes_dummy(int argc, char **argv);

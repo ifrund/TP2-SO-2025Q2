@@ -76,3 +76,23 @@ void endless_loop_print(uint64_t wait) {
    // bussy_wait(wait1);
   }
 }
+
+void uint_to_str(uint64_t num, char *out) {
+    char temp[20];
+    int i = 0;
+
+    if (num == 0) {
+        out[0] = '0';
+        out[1] = '\0';
+        return;
+    }
+
+    while (num > 0) {
+        temp[i++] = '0' + (num % 10);
+        num /= 10;
+    }
+
+    for (int j = 0; j < i; j++)
+        out[j] = temp[i - j - 1];
+    out[i] = '\0';
+}
