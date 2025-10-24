@@ -84,7 +84,7 @@ void process_key(char key){
         process_command(command_buffer);
 
         command_cursor = 0;
-        if(foreground){
+        if(foreground == 1){ //TODO esta funcionando mal, si lo corregimos sacar el ==
             write_out(PROMPT_START);
         }
 
@@ -151,7 +151,7 @@ void process_command(char* buffer){
         argv[argc - 1] = NULL;
     }
 
-    if(foreground == 0){ //este argc es el q usan las func, asiq le descontamos uno que es el & q solo nos importa a nosotros
+    if(foreground == 0){ //TODO esta funcionando mal, si lo corregimos sacar el ==
         argc--;
     }
 
