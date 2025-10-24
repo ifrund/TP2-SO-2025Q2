@@ -97,6 +97,6 @@ int kill_process(uint64_t pid);
 ProcessInfo* get_proc_list();
 int get_pid();
 int is_pid_valid(int pid);
-int wait(uint64_t pid);
+int wait(uint64_t target_pid, uint64_t my_pid);
 
 #endif

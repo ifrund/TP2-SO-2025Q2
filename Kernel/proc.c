@@ -124,7 +124,11 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
         
     memset(pcb->fileDescriptors, 0, sizeof(pcb->fileDescriptors));
 
-    //TODO aca un yield ?? sino el padre va a consumir sus ticks en vez de dejar ser al hijo
+    //TODO este yield debe ser para todos??
+    if(strcmp(name, "wait") == 0){
+        yield(); //necesitamos q el pcs q crea un wait deje sus quehaceres y se frene
+    }
+
     process_count++;
     return pcb->PID;
 }
@@ -149,7 +153,7 @@ int block_process(int pid){
     else{
         return -2;
     }
-    
+
     return 0;
 }
 
@@ -287,7 +291,6 @@ ProcessInfo* get_proc_list() {
     return list;
 }
 
-
 int get_pid(){
     
     int pid = -1;
@@ -305,8 +308,6 @@ int is_pid_valid(int pid){
     return (pid > MAX_PCS || processTable[pid] == NULL) ? 0 : 1;
 }
 
-
-
 void cleanup_process(uint64_t pid) {
     if (!is_pid_valid(pid))
         return;
@@ -322,36 +323,40 @@ void cleanup_process(uint64_t pid) {
     processTable[pid] = NULL;
 }
 
-int wait(uint64_t pid){
+int wait(uint64_t target_pid, uint64_t my_pid){
     
-    if (!is_pid_valid(pid))
+    if (!is_pid_valid(target_pid))
         return -1;
     
-    int currentPID = get_pid();
-    if (!is_pid_valid(currentPID)) //TODO cuando entra a aca?? este if no es "che yo existo??" xd
+    if (!is_pid_valid(my_pid)) //TODO cuando entra a aca?? este if no es "che yo existo??" xd
         return -2;
 
-    PCB* current = processTable[currentPID];
-    PCB* target = processTable[pid];
+    int my_index = get_process_index_by_pid(my_pid);
+    PCB* current = processTable[my_index];
+    int t_index = get_process_index_by_pid(target_pid);
+    PCB* target = processTable[t_index];
+    int t_pid = target->PID;
 
     //si el target termino primero, lo terminamos
     if (target->state == ZOMBIE) {
-        cleanup_process(pid);
+        cleanup_process(t_pid);
         return 0;
     }
 
     //Si el proceso que deberia esperar termino primero, hacemos el yield
     current->isWaitingForExtern = true;
-    current->externWaitingPID = pid;
-    block_process(currentPID);
-
+    current->externWaitingPID = t_pid;
+    block_process(processTable[my_index]->PID);
+    
     // #################################################################################
     //  ESPERA ACTIVA - BORRAR SI QUERES BORRAR A BARRACAS CENTRAL
     // ##################################################################################
-    while (is_pid_valid(pid) && processTable[pid]->state != ZOMBIE) {
+    while (is_pid_valid(t_pid) && processTable[t_pid]->state != ZOMBIE) {
+        yield();
         //TODO usar sems
     }
     // #################################################################################
 
+    unblock_process(processTable[my_index]->PID);
     return 0;
 }
