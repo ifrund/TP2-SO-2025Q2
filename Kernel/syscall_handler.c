@@ -103,7 +103,7 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     sys_get_pid();
     break;
 
-  case (0X46):
+  case (0x46):
     sys_wait(rdi);
     break;
 
