@@ -64,7 +64,7 @@ typedef struct {
     //Informacion de los hijos:
     int childrenAmount;
     uint64_t childProc[MAX_PCS];
-
+    int blocksAmount;
 } PCB;
 
 extern PCB* processTable[MAX_PCS]; 

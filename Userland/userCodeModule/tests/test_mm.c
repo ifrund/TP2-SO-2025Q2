@@ -16,7 +16,6 @@ void * memset2(void * destiation, int32_t c, uint64_t length) {
 
 	while(length--)
 		dst[length] = chr;
-
   //write_out("dsp del copiado (memset2)\n");
 
 	return destiation;
@@ -41,24 +40,28 @@ void test_mm_dummy(int argc, char **argv) {
     write_out("error en el satoi\n");
     exit_pcs(ERROR);
   }
+  int c = 0;
 
   while (1) {
     rq = 0;
     total = 0;
-
     // Request as many blocks as we can
     while (rq < MAX_BLOCKS && total < max_memory) {
       mm_rqs[rq].size = GetUniform(max_memory - total - 1) + 1;
       //write_out("Voy a hacers alloc--");
       mm_rqs[rq].address = _alloc(mm_rqs[rq].size);
-      
+      c++;      
 
       if (mm_rqs[rq].address) {
         total += mm_rqs[rq].size;
         rq++;
-        write_out("0");
+        printDec(c);
+        write_out("-");
       }
       else{
+        write_out("error en el alloc\n");
+        exit_pcs(ERROR);
+        return;
         write_out("1");
       }
     }

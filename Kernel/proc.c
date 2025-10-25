@@ -121,6 +121,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
             }
         }
     }
+    pcb->blocksAmount = 0;
         
     memset(pcb->fileDescriptors, 0, sizeof(pcb->fileDescriptors));
 
@@ -147,9 +148,16 @@ int block_process(int pid){
         return -1;
 
     int index = get_process_index_by_pid(pid);
-
-    if(processTable[index]->state == READY || processTable[index]->state == RUNNING)
+    ProcessState state = processTable[index]->state;
+    if(state == READY || state == RUNNING){
         processTable[index]->state = BLOCKED;
+        processTable[index]->blocksAmount++;
+        return 0;
+    }
+    if(state == BLOCKED){
+        processTable[index]->blocksAmount++;
+        return -2;
+    }
     else{
         return -2;
     }
@@ -166,7 +174,14 @@ int unblock_process(uint64_t pid){
     if(processTable[index]->state != BLOCKED )
         return -2;
 
+    if(processTable[index]->blocksAmount > 1){ //si hubo varios blocks, los descontamos
+        processTable[index]->blocksAmount--;
+        return 0;
+    }
+    //si estamos aca, significa q solo hubo un block, asiq lo descontamos y liberamos el pcs
+    processTable[index]->blocksAmount--;
     processTable[index]->state = READY;
+
     return 0;
 }
 
@@ -351,7 +366,7 @@ int wait(uint64_t target_pid, uint64_t my_pid){
     // #################################################################################
     //  ESPERA ACTIVA - BORRAR SI QUERES BORRAR A BARRACAS CENTRAL
     // ##################################################################################
-    while (is_pid_valid(t_pid) && processTable[t_pid]->state != ZOMBIE) {
+    while (is_pid_valid(t_pid) && processTable[t_index]->state != ZOMBIE) {
         yield();
         //TODO usar sems
     }
