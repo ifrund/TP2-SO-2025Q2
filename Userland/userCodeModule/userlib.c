@@ -144,20 +144,20 @@ int char_to_int(const char* str) {
 
     if (str == NULL || *str == '\0') {
         write_out("Parametro invalido: la cadena esta vacia o es nula.\n");
-        //write_out(PROMPT_START)/;
+        
         exit_pcs(ERROR);
     }
 
     while (*str != '\0') {
         if (!is_digit(*str)) {
             write_out("Parametro invalido: se esperaba un numero entero positivo.\n");
-            //write_out(PROMPT_START)/;
+            
             exit_pcs(ERROR);
         }
         uint32_t digit = *str - '0';
         if (result > (UINT32_MAX - digit) / 10) {
             write_out("Parametro invalido: el numero es demasiado grande.\n");
-            //write_out(PROMPT_START)/;
+            
             exit_pcs(ERROR);
         }
         result = result * 10 + digit;
@@ -256,6 +256,16 @@ void beep(uint32_t frequency, int duration){
 SISTEMAS OPERATIVOS
 ================================================================================================================================*/
 
+void argc_1(int argc){
+    if (argc != 1){
+        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
+        if(!foreground){
+           write_out(PROMPT_START);
+        }
+        exit_pcs(ERROR);    
+    }
+    return;
+}
 
 // Crear la memoria
 void create_mm(){
@@ -265,16 +275,12 @@ void create_mm(){
 // Ocupa espacio en la memoria
 void alloc_dummy(int argc, char ** argv){
 
-    if(argc != 1){
-        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
-        //write_out(PROMPT_START)/;
-        exit_pcs(ERROR);     
-    }
+    argc_1(argc);
 
     int size = char_to_int(argv[0]);
 
     _alloc(size);
-    //write_out(PROMPT_START)/;
+    
     exit_pcs(EXIT);
 }
 
@@ -285,14 +291,10 @@ int alloc(int argc, char ** argv){
 // Libera espacio de la memoria
 void free_dummy(int argc, char ** argv){
 
-    if(argc != 1){
-        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
-        //write_out(PROMPT_START)/;
-        exit_pcs(ERROR);     
-    }
+    argc_1(argc);
 
     _free((void*) argv[0]);
-    //write_out(PROMPT_START)/;
+    
     exit_pcs(EXIT);
 }
 
@@ -339,13 +341,7 @@ int create_process(void * rip , const char *name, int argc, char *argv[]){
 
 void kill_dummy(int argc, char ** argv){
 
-    if (argc != 1){
-        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
-        if(!foreground){
-           write_out(PROMPT_START);
-        }
-        exit_pcs(ERROR);    
-    }
+    argc_1(argc);
 
     int toKill = char_to_int(argv[0]);
     if(toKill == SHELL_PID){
@@ -437,13 +433,7 @@ void exit_pcs(int ret){
 
 void block_process_dummy(int argc, char ** argv){
 
-    if (argc != 1){
-        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
-        exit_pcs(ERROR);    
-    }
+    argc_1(argc);
 
     int pid = char_to_int(argv[0]);
     if(pid == 0){
@@ -486,14 +476,8 @@ int block_process(int argc, char ** argv){
 }
 
 void unblock_process_dummy(int argc, char ** argv){
-   if (argc != 1){
-        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
-        exit_pcs(ERROR);    
-    }
-
+   
+    argc_1(argc);
     int pid = char_to_int(argv[0]);
 
     if(pid == IDLE_PID){
@@ -526,7 +510,7 @@ int unblock_process(int argc, char ** argv){
     return create_process(&unblock_process_dummy, "unblock", argc, argv);
 }
 
-void get_proc_list_dummy(){
+void get_proc_list_dummy(int argc, char ** argv){
 
     ProcessInfo* list = _get_proc_list();
     if (list == NULL) {
@@ -588,7 +572,7 @@ int get_pid(){
 
 void yield_dummy(int argc, char ** argv){
     _yield();
-    //write_out(PROMPT_START)/;
+    
     exit_pcs(EXIT);
 }
 
@@ -662,15 +646,8 @@ int test_pcs(int argc, char ** argv){
 
 void loop_dummy(int argc, char ** argv){
   
+    argc_1(argc);
     int pid = get_pid(); //agarro mi priopio pid
-    if(argc!=1){
-        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
-        exit_pcs(ERROR);
-    }
-    
     int cloop=0;
     int tiempo = char_to_int(argv[0]);
     while (1){
@@ -691,9 +668,9 @@ int loop(int argc, char ** argv){
 
 void wait_dummy(int argc, char ** argv){
     
-    if(argc!=2){
+    if(argc!=2){//especial
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
-        //write_out(PROMPT_START)/;
+        
         exit_pcs(ERROR);
     }
 
@@ -703,16 +680,16 @@ void wait_dummy(int argc, char ** argv){
 
     if(ret == ERROR){
         write_out("Este pid no es valido\n");
-        //write_out(PROMPT_START)/;
+        
         exit_pcs(ERROR);
     }
     if(ret == SECOND_ERROR){
         write_out("Como llegaste a aca?? se rompio todo\n");
-        //write_out(PROMPT_START)/;
+        
         exit_pcs(ERROR);
     }
 
-    //write_out(PROMPT_START)/;
+    
     exit_pcs(EXIT);
 }
 
