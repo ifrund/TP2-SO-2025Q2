@@ -134,6 +134,7 @@ static void remove_extra_spaces(char *str);
 void process_command(char* buffer){
     char *argv[MAX_ARGS];
     int argc=0, wait_pid=-1, not_command = 0;
+    foreground=1;
 
     remove_extra_spaces(buffer);
    

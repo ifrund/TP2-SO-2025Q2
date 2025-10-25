@@ -256,12 +256,16 @@ void beep(uint32_t frequency, int duration){
 SISTEMAS OPERATIVOS
 ================================================================================================================================*/
 
+void estrellita_bg(){
+    if(!foreground){
+           write_out(PROMPT_START);
+    }
+}
+
 void argc_1(int argc){
     if (argc != 1){
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
-        if(!foreground){
-           write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(ERROR);    
     }
     return;
@@ -307,9 +311,7 @@ void status_count_dummy(int argc, char ** argv){
 
     if (argc != 0) {
         write_out("No tenias que mandar argumentos para este comando.\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(ERROR);
     }
 
@@ -325,9 +327,7 @@ void status_count_dummy(int argc, char ** argv){
     printDec(status[2]);
     write_out("\n");
     
-    if(!foreground){
-        write_out(PROMPT_START);
-    }
+    estrellita_bg();
     exit_pcs(EXIT);
 }
 
@@ -346,23 +346,17 @@ void kill_dummy(int argc, char ** argv){
     int toKill = char_to_int(argv[0]);
     if(toKill == SHELL_PID){
         write_out("Para matar la shell tenes que usar Exit. \n");
-        if(!foreground){
-           write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(EXIT);
     }
     if(toKill == IDLE_PID){
         write_out("No te podemos permitir matar el idle ¯\\_(ツ)_/¯\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(EXIT);
     }
     if(toKill == _get_pid()){
         write_out("Kill al kill ?? ... okay\n");
-        if(!foreground){
-           write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(EXIT);
     }
     if(kill_from_shell == 1){
@@ -377,15 +371,11 @@ void kill_dummy(int argc, char ** argv){
         write_out("... O no\nEl pid ");
         printDec(toKill);
         write_out(" no es valido, asique no podemos matar a ningun proceso de ese pid... bobo.\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(EXIT);
     }
 
-    if(!foreground){
-        write_out(PROMPT_START);
-    }
+    estrellita_bg();
     exit_pcs(EXIT);
 }
 
@@ -424,9 +414,7 @@ void exit_pcs(int ret){
             printDec(pid);
         }
         write_out(" no es valido... big problem, no deberias llegar a aca nunca\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(EXIT);
     }
 }
@@ -442,9 +430,7 @@ void block_process_dummy(int argc, char ** argv){
 
     if(pid == get_pid()){
         write_out("Que haces loco, nos vas a meter en problemas raja de aca.\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(ERROR); 
     }
 
@@ -452,22 +438,16 @@ void block_process_dummy(int argc, char ** argv){
 
     if(ret == ERROR){
         write_out("Este pid no es valido\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(ERROR);
     }
     if(ret == SECOND_ERROR){
         write_out("Este pid ya estaba bloqueado\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(ERROR); 
     }
 
-    if(!foreground){
-        write_out(PROMPT_START);
-    }
+    estrellita_bg();
     exit_pcs(EXIT);
 }
 
@@ -487,22 +467,16 @@ void unblock_process_dummy(int argc, char ** argv){
 
     if(ret == ERROR){ 
         write_out("Este pid no es valido\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(ERROR);
     }
     if(ret == SECOND_ERROR){ 
         write_out("Este proceso no esta bloqueado, asique no lo podemos desbloquear\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(ERROR);
     }
 
-    if(!foreground){
-        write_out(PROMPT_START);
-    }
+    estrellita_bg();
     exit_pcs(EXIT);
 }
 
@@ -515,9 +489,7 @@ void get_proc_list_dummy(int argc, char ** argv){
     ProcessInfo* list = _get_proc_list();
     if (list == NULL) {
         write_out("Error, no se pudo obtener la lista de procesos.\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(ERROR);
         return;
     }
@@ -555,9 +527,7 @@ void get_proc_list_dummy(int argc, char ** argv){
     write_out("-------------------------------------------------------------\n");
 
     _free(list);
-    if(!foreground){
-        write_out(PROMPT_START);
-    }
+    estrellita_bg();
     exit_pcs(EXIT);
 }
 
@@ -584,9 +554,7 @@ void be_nice_dummy(int argc, char ** argv){
 
     if (argc != 2){
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 2 argumentos.\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(ERROR);    
     }
 
@@ -597,29 +565,21 @@ void be_nice_dummy(int argc, char ** argv){
 
     if(ret == ERROR){ 
         write_out("Este pid no es valido\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(ERROR);
     }
     if(ret == SECOND_ERROR){
         write_out("Epa, intentaste cambiar la prioridad del idle, nonono\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(EXIT);
     }
     if(ret == -3){
         write_out("Mandaste una prioridad inexistente, porfavor acordate que las prioridades son de 0 a 4, siendo 0 la mayor\n");
-        if(!foreground){
-            write_out(PROMPT_START);
-        }
+        estrellita_bg();
         exit_pcs(ERROR);
     }
 
-    if(!foreground){
-        write_out(PROMPT_START);
-    }
+    estrellita_bg();
     exit_pcs(EXIT);
 }
 
