@@ -25,6 +25,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
             break;
         }
     }
+    //de esta manera el pid simepre es el indice en la tabla
 
     if (myPid == -1){
         return -1;
@@ -134,28 +135,18 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     return pcb->PID;
 }
 
-int get_process_index_by_pid(int pid) {
-    for (int i = 0; i < process_count; i++) {
-        if (processTable[i] != NULL && processTable[i]->PID == pid) {
-            return i;
-        }
-    }
-    return -1; // no encontrado
-}
-
 int block_process(int pid){
     if(!is_pid_valid(pid))
         return -1;
 
-    int index = get_process_index_by_pid(pid);
-    ProcessState state = processTable[index]->state;
+    ProcessState state = processTable[pid]->state;
     if(state == READY || state == RUNNING){
-        processTable[index]->state = BLOCKED;
-        processTable[index]->blocksAmount++;
+        processTable[pid]->state = BLOCKED;
+        processTable[pid]->blocksAmount++;
         return 0;
     }
     if(state == BLOCKED){
-        processTable[index]->blocksAmount++;
+        processTable[pid]->blocksAmount++;
         return -2;
     }
     else{
@@ -169,18 +160,16 @@ int unblock_process(uint64_t pid){
     if(!is_pid_valid(pid))
         return -1;
     
-    int index = get_process_index_by_pid(pid);
-
-    if(processTable[index]->state != BLOCKED )
+    if(processTable[pid]->state != BLOCKED )
         return -2;
 
-    if(processTable[index]->blocksAmount > 1){ //si hubo varios blocks, los descontamos
-        processTable[index]->blocksAmount--;
+    if(processTable[pid]->blocksAmount > 1){ //si hubo varios blocks, los descontamos
+        processTable[pid]->blocksAmount--;
         return 0;
     }
     //si estamos aca, significa q solo hubo un block, asiq lo descontamos y liberamos el pcs
-    processTable[index]->blocksAmount--;
-    processTable[index]->state = READY;
+    processTable[pid]->blocksAmount--;
+    processTable[pid]->state = READY;
 
     return 0;
 }
@@ -190,15 +179,12 @@ int kill_process(uint64_t pid){
         return -1;
 
     PCB* proc = processTable[pid];    
-    int index = get_process_index_by_pid(pid);
-
-    processTable[index]->state = ZOMBIE;
+    processTable[pid]->state = ZOMBIE;
 
     uint64_t parentPID = proc->ParentPID;
-    int index_parent = get_process_index_by_pid(parentPID);
 
-    if (index_parent < MAX_PCS && processTable[index_parent] != NULL) {
-        PCB* parent = processTable[index_parent];
+    if (parentPID < MAX_PCS && processTable[parentPID] != NULL) {
+        PCB* parent = processTable[parentPID];
 
         //me elimino del padre
         for (int i = 0; i < MAX_PCS; i++) {
@@ -346,32 +332,29 @@ int wait(uint64_t target_pid, uint64_t my_pid){
     if (!is_pid_valid(my_pid)) //TODO cuando entra a aca?? este if no es "che yo existo??" xd
         return -2;
 
-    int my_index = get_process_index_by_pid(my_pid);
-    PCB* current = processTable[my_index];
-    int t_index = get_process_index_by_pid(target_pid);
-    PCB* target = processTable[t_index];
-    int t_pid = target->PID;
+    PCB* current = processTable[my_pid];
+    PCB* target = processTable[target_pid]; //a quien tenemos q esperar
 
     //si el target termino primero, lo terminamos
     if (target->state == ZOMBIE) {
-        cleanup_process(t_pid);
+        cleanup_process(target_pid);
         return 0;
     }
 
     //Si el proceso que deberia esperar termino primero, hacemos el yield
     current->isWaitingForExtern = true;
-    current->externWaitingPID = t_pid;
-    block_process(processTable[my_index]->PID);
+    current->externWaitingPID = target_pid;
+    block_process(my_pid);
     
     // #################################################################################
     //  ESPERA ACTIVA - BORRAR SI QUERES BORRAR A BARRACAS CENTRAL
     // ##################################################################################
-    while (is_pid_valid(t_pid) && processTable[t_index]->state != ZOMBIE) {
+    while (is_pid_valid(target_pid) && processTable[target_pid]->state != ZOMBIE) {
         yield();
         //TODO usar sems
     }
     // #################################################################################
 
-    unblock_process(processTable[my_index]->PID);
+    unblock_process(my_pid);
     return 0;
 }
