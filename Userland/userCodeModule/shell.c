@@ -331,7 +331,6 @@ void process_command(char* buffer){
                 }
 
                 wait(argc, argv);
-                _yield();
             } 
 
             return;

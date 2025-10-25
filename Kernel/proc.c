@@ -128,6 +128,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
 
     //TODO este yield debe ser para todos??
     if(strcmp(name, "wait") == 0){
+        process_count++;
         yield(); //necesitamos q el pcs q crea un wait deje sus quehaceres y se frene
     }
 
