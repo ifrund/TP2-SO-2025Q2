@@ -17,6 +17,7 @@ void zero_to_max() {
   uint64_t value = 0;
 
   while (value++ != max_value); //si el while tarda menos q 5 ticks no sirve de nada este test xd
+  //con 15.000.000 tarda más de 5 ticks asegurado
 
   write_out("PROCESS ");
   printDec(_get_pid());

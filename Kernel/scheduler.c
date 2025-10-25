@@ -3,7 +3,7 @@
 #define IDLE_PID 1
 int process_count = 0;
 int current_index = -1;
-int yielding =0;
+static int yielding =0;
 
 
 int find_index_by_pid(int pid) {
@@ -50,7 +50,7 @@ void *scheduling(void *rsp) {
                     //aunque le queda tiempo, lo sacamos porq viene de un yield
                     yielding=0;
                     curr->time_used=0;
-                    curr->state = READY;
+                    curr->state = READY; //como estaba running y metio yield, lo dejamos ready
                 }
                 else{
                     //seguimos en el mismo porq no consumio su tiempo ni esta en yield

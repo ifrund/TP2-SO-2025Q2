@@ -143,10 +143,12 @@ int block_process(int pid){
     if(state == READY || state == RUNNING){
         processTable[pid]->state = BLOCKED;
         processTable[pid]->blocksAmount++;
+        yield();
         return 0;
     }
     if(state == BLOCKED){
         processTable[pid]->blocksAmount++;
+        yield();
         return -2;
     }
     else{
@@ -227,7 +229,7 @@ char *strncpy(char *dest, const char *src, unsigned int n) {
 }
 
 ProcessInfo* get_proc_list() {
-    ProcessInfo* list = alloc(sizeof(ProcessInfo) * MAX_PCS); //TODO y si en vez de MAX_PCS pondemos process_count
+    ProcessInfo* list = alloc(sizeof(ProcessInfo) * process_count);
     if (list == NULL)
         return NULL;
 
@@ -329,7 +331,7 @@ int wait(uint64_t target_pid, uint64_t my_pid){
     if (!is_pid_valid(target_pid))
         return -1;
     
-    if (!is_pid_valid(my_pid)) //TODO cuando entra a aca?? este if no es "che yo existo??" xd
+    if (!is_pid_valid(my_pid)) //TODO cuando entra a aca?? este if no es un "che yo existo??" xd
         return -2;
 
     PCB* current = processTable[my_pid];

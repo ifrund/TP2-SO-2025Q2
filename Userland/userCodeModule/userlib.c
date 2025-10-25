@@ -406,7 +406,7 @@ void exit_pcs(int ret){
         write_out(PROMPT_START);
         exit_pcs(EXIT);
     }
-    /* TODO estos write_out tienen q ir a la terminal, no a pantalla
+    /* 
     else if(ret == EXIT){
         write_out("Proceso de pid ");
         printDec(pid);

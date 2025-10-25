@@ -84,7 +84,7 @@ void process_key(char key){
         process_command(command_buffer);
 
         command_cursor = 0;
-        if(foreground == 1){ //TODO esta funcionando mal, si lo corregimos sacar el ==
+        if(foreground){
             write_out(PROMPT_START);
         }
 
@@ -151,8 +151,11 @@ void process_command(char* buffer){
         argv[argc - 1] = NULL;
     }
 
-    if(foreground == 0){ //TODO esta funcionando mal, si lo corregimos sacar el ==
+    if(!foreground){
         argc--;
+        write_out("argc: ");
+        printDec(argc);
+        write_out("\n");
     }
 
     for(int i = 0; i < COMMANDS; i++){
@@ -328,7 +331,7 @@ void process_command(char* buffer){
                 }
 
                 wait(argc, argv);
-                
+                _yield();
             } 
 
             return;
