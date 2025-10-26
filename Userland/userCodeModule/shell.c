@@ -50,7 +50,6 @@ int cantRegs = 18;
 uint64_t regs[18];
 char* regsNames[18] = {"rax:", "rbx:", "rcx:", "rdx:", "rsi:", "rdi:", "rbp:", "rsp:", "r8:", "r9:",
                        "r10:", "r11:", "r12:", "r13:", "r14:", "r15:", "rip:", "rflags:"};
-char* bye[MAX_ARGS];
 void exit_shell();
 
 int shell(){
@@ -106,8 +105,7 @@ void process_key(char key){
     if (key == '\x04') { //Ctrl+D
         write_out("Esto es ctrl+d, tdv no esta desarrollado.\n");
         if (command_cursor == 0) {
-            write_out("\nExit shell\n");
-            exit_shell();
+            
         } else {
             
             //TODO
@@ -428,8 +426,6 @@ static void remove_extra_spaces(char *str) {
 
 void exit_shell(){
     write_out("Nos vemos, esperamos que la hayas pasado bien! \n");
-    bye[0]= "0";
-    bye[1]= NULL;
     exit_pcs(EXIT);
 }
 

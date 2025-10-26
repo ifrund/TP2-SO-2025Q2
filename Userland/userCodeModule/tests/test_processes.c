@@ -147,7 +147,7 @@ void test_processes_dummy(int argc, char **argv) {
         write_out("\t");
         if (p->parentPid == (uint64_t)-1) write_out("-1");
         else printDec(p->parentPid);
-        write_out("\t");
+        write_out("\n");
     }
 
     write_out("-------------------------------------------------------------\n");

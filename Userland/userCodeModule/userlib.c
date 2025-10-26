@@ -1,7 +1,7 @@
 #include "include/userlib.h"
 
-#define SHELL_PID 0
-#define IDLE_PID 1
+#define SHELL_PID 1
+#define IDLE_PID 0
 
 static char buffer[64] = {'0'};
 static char* char_buffer = " ";
@@ -345,12 +345,12 @@ void kill_dummy(int argc, char ** argv){
 
     int toKill = char_to_int(argv[0]);
     if(toKill == SHELL_PID){
-        write_out("Para matar la shell tenes que usar Exit. \n");
+        write_out("Para matar la shell tenes que usar el comando Exit.\n");
         estrellita_bg();
         exit_pcs(EXIT);
     }
     if(toKill == IDLE_PID){
-        write_out("No te podemos permitir matar el idle ¯\\_(ツ)_/¯\n");
+        write_out("No te podemos permitir matar el init/idle, necestiamos que se haga cargo de los huerfanos\n");
         estrellita_bg();
         exit_pcs(EXIT);
     }
@@ -388,7 +388,6 @@ int kill_process(int argc, char ** argv){
 void exit_pcs(int ret){
     
     int pid = _get_pid(); 
-
     if(ret == ERROR){
         write_out("El proceso de pid ");
         printDec(pid);
@@ -405,6 +404,9 @@ void exit_pcs(int ret){
     */
 
     int ret_del_kill = _kill_process(pid);
+    write_out("ret del kill:");
+    printDec(ret_del_kill);
+    write_out("\n");
     if(ret_del_kill == ERROR){
         write_out("Hubo un error en el exit ya que el pid ");
         if(pid==-1){
@@ -424,11 +426,11 @@ void block_process_dummy(int argc, char ** argv){
     argc_1(argc);
 
     int pid = char_to_int(argv[0]);
-    if(pid == 0){
+    if(pid == SHELL_PID){
         write_out("Por ahora la shell no es bloqueante, asiq... adios\n");
     }
 
-    if(pid == get_pid()){
+    if(pid == get_pid()){ //Te bloquearias a vos mismo, posibles problemas, lo cortamos de raíz
         write_out("Que haces loco, nos vas a meter en problemas raja de aca.\n");
         estrellita_bg();
         exit_pcs(ERROR); 
@@ -569,7 +571,7 @@ void be_nice_dummy(int argc, char ** argv){
         exit_pcs(ERROR);
     }
     if(ret == SECOND_ERROR){
-        write_out("Epa, intentaste cambiar la prioridad del idle, nonono\n");
+        write_out("Epa, intentaste cambiar la prioridad de nuestro init/idle, nonono.\n");
         estrellita_bg();
         exit_pcs(EXIT);
     }

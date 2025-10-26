@@ -12,8 +12,6 @@
 #include "include/memory_manager.h"
 #include "include/proc.h"
 
-#define IDLE_PID 1
-
 extern uint8_t text;
 extern uint8_t rodata;
 extern uint8_t data;
@@ -60,8 +58,10 @@ void * initializeKernelBinary()
 
 static void* const shell = (void *) 0x400000;
 
-//proceso basura cuando no hay ninguno ready, llama constantemente a halt, osea al sch, osea a q pase al proximo pcs
-static void idle(){
+//nuestro init tmb es nuesto idle, y recibira a hijos huerfanos
+static void init(){
+	char * argNull[1]={NULL};
+	create_process(shell, "shell", 0, argNull); //es el segundo, se crea con pid 1
 	while(1){
 		_hlt();
 	}
@@ -74,9 +74,9 @@ int main()
 	create_mm();
 	//TODO init de pipes (?
 	char * argNull[1]={NULL};
-	create_process(shell, "shell", 0, argNull); //es el primero, se crea con pid 0
+	create_process(init, "init", 0, argNull); //es el primero, se crea con pid 0
 	current_index = 0;
-	create_process(idle, "idle", 0, argNull); //es el segundo, se crea con pid 1
+	create_process(shell, "shell", 0, argNull); //es el segundo, se crea con pid 1
 
 	_setUser();
 

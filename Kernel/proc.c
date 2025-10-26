@@ -38,7 +38,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     processTable[myPid] = pcb; 
 
     //Informacion general
-    memset(pcb, 0, sizeof(PCB));
+    memset(pcb, 0, sizeof(PCB)); //TODO y esto??
 
     //Reservamos espacio para el stack
     void* stackBase = alloc(MAX_STACK_SIZE);
@@ -88,7 +88,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     pcb->ParentPID = get_pid();
 
     pcb->time_used=0;
-    if(strcmp(name, "idle") == 0){
+    if(strcmp(name, "init") == 0){
         pcb->my_max_time = IDLE_Q;
         pcb->my_prio = LEVEL_IDLE;
         //No lo dejamos ni en ready, eso se hara en el sch cuando se necesite
@@ -126,7 +126,6 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
         
     memset(pcb->fileDescriptors, 0, sizeof(pcb->fileDescriptors));
 
-    //TODO este yield debe ser para todos??
     if(strcmp(name, "wait") == 0){
         process_count++;
         yield(); //necesitamos q el pcs q crea un wait deje sus quehaceres y se frene

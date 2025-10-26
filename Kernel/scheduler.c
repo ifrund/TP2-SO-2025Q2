@@ -1,6 +1,6 @@
 #include "include/scheduler.h"
 
-#define IDLE_PID 1
+#define IDLE_PID 0
 int process_count = 0;
 int current_index = -1;
 static int yielding =0;
@@ -19,7 +19,7 @@ int find_index_by_pid(int pid) {
 //hay 3 ya corriendo
 //hay 3 de diferentes prio
 //el pcs pasa a estar ZOMBIE o BLOCKED
-//casos con idle :(
+//casos con idle/init :(
 
 void *scheduling(void *rsp) {
 
@@ -38,7 +38,7 @@ void *scheduling(void *rsp) {
             //y pase por get_max_time_for_priority
             if(curr->time_used >= curr->my_max_time){
                 curr->time_used = 0;
-                if(strcmp(curr->name, "idle") == 0){ //Si sos el idle te volvemos a bloquear, sino queda ready
+                if(strcmp(curr->name, "init") == 0){ //Si sos el init/idle te volvemos a bloquear, sino queda ready
                     curr->state = BLOCKED;
                 }   
                 else{
@@ -79,7 +79,6 @@ void *scheduling(void *rsp) {
 
     //como no hay ningun proceso en ready, tenemos q dejar algo corriendo en el sch
     //asiq vamos con el idle, q sabemos q siempre es el de pid 1
-    
     processTable[IDLE_PID]->state = RUNNING;
     current_index = IDLE_PID; 
     return (void *)processTable[IDLE_PID]->rsp;
@@ -123,7 +122,7 @@ int be_nice(int pid, int new_prio){
         }
     }  
 
-    if(strcmp(curr->name, "idle") == 0){ //el idle no lo podes cambiar xd
+    if(strcmp(curr->name, "init") == 0){ //el init/idle no lo podes cambiar xd
         return -2;
     }
 
