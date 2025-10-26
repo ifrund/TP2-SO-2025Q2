@@ -15,6 +15,7 @@
 #define PROCESS_NAME_MAX_LENGTH 32
 #define QUANTUM 5
 #define IDLE_Q 1
+#define INIT_PID 1 //TODO cambiar a 0 cuando este listo
 #define MAX_ARGUMENTS 16
 #define MAX_ARG_LENGTH 64 
 
@@ -58,7 +59,7 @@ typedef struct {
     int my_max_time;
 
     //Por si espera otro proceso
-    uint64_t externWaitingPID;
+    uint64_t externWaitingPID; //TODO re de más, si tengo más de dos wait dejar de servir 
     bool isWaitingForExtern;
 
     //Informacion de los hijos:

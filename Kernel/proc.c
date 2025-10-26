@@ -198,22 +198,25 @@ int kill_process(uint64_t pid){
             }
         }
 
-        //Si el padre esta haciendo wait por exactamente este, desbloq
+        //si el padre esta haciendo wait por exactamente este, desbloq
+        //TODO, esto no es algo q deberia hacer justamente wait??
         if (parent->isWaitingForExtern && parent->externWaitingPID == pid) {
             parent->isWaitingForExtern = false;
             parent->externWaitingPID = -1;
             unblock_process(parentPID);
         }
-
-        if (parent->childrenAmount == 0 && parent->state == BLOCKED) {
-            unblock_process(parentPID);
-        }
     }
 
-    //TODO manejar huerfanos
+    //a todos mis hijos se los dejo a Init, no improta q este bloqueado
+    PCB * init = processTable[INIT_PID];
+    for(int i=0; i < proc->childrenAmount; i++){
+        uint64_t childPid = proc->childProc[i];
+        PCB* child = processTable[childPid];
+        child->ParentPID = INIT_PID;
+        init->childProc[init->childrenAmount++] = childPid;
+    }
 
     yield();
-
     return 0;
 }
 
@@ -358,6 +361,6 @@ int wait(uint64_t target_pid, uint64_t my_pid){
     }
     // #################################################################################
 
-    unblock_process(my_pid);
+    unblock_process(my_pid); //este block podria estar re de más porq tmb hay uno en el kill (osea cuando se muere el hijo)
     return 0;
 }
