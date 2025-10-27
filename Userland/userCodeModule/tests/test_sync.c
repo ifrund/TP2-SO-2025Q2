@@ -7,55 +7,75 @@
 
 int64_t global; // shared memory
 
-/*void slowInc(int64_t *p, int64_t inc) {
+void slowInc(int64_t *p, int64_t inc) {
   uint64_t aux = *p;
-  my_yield(); // This makes the race condition highly probable
+  _yield(); // This makes the race condition highly probable
   aux += inc;
   *p = aux;
 }
 
-uint64_t my_process_inc(uint64_t argc, char *argv[]) {
+void my_process_inc(uint64_t argc, char *argv[]) {
   uint64_t n;
   int8_t inc;
   int8_t use_sem;
 
-  if (argc != 3)
-    return -1;
+  if (argc != 3){
+    write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 3 argumentos.\n");
+    exit_pcs(ERROR);
+  }
 
-  if ((n = satoi(argv[0])) <= 0)
-    return -1;
-  if ((inc = satoi(argv[1])) == 0)
-    return -1;
-  if ((use_sem = satoi(argv[2])) < 0)
-    return -1;
+  if ((n = satoi(argv[0])) <= 0){
+    write_out("Erro en el satoi de n\n");
+    exit_pcs(ERROR);
+  }
+  if ((inc = satoi(argv[1])) == 0){
+    write_out("Erro en el satoi de inc \n");
+    exit_pcs(ERROR);
+  }
+  if ((use_sem = satoi(argv[2])) < 0){
+    write_out("Erro en el satoi de use_sem\n");
+    exit_pcs(ERROR);
+  }
 
-  if (use_sem)
-    if (!my_sem_open(SEM_ID, 1)) {
-      printf("test_sync: ERROR opening semaphore\n");
-      return -1;
+  if (use_sem){
+    if (_sem_open_init(SEM_ID, 1) != 0) {
+      write_out("test_sync: ERROR opening sem\n");
+      exit_pcs(ERROR);    
     }
+  }
 
   uint64_t i;
   for (i = 0; i < n; i++) {
-    if (use_sem)
-      my_sem_wait(SEM_ID);
+    if (use_sem){
+      if(_sem_wait(SEM_ID)!=0){
+        write_out("test_sync: ERROR waiting sem\n");
+        exit_pcs(ERROR); 
+      }
+    }
     slowInc(&global, inc);
-    if (use_sem)
-      my_sem_post(SEM_ID);
+    if (use_sem){
+      if(_sem_post(SEM_ID)!=0){
+        write_out("test_sync: ERROR posting sem\n");
+        exit_pcs(ERROR); 
+      }
+    }
   }
 
-  if (use_sem)
-    my_sem_close(SEM_ID);
+  if (use_sem){
+    if(_sem_close(SEM_ID)){
+      write_out("test_sync: ERROR closing sem\n");
+      exit_pcs(ERROR); 
+    }
+  }
 
-  return 0;
+  exit_pcs(EXIT);
 }
-*/
 
-void test_sync_dummy(int argc, char **argv) { //{n, use_sem, 0}
+
+void test_sync_dummy(int argc, char **argv) { //{n, use_sem}
+  //n debe ser cuantas veces va a sumar/restar a global, osea un numero mayor a 0
+  //use_sem debe ser 0 o 1
   
-  write_out("Esto tdv no fue desarrollado, vuelva más tarde \n");
-  exit_pcs(ERROR);
-  /*
   uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
 
   if (argc != 2){
@@ -70,18 +90,19 @@ void test_sync_dummy(int argc, char **argv) { //{n, use_sem, 0}
 
   uint64_t i;
   for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-    pids[i] = my_create_process("my_process_inc", 3, argvDec);
-    pids[i + TOTAL_PAIR_PROCESSES] = my_create_process("my_process_inc", 3, argvInc);
+    pids[i] = _create_process(&my_process_inc, "my_process_inc", 3, argvDec);
+    pids[i + TOTAL_PAIR_PROCESSES] = _create_process(&my_process_inc, "my_process_inc", 3, argvInc);
   }
 
+  int pid = _get_pid();
   for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-    my_wait(pids[i]);
-    my_wait(pids[i + TOTAL_PAIR_PROCESSES]);
+    _wait(pids[i], pid);
+    _wait(pids[i + TOTAL_PAIR_PROCESSES], pid);
   }
 
-  write_out("Final value: %d\n", global);
-
-  */
+  write_out("Final value (deberia ser 0): ");
+  printDec(global);
+  write_out("\n");
 
   exit_pcs(EXIT);
 }
