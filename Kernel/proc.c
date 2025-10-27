@@ -125,7 +125,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     pcb->blocksAmount = 0;
         
     memset(pcb->fileDescriptors, 0, sizeof(pcb->fileDescriptors));
-
+    pcb->isYielding = 0;
     //TODO este yield debe ser para todos??
     if(strcmp(name, "wait") == 0){
         process_count++;

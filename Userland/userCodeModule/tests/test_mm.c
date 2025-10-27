@@ -59,7 +59,7 @@ void test_mm_dummy(int argc, char **argv) {
         write_out("-");
       }
       else{
-        write_out("error en el alloc\n");
+        //write_out("error en el alloc\n");
         exit_pcs(ERROR);
         return;
         write_out("1");

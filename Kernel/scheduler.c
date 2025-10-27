@@ -3,8 +3,6 @@
 #define IDLE_PID 1
 int process_count = 0;
 int current_index = -1;
-static int yielding =0;
-
 
 int find_index_by_pid(int pid) {
     for (int i = 0; i < process_count; i++) {
@@ -46,9 +44,9 @@ void *scheduling(void *rsp) {
                 }           
             }
             else{
-                if(yielding){
+                if(curr->isYielding){
                     //aunque le queda tiempo, lo sacamos porq viene de un yield
-                    yielding=0;
+                    curr->isYielding=0;
                     curr->time_used=0;
                     curr->state = READY; //como estaba running y metio yield, lo dejamos ready
                 }
@@ -88,7 +86,7 @@ void *scheduling(void *rsp) {
 void yield(){
     //forzamos un tick y al proceso q esta forzando el tick aka cediendo el CPU
     //y activamos el flag, para que el sch sepa que lo tiene que sacar de ready
-    yielding = 1;
+    processTable[get_pid()]->isYielding = 1;
     _yield();
 }
 

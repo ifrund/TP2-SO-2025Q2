@@ -66,6 +66,8 @@ typedef struct {
     int childrenAmount;
     uint64_t childProc[MAX_PCS];
     int blocksAmount;
+
+    int isYielding; //1 true, 0 false
 } PCB;
 
 extern PCB* processTable[MAX_PCS]; 
