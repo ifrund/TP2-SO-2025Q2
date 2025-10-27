@@ -31,7 +31,9 @@ int sem_open_init(const char* name, unsigned int value) {
     sem_internal_t* new_sem = NULL;
     for (int i = 0; i < MAX_SEMAPHORES; i++) {
         if (semaphores[i].initialized == 0) {
-            new_sem = &semaphores[i];
+            new_sem = &semaphores[i];    
+            new_sem->initialized = 1;
+            break;
         }
     }
 
@@ -42,7 +44,6 @@ int sem_open_init(const char* name, unsigned int value) {
     strncpy(new_sem->name, name, MAX_NAME_LENGTH - 1);
     new_sem->name[MAX_NAME_LENGTH-1] = '\0';
     new_sem->value = value;
-    new_sem->initialized = 1;
     new_sem->amount_bprocesses = 0;
     new_sem->lock = 1;
     new_sem->amount_sem_openings = 1;
