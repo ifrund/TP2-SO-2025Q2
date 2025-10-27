@@ -1,7 +1,6 @@
 #include "include/lib.h"
 #include <stdint.h>
 #include <sound.h>
-#include <string.h>
 #include <lib.h>
 #include <moduleLoader.h>
 #include <videoDriver.h>

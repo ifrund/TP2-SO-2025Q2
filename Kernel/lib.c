@@ -113,3 +113,15 @@ int strcmp(const char *str1, const char *str2){
 
     return *(unsigned char *)str1 - *(unsigned char *)str2;
 }
+
+char *strncpy(char *dest, const char *src, unsigned int n) {
+    unsigned int i;
+    for (i = 0; i < n && src[i] != '\0'; i++)
+        dest[i] = src[i];
+
+    // Rellenar con '\0' si src es más corta que n
+    for (; i < n; i++)
+        dest[i] = '\0';
+
+    return dest;
+}

@@ -220,18 +220,6 @@ int kill_process(uint64_t pid){
     return 0;
 }
 
-char *strncpy(char *dest, const char *src, unsigned int n) {
-    unsigned int i;
-    for (i = 0; i < n && src[i] != '\0'; i++)
-        dest[i] = src[i];
-
-    // Rellenar con '\0' si src es más corta que n
-    for (; i < n; i++)
-        dest[i] = '\0';
-
-    return dest;
-}
-
 ProcessInfo* get_proc_list() {
     ProcessInfo* list = alloc(sizeof(ProcessInfo) * process_count);
     if (list == NULL)

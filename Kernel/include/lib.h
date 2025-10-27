@@ -29,6 +29,9 @@ int _getDateTimeFormat();
 
 //asm SO functions
 void _yield();
+void* _create_stack(void * stack_top, void * rip, int argc, char ** argv);
+void _wait(uint8_t * lock);
+void _post(uint8_t * lock);
 
 // base changing
 uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
@@ -36,7 +39,7 @@ uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
 int pow(int base, int exp);
 
 //SO
-void* _create_stack(void * stack_top, void * rip, int argc, char ** argv);
 int strcmp(const char *str1, const char *str2);
+char *strncpy(char *dest, const char *src, unsigned int n);
 
 #endif
