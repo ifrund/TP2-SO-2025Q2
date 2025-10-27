@@ -58,10 +58,6 @@ typedef struct {
     int time_used;
     int my_max_time;
 
-    //Por si espera otro proceso
-    uint64_t externWaitingPID; //TODO re de más, si tengo más de dos wait dejar de servir 
-    bool isWaitingForExtern;
-
     //Informacion de los hijos:
     int childrenAmount;
     uint64_t childProc[MAX_PCS];
@@ -80,13 +76,10 @@ typedef struct {
     char state[16];            // "READY", etc.
     uint64_t rsp;
     char my_prio[16];
+    int childrenAmount;
 
     //TODO probablmente borrarlas
-    uint64_t externWaitingPID;
-    bool isWaitingForExtern;
-    int childrenAmount;
     uint64_t children[MAX_PCS];
-    // Podrías incluir file descriptors si querés: los ids nada más.
     uint64_t fileDescriptors[MAX_FD];
     int fileDescriptorCount;  // Número de FDs válidos
 } ProcessInfo;

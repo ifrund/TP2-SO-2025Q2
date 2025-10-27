@@ -100,10 +100,6 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
         pcb->state = READY;
     }
         
-    //Espera externa:
-    pcb->isWaitingForExtern = false;
-    pcb->externWaitingPID = -1;
-    
     //Informacion de los hijos
     pcb->childrenAmount = 0;
     for(int i = 0; i < MAX_PCS; i++) {
@@ -197,14 +193,6 @@ int kill_process(uint64_t pid){
                 break;
             }
         }
-
-        //si el padre esta haciendo wait por exactamente este, desbloq
-        //TODO, esto no es algo q deberia hacer justamente wait??
-        if (parent->isWaitingForExtern && parent->externWaitingPID == pid) {
-            parent->isWaitingForExtern = false;
-            parent->externWaitingPID = -1;
-            unblock_process(parentPID);
-        }
     }
 
     //a todos mis hijos se los dejo a Init, no improta q este bloqueado
@@ -266,9 +254,6 @@ ProcessInfo* get_proc_list() {
 
         info->my_prio[15] = '\0';
 
-        info->externWaitingPID = p->externWaitingPID;
-        info->isWaitingForExtern = p->isWaitingForExtern;
-
         info->childrenAmount = p->childrenAmount;
         for (int j = 0; j < MAX_PCS; j++)
             info->children[j] = p->childProc[j];
@@ -326,7 +311,6 @@ int wait(uint64_t target_pid, uint64_t my_pid){
     if (!is_pid_valid(my_pid)) //TODO cuando entra a aca?? este if no es un "che yo existo??" xd
         return -2;
 
-    PCB* current = processTable[my_pid];
     PCB* target = processTable[target_pid]; //a quien tenemos q esperar
 
     //si el target termino primero, lo terminamos
@@ -336,8 +320,6 @@ int wait(uint64_t target_pid, uint64_t my_pid){
     }
 
     //Si el proceso que deberia esperar termino primero, hacemos el yield
-    current->isWaitingForExtern = true;
-    current->externWaitingPID = target_pid;
     block_process(my_pid);
     
     // #################################################################################
