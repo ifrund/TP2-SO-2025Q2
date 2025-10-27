@@ -104,10 +104,12 @@ void free (void * address){
     if (blocks_to_free == 0)
         return;
 
-    for(int i = index; i < blocks_to_free; i++) {
+    for(int i = index; i < blocks_to_free + index; i++) {
         block_array[i].status = FREE;
         block_array[i].contiguous_blocks = 0;
     }
+    
+    reset_first_free_index();
     
     free_blocks += blocks_to_free;
 }
@@ -121,7 +123,7 @@ void status_count(int *status_out){
 }
 
 void reset_first_free_index() {
-    for (int i = first_free_index, found = 0; i < TOTAL_BLOCK_COUNT && found == 0; i++)
+    for (int i = 0, found = 0; i < TOTAL_BLOCK_COUNT && found == 0; i++)
         {
             if (block_array[i].status == FREE)
             {
