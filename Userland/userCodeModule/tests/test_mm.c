@@ -55,14 +55,12 @@ void test_mm_dummy(int argc, char **argv) {
       if (mm_rqs[rq].address) {
         total += mm_rqs[rq].size;
         rq++;
-        printDec(c);
-        write_out("-");
+        //printDec(c);
+        //write_out("-");
       }
       else{
-        //write_out("error en el alloc\n");
+        write_out("error en el alloc\n");
         exit_pcs(ERROR);
-        return;
-        write_out("1");
       }
     }
     //write_out("Terminamos de hacer Alloc\n");
@@ -93,7 +91,7 @@ void test_mm_dummy(int argc, char **argv) {
         //write_out("Libero la memoria ");
       }
     }
-    write_out("\n");
+    //write_out("\n");
 
   }
 }
