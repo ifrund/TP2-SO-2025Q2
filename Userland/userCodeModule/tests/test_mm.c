@@ -52,14 +52,22 @@ void test_mm_dummy(int argc, char **argv) {
       mm_rqs[rq].address = _alloc(mm_rqs[rq].size);
       c++;      
 
-      if (mm_rqs[rq].address) {
+      if (mm_rqs[rq].address != NULL) {
         total += mm_rqs[rq].size;
         rq++;
         //printDec(c);
         //write_out("-");
       }
       else{
-        write_out("error en el alloc\n");
+        write_out("error en el alloc, vuelta: ");
+        printDec(c);
+        write_out("\n");
+        for (int i = 0; i < rq; i++){
+          if (mm_rqs[i].address != NULL){
+            _free(mm_rqs[i].address);
+            //write_out("Libero la memoria ");
+          }
+        }
         exit_pcs(ERROR);
       }
     }
@@ -68,7 +76,7 @@ void test_mm_dummy(int argc, char **argv) {
     // Set
     uint32_t i;
     for (i = 0; i < rq; i++)
-      if (mm_rqs[i].address){
+      if (mm_rqs[i].address != NULL){
         //write_out("Vamos a hacer memset2--");
         memset2(mm_rqs[i].address, i, mm_rqs[i].size);
         //write_out("Hicimos memset2\n");
@@ -77,7 +85,7 @@ void test_mm_dummy(int argc, char **argv) {
     //write_out("Terminamos de hacer memset\n"); 
     // Check
     for (i = 0; i < rq; i++)
-      if (mm_rqs[i].address)
+      if (mm_rqs[i].address != NULL)
         if (!memcheck(mm_rqs[i].address, i, mm_rqs[i].size)) {
           write_out("test_mm ERROR\n");
           exit_pcs(ERROR);
@@ -86,7 +94,7 @@ void test_mm_dummy(int argc, char **argv) {
                     
     // Free
     for (i = 0; i < rq; i++){
-      if (mm_rqs[i].address){
+      if (mm_rqs[i].address != NULL){
         _free(mm_rqs[i].address);
         //write_out("Libero la memoria ");
       }
