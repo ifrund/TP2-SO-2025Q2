@@ -21,10 +21,7 @@ typedef struct {
 
 typedef void* sem_t;
 
-static sem_internal_t semaphores[MAX_SEMAPHORES] = {0};
-static int init = 0;
-
-int sem_open(const char* name, unsigned int value);
+int sem_open_init(const char* name, unsigned int value);
 int sem_wait(const char* name);
 int sem_post(const char* name);
 int sem_close(const char* name);

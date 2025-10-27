@@ -630,7 +630,6 @@ void wait_dummy(int argc, char ** argv){
     
     if(argc!=2){//especial
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
-        
         exit_pcs(ERROR);
     }
 
@@ -640,16 +639,13 @@ void wait_dummy(int argc, char ** argv){
 
     if(ret == ERROR){
         write_out("Este pid no es valido\n");
-        
         exit_pcs(ERROR);
     }
     if(ret == SECOND_ERROR){
         write_out("Como llegaste a aca?? se rompio todo\n");
-        
         exit_pcs(ERROR);
     }
 
-    
     exit_pcs(EXIT);
 }
 
@@ -733,4 +729,87 @@ void mvar_dummy(int argc, char ** argv){
 
 int mvar(int argc, char ** argv){
     return create_process(&mvar_dummy, "mvar", argc, argv);
+}
+
+void sem_open_init_dummy(int argc, char ** argv){
+    
+    if(argc!=2){
+        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 2 argumentos.\n");
+        exit_pcs(ERROR);
+    }
+
+    int val = char_to_int(argv[1]);
+    int ret = _sem_open_init(argv[0], val);
+    if(ret==ERROR){
+        write_out("El semaforo ");
+        write_out(argv[0]);
+        write_out(" ya existe\n");
+        exit_pcs(ERROR);
+    }
+    if(ret==SECOND_ERROR){
+        write_out("No hay espacio para más semaforos");
+        exit_pcs(ERROR);
+    }
+
+    exit_pcs(EXIT);
+}
+
+int sem_open_init(int argc, char ** argv){
+    return create_process(&sem_open_init_dummy, "sem open/init", argc, argv);
+}
+
+void sem_wait_dummy(int argc, char ** argv){
+
+    argc_1(argc);
+    int ret = _sem_wait(argv[0]);
+    if(ret == ERROR){
+        write_out("El semaforo ");
+        write_out(argv[0]);
+        write_out(" no existe\n");
+        exit_pcs(ERROR);
+    }
+
+    exit_pcs(EXIT);
+}
+
+int sem_wait(int argc, char ** argv){
+    return create_process(&sem_wait_dummy, "sem wait", argc, argv);
+}
+
+void sem_post_dummy(int argc, char ** argv){
+
+    argc_1(argc);
+
+    int ret = _sem_post(argv[0]);
+    if(ret == ERROR){
+        write_out("El semaforo ");
+        write_out(argv[0]);
+        write_out(" no existe\n");
+        exit_pcs(ERROR);
+    }
+
+    exit_pcs(EXIT);
+}
+
+int sem_post(int argc, char ** argv){
+    return create_process(&sem_post_dummy, "sem wait", argc, argv);
+}
+
+void sem_close_dummy(int argc, char ** argv){
+
+    argc_1(argc);
+    int ret = _sem_close(argv[0]);
+    if(ret == ERROR){
+        write_out("El semaforo ");
+        write_out(argv[0]);
+        write_out(" no existe\n");
+        exit_pcs(ERROR);
+    }
+
+    exit_pcs(EXIT);
+
+}
+
+int sem_close(int argc, char ** argv){
+    return create_process(&sem_close_dummy, "sem wait", argc, argv);
 }

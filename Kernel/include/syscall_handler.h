@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "proc.h"
+#include "sem.h"
 
 void syscall_handler();
 void sys_write(uint64_t fd, uint64_t message, uint64_t length);
@@ -37,3 +38,7 @@ int sys_get_pid();
 int sys_wait(uint64_t target_pid, uint64_t my_pid);
 void sys_yield();
 int sys_be_nice(uint64_t pid, uint64_t newPrio);
+int sys_sem_open_init(uint64_t name, uint64_t value);
+int sys_sem_wait(uint64_t name);
+int sys_sem_post(uint64_t name);
+int sys_sem_close(uint64_t name);

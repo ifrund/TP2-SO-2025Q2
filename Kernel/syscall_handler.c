@@ -107,6 +107,22 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     sys_wait(rdi, rsi);
     break;
 
+  case (0xA7):
+    sys_sem_open_init(rdi, rsi);
+    break;
+  
+  case (0xA8):
+    sys_sem_wait(rdi);
+    break;
+
+  case (0xA9):
+    sys_sem_post(rdi);
+    break;
+
+  case (0xAA):
+    sys_sem_close(rdi);
+    break;
+
   }
 }
 
@@ -241,4 +257,20 @@ int sys_get_pid(){
 
 int sys_wait(uint64_t target_pid, uint64_t my_pid){
   return wait(target_pid, my_pid);
+}
+
+int sys_sem_open_init(uint64_t name, uint64_t value){
+  return sem_open_init((char *)name, value);
+}
+
+int sys_sem_wait(uint64_t name){
+  return sem_wait((char *)name);
+}
+
+int sys_sem_post(uint64_t name){
+  return sem_post((char *)name);
+}
+
+int sys_sem_close(uint64_t name){
+  return sem_close((char *)name);
 }

@@ -232,4 +232,9 @@ int cat(int argc, char **argv);
 int filter(int argc, char **argv);
 int mvar(int argc, char ** argv);
 
+int sem_open_init(int argc, char ** argv);
+int sem_wait(int argc, char ** argv);
+int sem_post(int argc, char ** argv);
+int sem_close(int argc, char ** argv);
+
 #endif

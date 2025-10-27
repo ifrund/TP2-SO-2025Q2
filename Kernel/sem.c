@@ -1,5 +1,8 @@
 #include "include/sem.h"
 
+static sem_internal_t semaphores[MAX_SEMAPHORES] = {0};
+static int init = 0;
+
 static sem_internal_t* find_sem(const char* name) {
     for (int i = 0; i < MAX_SEMAPHORES; i++) {
         if (semaphores[i].initialized && strcmp(semaphores[i].name, name) == 0) {
@@ -9,7 +12,8 @@ static sem_internal_t* find_sem(const char* name) {
     return NULL;
 }
 
-int sem_open(const char* name, unsigned int value) {
+//es el open y el init
+int sem_open_init(const char* name, unsigned int value) {
 
     if(init==0){
         for (int i = 0; i < MAX_SEMAPHORES; i++) {
@@ -21,7 +25,7 @@ int sem_open(const char* name, unsigned int value) {
     sem_internal_t* existing_sem = find_sem(name);
     if (existing_sem != NULL) {
         existing_sem->amount_sem_openings = existing_sem->amount_sem_openings + 1;
-        return 1;  //semaforo ya existe
+        return -1;  //semaforo ya existe
     }
 
     sem_internal_t* new_sem = NULL;
@@ -32,7 +36,7 @@ int sem_open(const char* name, unsigned int value) {
     }
 
     if (new_sem == NULL) {
-        return 0;  //no hay slots libres
+        return -2;  //no hay slots libres
     }
 
     strncpy(new_sem->name, name, MAX_NAME_LENGTH - 1);
@@ -42,7 +46,7 @@ int sem_open(const char* name, unsigned int value) {
     new_sem->amount_bprocesses = 0;
     new_sem->lock = 1;
     new_sem->amount_sem_openings = 1;
-    return 2;
+    return 0;
 }
 
 int sem_wait(const char* name) {
@@ -97,7 +101,7 @@ int sem_close(const char* name) {
 
     sem->amount_sem_openings = sem->amount_sem_openings - 1;
     if(sem->amount_sem_openings > 0){
-        return -1;
+        return 0; //tdb hay otros usando este semaforo
     }
 
     sem->initialized = 0;
