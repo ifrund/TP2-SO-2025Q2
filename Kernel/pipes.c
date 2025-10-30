@@ -1,7 +1,7 @@
 #include "pipes.h"
 #include "sem.h"
 #include "memory_manager.h" 
-//#include "lib.h"
+#include "lib.h"
 #include <stddef.h>
 
 #define MAX_PIPES            16 
@@ -33,6 +33,18 @@ typedef struct {
 // Tabla Global de Pipes 
 Pipe global_pipe_table[MAX_PIPES];
 
+// ---------------------- PROTOTIPOS ----------------------
+static int create_pipe_object(int pipe_id, const char *name, int is_named);
+static void build_sem_names(const char *base_name, Pipe *pipe);
+static void itoa(int n, char s[], int base);
+static void reverse(char s[]);
+static int strlen_custom(const char *s);
+static void strcopy(char *dest, const char *src);
+static void strncopy(char *dest, const char *src, unsigned int n);
+static char *strcat(char *dest, const char *src);
+static char *strncat(char *dest, const char *src, unsigned int n);
+
+
 void pipe_init() {
     // Inicializa el semaforo para la tabla global
     sem_open_init("GLOBAL_PIPE_TABLE_LOCK", 1);
@@ -42,6 +54,112 @@ void pipe_init() {
         global_pipe_table[i].is_in_use = 0;
     }
 }
+
+int pipe_create_anonymous(int pipe_ids[2]) {
+    // 1. Bloquea la tabla global de pipes
+    sem_wait("GLOBAL_PIPE_TABLE_LOCK");
+
+    // 2. Busca un slot libre
+    int free_slot = -1;
+    for (int i = 0; i < MAX_PIPES; i++) {
+        if (!global_pipe_table[i].is_in_use) {
+            free_slot = i;
+            global_pipe_table[i].is_in_use = 1; 
+            break;
+        }
+    }
+
+    if (free_slot == -1) {
+        sem_post("GLOBAL_PIPE_TABLE_LOCK");
+        return -1; // No hay pipes libres
+    }
+    
+    // 3. Genera un nombre único para el pipe anónimo (ej: "anon_3")
+    char anon_name[MAX_PIPE_NAME_LENGTH];
+    strncopy(anon_name, "anon_", 5);
+    char slot_str[10];
+    itoa(free_slot, slot_str, 10);
+    strcat(anon_name, slot_str);
+
+    sem_post("GLOBAL_PIPE_TABLE_LOCK");
+
+    int pipe_id = create_pipe_object(free_slot, anon_name, 0);
+    if (pipe_id < 0) {
+        sem_wait("GLOBAL_PIPE_TABLE_LOCK");
+        global_pipe_table[free_slot].is_in_use = 0;
+        sem_post("GLOBAL_PIPE_TABLE_LOCK");
+        return -1;
+    }
+
+    sem_wait("GLOBAL_PIPE_TABLE_LOCK");
+    global_pipe_table[pipe_id].ref_count = 2;
+    sem_post("GLOBAL_PIPE_TABLE_LOCK");
+
+
+    //Devuelve los dos handles
+    pipe_ids[0] = pipe_id; // Handle para pipe_read
+    pipe_ids[1] = pipe_id; // Handle para pipe_write
+    
+    return 0; // Éxito
+}
+
+int pipe_open_named(const char* name) {
+    if (name == NULL)
+        return -1;
+
+    // 1. Bloquear tabla global
+    sem_wait("GLOBAL_PIPE_TABLE_LOCK");
+
+    // 2. Verificar si ya existe un pipe con ese nombre
+    for (int i = 0; i < MAX_PIPES; i++) {
+        if (global_pipe_table[i].is_in_use &&
+            global_pipe_table[i].is_named &&
+            strcmp(global_pipe_table[i].name, name) == 0) 
+        {
+            // Ya existe — incrementamos ref_count
+            global_pipe_table[i].ref_count++;
+            sem_post("GLOBAL_PIPE_TABLE_LOCK");
+            return i; // Devuelve el ID existente
+        }
+    }
+
+    // 3. Buscar un slot libre
+    int free_slot = -1;
+    for (int i = 0; i < MAX_PIPES; i++) {
+        if (!global_pipe_table[i].is_in_use) {
+            free_slot = i;
+            global_pipe_table[i].is_in_use = 1;
+            break;
+        }
+    }
+
+    if (free_slot == -1) {
+        sem_post("GLOBAL_PIPE_TABLE_LOCK");
+        return -1; // No hay lugar
+    }
+
+    // 4. Liberamos el lock global mientras se crean semáforos (operación lenta)
+    sem_post("GLOBAL_PIPE_TABLE_LOCK");
+
+    // Crear el objeto pipe (named = 1)
+    int pipe_id = create_pipe_object(free_slot, name, 1);
+
+    if (pipe_id < 0) {
+        // Rollback si algo falló
+        sem_wait("GLOBAL_PIPE_TABLE_LOCK");
+        global_pipe_table[free_slot].is_in_use = 0;
+        sem_post("GLOBAL_PIPE_TABLE_LOCK");
+        return -1;
+    }
+
+    // 5. Rebloquear para setear ref_count inicial
+    sem_wait("GLOBAL_PIPE_TABLE_LOCK");
+    global_pipe_table[pipe_id].ref_count = 1;
+    sem_post("GLOBAL_PIPE_TABLE_LOCK");
+
+    return pipe_id;
+}
+
 
 int pipe_close(int pipe_id) {
     if (pipe_id < 0 || pipe_id >= MAX_PIPES) {
@@ -138,4 +256,118 @@ int pipe_read(int pipe_id, char* buffer, int count) {
     }
 
     return bytes_read;
+}
+
+//Funciones auxiliares
+
+static void build_sem_names(const char* base_name, Pipe* pipe) {
+    // Lock
+    strncpy(pipe->sem_pipe_lock_name, "p_lock_", MAX_NAME_LENGTH - 1);
+    strncat(pipe->sem_pipe_lock_name, base_name, MAX_NAME_LENGTH - strlen_custom(pipe->sem_pipe_lock_name) - 1);
+    
+    // Items
+    strncpy(pipe->sem_items_available_name, "p_items_", MAX_NAME_LENGTH - 1);
+    strncat(pipe->sem_items_available_name, base_name, MAX_NAME_LENGTH - strlen_custom(pipe->sem_items_available_name) - 1);
+
+    // Space
+    strncpy(pipe->sem_empty_space_available_name, "p_space_", MAX_NAME_LENGTH - 1);
+    strncat(pipe->sem_empty_space_available_name, base_name, MAX_NAME_LENGTH - strlen_custom(pipe->sem_empty_space_available_name) - 1);
+}
+
+static int create_pipe_object(int pipe_id, const char *name, int is_named) {
+    Pipe *pipe = &global_pipe_table[pipe_id];
+
+    strcopy(pipe->name, name);
+    pipe->is_named = is_named;
+    pipe->read_index = 0;
+    pipe->write_index = 0;
+    pipe->data_size = 0;
+
+    build_sem_names(name, pipe);
+
+    sem_post("GLOBAL_PIPE_TABLE_LOCK");
+
+    if (sem_open_init(pipe->sem_pipe_lock_name, 1) < 0)
+        return -1;
+
+    if (sem_open_init(pipe->sem_items_available_name, 0) < 0) {
+        sem_close(pipe->sem_pipe_lock_name);
+        return -1;
+    }
+
+    if (sem_open_init(pipe->sem_empty_space_available_name, PIPE_BUFFER_SIZE) < 0) {
+        sem_close(pipe->sem_pipe_lock_name);
+        sem_close(pipe->sem_items_available_name);
+        return -1;
+    }
+
+    return pipe_id;
+}
+
+// ---------------------- HELPERS DE STRINGS ----------------------
+
+static int strlen_custom(const char *s) {
+    int n = 0;
+    while (s[n] != '\0')
+        n++;
+    return n;
+}
+
+static void strcopy(char *dest, const char *src) {
+    while ((*dest++ = *src++) != '\0');
+}
+
+static void strncopy(char *dest, const char *src, unsigned int n) {
+    unsigned int i;
+    for (i = 0; i < n && src[i] != '\0'; i++) {
+        dest[i] = src[i];
+    }
+    dest[i] = '\0';
+}
+
+static char *strcat(char *dest, const char *src) {
+    char *ret = dest;
+    while (*dest)
+        dest++;
+    while ((*dest++ = *src++));
+    return ret;
+}
+
+static char *strncat(char *dest, const char *src, unsigned int n) {
+    char *ret = dest;
+    while (*dest)
+        dest++;
+    while (n-- && *src) {
+        *dest++ = *src++;
+    }
+    *dest = '\0';
+    return ret;
+}
+
+static void reverse(char s[]) {
+    int i, j;
+    char c;
+    for (i = 0, j = strlen_custom(s) - 1; i < j; i++, j--) {
+        c = s[i];
+        s[i] = s[j];
+        s[j] = c;
+    }
+}
+
+static void itoa(int n, char s[], int base) {
+    int i = 0, sign = n;
+
+    if (n < 0)
+        n = -n;
+
+    do {
+        int digit = n % base;
+        s[i++] = (digit < 10) ? digit + '0' : digit - 10 + 'A';
+    } while ((n /= base) > 0);
+
+    if (sign < 0)
+        s[i++] = '-';
+
+    s[i] = '\0';
+    reverse(s);
 }
