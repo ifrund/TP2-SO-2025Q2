@@ -63,4 +63,11 @@ int _sem_wait(char * name);
 int _sem_post(char * name);
 int _sem_close(char * name);
 
+//PIPES
+int _pipe_create_anonymous(int pipe_ids[2]);
+int _pipe_create_named(const char* name);
+int _pipe_close(int pipe_id);
+int _pipe_write(int pipe_id, const char* buffer, int count);
+int _pipe_read(int pipe_id, char* buffer, int count);
+
 #endif // USERLIBASM_H
