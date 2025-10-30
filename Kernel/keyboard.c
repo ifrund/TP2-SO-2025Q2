@@ -52,19 +52,37 @@ void key_handler() { insert_key(_getKey()); }
 
 void insert_key(int key) {
 
-  checkShift(key);
+  checkShift(key); // Esto setea 'shifted', 'caps' y 'control'
 
-  if (key <= 0x52 && scan_chars[key] != 0) {
+  // Variable para saber si agregamos algo al buffer ASCII
+  int added_ascii = 0;
+
+  if (control == 1) {
+    if (key == 0x2E) { // 0x2E es el scancode de C
+      ascii_buf[ascii_insert_index++] = '\x03'; // Bufferea Ctrl+C
+      added_ascii = 1;
+    } else if (key == 0x20) { // 0x20 es el scancode de D
+      ascii_buf[ascii_insert_index++] = '\x04'; // bufferea Ctrl+D
+      added_ascii = 1;
+    }
+  } 
+  else if (key <= 0x52 && scan_chars[key] != 0) { 
     if (shifted || (caps && key >= 0x10))
       ascii_buf[ascii_insert_index++] = scan_chars_shift[key];
     else
       ascii_buf[ascii_insert_index++] = scan_chars[key];
+    added_ascii = 1;
+  }
+
+  // Manejo de buffer circular y flag 'to_read' para ASCII
+  if (added_ascii) {
     if (ascii_insert_index == KEY_BUF_SIZE)
       ascii_insert_index = 0;
-
     ascii_to_read = 1;
   }
 
+  // Esta parte es para STDKEYS (scancodes crudos), siempre se debe ejecutar
+  // incluso si la tecla fue solo "Ctrl" (que no genera ASCII)
   to_read = 1;
   key_buf[insert_index++] = key;
   if (insert_index == KEY_BUF_SIZE)
