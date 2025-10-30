@@ -74,6 +74,39 @@ int pipe_close(int pipe_id) {
     return 0;
 }
 
+int pipe_write(int pipe_id, const char* buffer, int count) {
+    if (pipe_id < 0 || pipe_id >= MAX_PIPES || buffer == NULL || count <= 0 || !global_pipe_table[pipe_id].is_in_use) {
+        return -1; // PipeID invalido o parametros invalidos
+    }
+
+    Pipe* pipe = &global_pipe_table[pipe_id];
+
+    int bytes_written = 0;
+
+    // Escribimos byte por byte
+    for (int i = 0; i < count; i++) {
+        // 1. Esperamos por espacio disponible en el pipe
+        sem_wait(pipe->sem_empty_space_available_name);
+
+        // Entramos a la region critica
+        sem_wait(pipe->sem_pipe_lock_name);
+
+        // Escribir el byte
+        pipe->buffer[pipe->write_index] = buffer[i];
+        pipe->write_index = (pipe->write_index + 1) % PIPE_BUFFER_SIZE;
+
+        // Salimos de la region critica
+        sem_post(pipe->sem_pipe_lock_name);
+
+        // Avisamos que hay cosas para leer
+        sem_post(pipe->sem_items_available_name);
+
+        bytes_written++;
+    }
+
+    return bytes_written;
+}
+
 int pipe_read(int pipe_id, char* buffer, int count) {
     if (pipe_id < 0 || pipe_id >= MAX_PIPES || buffer == NULL || count <= 0 || !global_pipe_table[pipe_id].is_in_use) {
         return -1; // PipeID invalido o parametros invalidos
