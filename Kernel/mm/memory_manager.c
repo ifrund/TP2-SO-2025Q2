@@ -1,4 +1,4 @@
-#include "memory_manager.h"
+#include "include/memory_manager.h"
 
 #define BLOCK_SIZE 0x1000                       // 4KB, igual que una página
 #define MEMORY_START (void*)0x0000000000500000  // Dirección del primer bloque. Todo el espacio desde ~0x40 0000 esta disponible

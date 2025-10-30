@@ -1,7 +1,7 @@
 include Makefile.inc
 
 KERNEL=kernel.bin
-SOURCES=$(wildcard *.c) $(wildcard mm/*.c)
+SOURCES=$(wildcard *.c) mm/buddy_memory_manager.c
 SOURCES_ASM=$(wildcard asm/*.asm)
 #TODO falta un SOURCES_TEST
 OBJECTS=$(SOURCES:.c=.o)

@@ -6,7 +6,7 @@
 #include <time.h>
 #include <registers.h>
 #include <sound.h>
-#include "mm/memory_manager.h"
+#include "include/memory_manager.h"
 
 #define STDIN 0
 #define STDOUT 1
