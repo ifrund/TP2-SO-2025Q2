@@ -725,15 +725,45 @@ int wc(int argc, char ** argv){
 //     exit_pcs(EXIT);
 // }
 
+// EN: userlib.c
+
 void cat_dummy(int argc, char ** argv){
-    char buffer[1];
+    char read_buffer[1];
+    char write_buffer[2]; // Buffer para 1 carácter + el terminador nulo '\0'
+    write_buffer[1] = '\0';
     
-    // Lee de STDIN (FD 0)
-    while (read(buffer, 1) > 0) {
-        // Escribe en STDOUT (FD 1)
-        print(buffer);
+    while (1) {
+        // 1. Llama a read() para leer de STDIN (FD 0)
+        int bytes_read = read(read_buffer, 1);
+
+        if (bytes_read > 0) {
+            // 2. Si leyó una tecla...
+            char c = read_buffer[0];
+
+            if (c == '\x04') { // Ctrl+D (Fin de Archivo)
+                break; // Sale del loop y termina el proceso
+            }
+            
+            if (c == '\x03') { // Ctrl+C (Interrupción)
+                break; // Sale del loop y termina el proceso
+            }
+
+            // 3. Escribe el carácter en STDOUT (FD 1)
+            //    Esto cumple "Imprime el stdin tal como lo recibe"
+            write_buffer[0] = c;
+            print(write_buffer);
+            
+            // Si el carácter es '\n', la shell (no cat) lo interpretará
+            // y moverá el cursor a la siguiente línea.
+
+        } else {
+            // 4. Si read() devolvió 0 (no hay tecla),
+            //    hacemos lo mismo que la shell: cede el CPU y vuelve a intentar.
+            sleep_once(); 
+        }
     }
-    exit_pcs(EXIT);
+    
+    exit_pcs(EXIT); // Termina el proceso limpiamente
 }
 
 int cat(int argc, char ** argv){

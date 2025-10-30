@@ -138,13 +138,13 @@ void process_key(char key){
 
     if (key == '\x04') { //Ctrl+D
         write_out("Esto es ctrl+d, tdv no esta desarrollado.\n");
-        if (command_cursor == 0) {
-            write_out("\nExit shell\n");
-            exit_shell();
-        } else {
+        // if (command_cursor == 0) {
+        //     write_out("\nExit shell\n");
+        //     exit_shell();
+        // } else {
             
-            //TODO
-        }
+        //     //TODO
+        // }
     }
 
     if (key == '\x03') { // Ctrl+C
