@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "test_util.h"
+#include "../include/userlib.h"
 
 #define LOWEST 0  
 #define MEDIUM 1  
@@ -50,7 +51,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
     write_out("SAME PRIORITY...\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++){
-        pids[i] = _create_process(&zero_to_max, "zero_to_max", 0, ztm_argv);
+        pids[i] = create_process(&zero_to_max, "zero_to_max", 0, ztm_argv);
         write_out("CREATED: ");
         printDec(pids[i]);
         write_out("  ");
@@ -75,7 +76,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
     write_out("\nSAME PRIORITY, THEN CHANGE IT...\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++) {
-        pids[i] = _create_process(&zero_to_max, "zero_to_max", 0, ztm_argv);
+        pids[i] = create_process(&zero_to_max, "zero_to_max", 0, ztm_argv);
         _be_nice(pids[i], prio[i]);
         write_out("PROCESS ");
         printDec(pids[i]);
@@ -100,7 +101,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
     write_out("\nSAME PRIORITY, THEN CHANGE IT WHILE BLOCKED...\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++) {
-        pids[i] = _create_process(&zero_to_max, "zero_to_max", 0, ztm_argv);
+        pids[i] = create_process(&zero_to_max, "zero_to_max", 0, ztm_argv);
         _block_process(pids[i]);
         _be_nice(pids[i], prio[i]);
         write_out("PROCESS ");

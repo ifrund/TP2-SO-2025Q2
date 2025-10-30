@@ -90,8 +90,8 @@ void test_sync_dummy(int argc, char **argv) { //{n, use_sem}
 
   uint64_t i;
   for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-    pids[i] = _create_process(&my_process_inc, "my_process_inc", 3, argvDec);
-    pids[i + TOTAL_PAIR_PROCESSES] = _create_process(&my_process_inc, "my_process_inc", 3, argvInc);
+    pids[i] = create_process(&my_process_inc, "my_process_inc", 3, argvDec);
+    pids[i + TOTAL_PAIR_PROCESSES] = create_process(&my_process_inc, "my_process_inc", 3, argvInc);
   }
 
   int pid = _get_pid();

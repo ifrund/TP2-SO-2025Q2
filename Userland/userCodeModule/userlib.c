@@ -336,7 +336,11 @@ int status_count(int argc, char ** argv){
 }
 
 int create_process(void * rip , const char *name, int argc, char *argv[]){
-    return _create_process(rip, name, argc, argv);
+    return _create_process(rip, name, argc, argv, NULL);
+}
+
+int create_process_piped(void * rip , const char *name, int argc, char *argv[], uint64_t* fds){
+    return _create_process(rip, name, argc, argv, fds);
 }
 
 void kill_dummy(int argc, char ** argv){
@@ -664,23 +668,45 @@ int wait(int argc, char ** argv){
 }
 
 //TODO aplicar pipes, donde usa argv deberia se el input
-void wc_dummy(int argc, char ** argv){
+// void wc_dummy(int argc, char ** argv){
     
-    char buffer[BUFFER_SIZE];
-    int n;
+//     char buffer[BUFFER_SIZE];
+//     int n;
+//     int line_count = 0;
+
+//     while ((n = read_input(buffer, sizeof(buffer))) > 0) {
+//         for (int i = 0; i < n; i++) {
+//             if (buffer[i] == '\n') line_count++;
+//         }
+//     }
+
+//     char number[12];
+//     uintToBase(line_count, number, 10);
+//     write_out("Cantidad de lineas: ");
+//     write_out(number);
+//     write_out("\n");
+
+//     exit_pcs(EXIT);
+// }
+
+void wc_dummy(int argc, char ** argv){
+    char buffer[1];
     int line_count = 0;
 
-    while ((n = read_input(buffer, sizeof(buffer))) > 0) {
-        for (int i = 0; i < n; i++) {
-            if (buffer[i] == '\n') line_count++;
+    // Lee de STDIN (FD 0)
+    while (read(buffer, 1) > 0) {
+        if (buffer[0] == '\n') {
+            line_count++;
         }
     }
 
     char number[12];
     uintToBase(line_count, number, 10);
-    write_out("Cantidad de lineas: ");
-    write_out(number);
-    write_out("\n");
+    
+    // Escribe en STDOUT (FD 1)
+    print("Cantidad de lineas: ");
+    print(number);
+    print("\n");
 
     exit_pcs(EXIT);
 }
@@ -690,12 +716,23 @@ int wc(int argc, char ** argv){
 }
 
 //TODO aplicar pipes, donde usa argv deberia ser el input
+// void cat_dummy(int argc, char ** argv){
+//     for(int i = 0; argv[i] != NULL; i++){
+//         write_out(argv[i]);
+//         write_out(" ");
+//     }
+//     write_out("\n");
+//     exit_pcs(EXIT);
+// }
+
 void cat_dummy(int argc, char ** argv){
-    for(int i = 0; argv[i] != NULL; i++){
-        write_out(argv[i]);
-        write_out(" ");
+    char buffer[1];
+    
+    // Lee de STDIN (FD 0)
+    while (read(buffer, 1) > 0) {
+        // Escribe en STDOUT (FD 1)
+        print(buffer);
     }
-    write_out("\n");
     exit_pcs(EXIT);
 }
 
@@ -704,17 +741,37 @@ int cat(int argc, char ** argv){
 }
 
 //TODO aplicar pipes, donde dice argv deberia ser el input
+// void filter_dummy(int argc, char ** argv){
+//     for(int i = 0; argv[i] != NULL; i++){
+//         for(int j = 0; argv[i][j] != '\0'; j++){
+//             if(argv[i][j] == 'a' || argv[i][j] == 'e' || argv[i][j] == 'i' || argv[i][j] == 'o' || argv[i][j] == 'u' 
+//             || argv[i][j] == 'A' || argv[i][j] == 'E' || argv[i][j] == 'I' || argv[i][j] == 'O' || argv[i][j] == 'U'){
+//                 char vocal[2] = {argv[i][j], '\0'};
+//                 write_out(vocal);
+//             }
+//         }
+//     }
+//     write_out("\n");
+//     exit_pcs(EXIT);
+// }
+
 void filter_dummy(int argc, char ** argv){
-    for(int i = 0; argv[i] != NULL; i++){
-        for(int j = 0; argv[i][j] != '\0'; j++){
-            if(argv[i][j] == 'a' || argv[i][j] == 'e' || argv[i][j] == 'i' || argv[i][j] == 'o' || argv[i][j] == 'u' 
-            || argv[i][j] == 'A' || argv[i][j] == 'E' || argv[i][j] == 'I' || argv[i][j] == 'O' || argv[i][j] == 'U'){
-                char vocal[2] = {argv[i][j], '\0'};
-                write_out(vocal);
-            }
+    char read_buffer[1];
+    char write_buffer[2];
+    write_buffer[1] = '\0';
+
+    // Lee de STDIN (FD 0)
+    while (read(read_buffer, 1) > 0) {
+        char c = read_buffer[0];
+        
+        if(c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' ||
+           c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U')
+        {
+            // Escribe en STDOUT (FD 1)
+            write_buffer[0] = c;
+            print(write_buffer); 
         }
     }
-    write_out("\n");
     exit_pcs(EXIT);
 }
 

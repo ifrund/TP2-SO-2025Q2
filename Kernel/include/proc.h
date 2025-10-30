@@ -86,7 +86,7 @@ typedef struct {
 
 
 //Funciones:
-int create_process(void * rip, char *name, int argc, char *argv[]);
+int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds);
 int block_process(int pid);
 int unblock_process(uint64_t pid);
 int kill_process(uint64_t pid);

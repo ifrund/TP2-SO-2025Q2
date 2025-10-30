@@ -73,9 +73,9 @@ int main()
 	create_mm();
 	//TODO init de pipes (?
 	char * argNull[1]={NULL};
-	create_process(shell, "shell", 0, argNull); //es el primero, se crea con pid 0
+	create_process(shell, "shell", 0, argNull, NULL); //es el primero, se crea con pid 0
 	current_index = 0;
-	create_process(idle, "idle", 0, argNull); //es el segundo, se crea con pid 1
+	create_process(idle, "idle", 0, argNull, NULL); //es el segundo, se crea con pid 1
 
 	_setUser();
 

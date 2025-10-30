@@ -1,6 +1,7 @@
 #include "include/userlib.h"
 #include "include/shell.h"
 #include "include/userlibasm.h"
+#include "include/file_descriptors.h"
 #include <stdint.h>
 
 #define COMMANDS 25
@@ -11,22 +12,47 @@
 #define BUFFER_SIZE 128
 #define MAX_ARGS 10
 
+// --- PROTOTIPOS EXTERNOS ---
+// (Funciones dummy de userlib.c que find_command_rip necesita)
+extern void test_mm_dummy(int argc, char **argv);
+extern uint64_t test_prio_new(uint64_t argc, char **argv);
+extern void test_processes_dummy(int argc, char **argv);
+extern void test_sync_dummy(int argc, char **argv);
+extern void status_count_dummy(int argc, char **argv);
+extern void kill_dummy(int argc, char **argv);
+extern void get_proc_list_dummy(int argc, char **argv);
+extern void be_nice_dummy(int argc, char **argv);
+extern void block_process_dummy(int argc, char **argv);
+extern void unblock_process_dummy(int argc, char **argv);
+extern void loop_dummy(int argc, char **argv);
+extern void wc_dummy(int argc, char **argv);
+extern void cat_dummy(int argc, char **argv);
+extern void filter_dummy(int argc, char **argv);
+extern void mvar_dummy(int argc, char **argv);
+// --- FIN DE PROTOTIPOS EXTERNOS ---
+
 // Esto es un "string" manual para poder imprimir el caracter 128 de nuestro font de kernel usando lsa funciones estandar
 #define ERROR_PROMPT "Unknown command: "
 char PROMPT_START[] = {127, 0};
 int kill_from_shell = 0, foreground = 1;
+int current_foreground_pid = -1;
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
 static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
     "test-mm", "test-prio", "test-pcs", "test-sync", "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock",
     "loop", "wc", "cat", "filter", "mvar"};
-static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
+
+//static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
+
 static char* help[COMMANDS-TESTS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
     "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock", "loop", "wc", "cat", "filter", "mvar"};
-static char* SOcommands[SOCOMS]= {
-    "Aca tiene q ir como funciona cada comando de SO"
-};
+// 
+// static char* SOcommands[SOCOMS]= {
+    // "Aca tiene q ir como funciona cada comando de SO"
+// };
+
+//REFACTOR
 char char_buffer[1];
 
 // Cursors & flags
@@ -52,6 +78,13 @@ char* regsNames[18] = {"rax:", "rbx:", "rcx:", "rdx:", "rsi:", "rdi:", "rbp:", "
                        "r10:", "r11:", "r12:", "r13:", "r14:", "r15:", "rip:", "rflags:"};
 char* bye[MAX_ARGS];
 void exit_shell();
+
+//Helpers
+static void remove_extra_spaces(char *str);
+static char* strchr(const char* str, int c);
+static int parse_arguments(char* buffer, char** argv);
+static void* find_command_rip(char* name);
+static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground);
 
 int shell(){
     cursor_x = 0;
@@ -114,10 +147,30 @@ void process_key(char key){
         }
     }
 
-    if (key == '\x03') { //Ctrl+C
-        //TODO 
-        write_out("Esto es ctrl+c, tdv no esta desarrollado.\n");
+    if (key == '\x03') { // Ctrl+C
+        write_out("\n");  // para que no se mezcle con la línea actual
+
+        if (current_foreground_pid > 0) {
+            char pid_str[12];
+            char *argv_kill[2];
+
+            int_to_str(current_foreground_pid, pid_str);
+            argv_kill[0] = pid_str;
+            argv_kill[1] = NULL;
+
+            kill_from_shell = 1;           // para que kill_dummy sepa que viene de la shell
+            kill_process(1, argv_kill);    // matamos el proceso foreground
+
+            current_foreground_pid = -1;   // limpiamos
+            write_out("Proceso foreground terminado.\n");
+        } else {
+            write_out("No hay proceso en foreground para matar.\n");
     }
+
+    write_out(PROMPT_START); // Volvemos al prompt
+    return;
+}
+
 
     // a partir de aca si esta lleno el buffer nos vamos
     if (command_cursor == BUFFER_SIZE - 1) 
@@ -129,226 +182,95 @@ void process_key(char key){
     }
 }
 
-static void remove_extra_spaces(char *str);
-
 void process_command(char* buffer){
     char *argv[MAX_ARGS];
-    int argc=0, wait_pid=-1, not_command = 0;
-    foreground=1;
+    int argc = 0;
+    foreground = 1;
 
-    remove_extra_spaces(buffer);
-   
-    for (int i = 0; buffer[i] != '\0'; i++) {
-        if (buffer[i] == ' ' && i != 0) {
-            buffer[i] = '\0';
-            argv[argc++] = &buffer[i + 1];
-        }
-    }
-    argv[argc] = NULL;
-
-    //si & es el último argumento, y hay al menos un argumento (comando) adelante significa q queremos activar el flag
-    if (argc >= 1 && argv[argc - 1] != NULL && !strcmp(argv[argc - 1], "&")) {
+    // 1. Buscar background
+    char* bg_pos = strchr(buffer, '&');
+    if (bg_pos != NULL) {
         foreground = 0;
-        argv[argc - 1] = NULL;
+        *bg_pos = '\0'; // Elimina el '&'
     }
 
-    if(!foreground){
-        argc--;
-        write_out("argc: ");
-        printDec(argc);
-        write_out("\n");
-    }
+    // 2. Buscar pipe
+    char* pipe_pos = strchr(buffer, '|');
+    if (pipe_pos != NULL) {
+        // --- CASO PIPE: "cmd A | cmd B" ---
+        *pipe_pos = '\0'; // Divide el buffer
+        char* cmd_A = buffer;
+        char* cmd_B = pipe_pos + 1;
+        
+        handle_pipe_command(cmd_A, cmd_B, foreground);
 
-    for(int i = 0; i < COMMANDS; i++){
-        if (!strcmp(buffer, commands[i])){
-            switch (i) {
-                case 0:
-                    exit_shell();
-                    not_command = 1;
-                    break;
-                case 1:
-                    clearScreen(); 
-                    cursor_y = 0;
-                    cursor_x = 0;
-                    limit_index = VERT_SIZE/font_size - 1;
-                    not_command = 1;
-                    break;
-                case 2:
-                    write_out("Vamos a esperar 4 segundos... ");
-                    sleep(4, 0);
-                    write_out("Listo!\n");
-                    not_command = 1;
-                    break;
-                case 3:
-                    write_out("El comando sleep efectuara una espera de 4 segundos para demostrar el funcionamiento de la syscall. Los comandos milisleep y nanosleep haran algo equivalente pero con sus respectivas unidades\n");
-                    not_command = 1;
-                    break;
-                case 4:
-                    write_out("Los comandos existentes son:\n");
-                    for(int i=0; i<(COMMANDS-TESTS); i++){
-                        write_out(help[i]);
-                        write_out("\n");
-                    }
-                    not_command = 1;
-                    break;
-                case 5:
-                    if(getRegs(regs)==0){
-                        write_out("Antes de pedir los registros debe apretar la tecla alt izquierda para que los mismos se guarden\n");
-                    }
-
-                    else{
-                        for(int i=0; i<cantRegs; i++){
-                            if (i != cantRegs - 1)
-                                write_out("-");
-                            write_out(regsNames[i]);
-                            uintToBase(regs[i], aux, 10);
-                            write_out(aux);
-                            write_out("\n");
-                        }
-                    }
-                    not_command = 1;
-                    break;
-         
-                case 6:
-                    write_out("Vamos a testear dividir 1 por 0 en:\n");
-                    write_out("3...\n");
-                    sleep(1, 0);
-                    write_out("2...\n");
-                    sleep(1, 0);
-                    write_out("1...\n");
-                    sleep(1, 0);
-                    int a = 1;
-                    int b = 0;
-                    if (a/b ==1)
-                        write_out("You really shouldnt be here chief... medio que rompiste la matematica\n");
-                    not_command = 1;
-                    break;
-
-                case 7:
-                    write_out("Vamos a tratar de desafiar al runtime de asm en:\n");
-                    write_out("3...\n");
-                    sleep(1, 0);
-                    write_out("2...\n");
-                    sleep(1, 0);
-                    write_out("1...\n");
-                    sleep(1, 0);
-                    _opError();
-                    not_command = 1;    
-                    break;
-
-                case 8: 
-                    wait_pid = test_mm(argc, argv);
-                    break;
-
-                case 9:
-                    wait_pid = test_prio(argc, argv);
-                    break;
-
-                case 10:
-                    wait_pid = test_pcs(argc, argv);
-                    break;
-
-                case 11:
-                    wait_pid = test_sync(argc, argv);
-                    break;
-
-                case 12:
-                    wait_pid = status_count(argc, argv);
-                    break;
-                    
-                case 13:
-                    write_out("Los Tests existentes son:\n");
-                    for(int i=0; i<TESTS; i++){
-                        write_out(tests[i]);
-                        write_out("\n");
-                    }
-                    break;
-                
-                case 14:
-                    kill_from_shell = 1; 
-                    wait_pid = kill_process(argc,argv);
-                    break;
-
-                case 15:
-                    wait_pid = get_proc_list(argc, argv);
-                    break;
-
-                case 16:
-                    wait_pid = be_nice(argc, argv);
-                    break;
-
-                case 17:
-                    write_out("Info de los comandos de SO:\n");
-                    for(int i=0; i<(SOCOMS); i++){
-                        write_out(SOcommands[i]);
-                        write_out("\n");
-                    }
-                    break;
-
-                case 18:
-                    wait_pid = block_process(argc, argv);
-                    break;
-
-                case 19:
-                    wait_pid = unblock_process(argc, argv);
-                    break;
-
-                case 20:
-                    if(foreground == 1){
-                       write_out("Estas creando un loop en foreground, despedite de la shell.\n");
-                    }
-                    wait_pid = loop(argc, argv);
-                    break;
-
-                case 21:
-                    wait_pid = wc(argc, argv);
-                    break;
-
-                case 22:
-                    wait_pid = cat(argc, argv);
-                    break;
-            
-                case 23:
-                    wait_pid = filter(argc, argv);
-                    break;
-
-                case 24:
-                    wait_pid = mvar(argc, argv);
-                    break;
-            }  
-
-            if(foreground && !not_command){
-                //write_out("Jeje fg no esta desarrollado\n");
-                
-                char pid_str[16];
-                int_to_str(wait_pid, pid_str);
-                char *argv[1];
-                argv[0] = pid_str;
-
-                int argc = 0;
-                while (argc < 1 || argv[argc] != 0) {
-                    argc++;
-                    if (argc == 1) break;
+    } else {
+        // --- CASO COMANDO ÚNICO ---
+        remove_extra_spaces(buffer);
+        argc = parse_arguments(buffer, argv); // Parsea el comando
+        
+        if (argc == 0) return; // Comando vacío
+        
+        void* rip = find_command_rip(argv[0]); // Busca el RIP del comando
+        
+        if (rip == NULL) {
+            // --- MANEJAR COMANDOS BUILT-IN ---
+            if (strcmp(argv[0], "exit") == 0) {
+                exit_shell();
+            } else if (strcmp(argv[0], "clear") == 0) {
+                clearScreen(); 
+                cursor_y = 0;
+                cursor_x = 0;
+                limit_index = VERT_SIZE/font_size - 1;
+            } else if (strcmp(argv[0], "sleep") == 0) {
+                 write_out("Vamos a esperar 4 segundos... ");
+                 sleep(4, 0);
+                 write_out("Listo!\n");
+            } else if (strcmp(argv[0], "infoSleep") == 0) {
+                 write_out("El comando sleep efectuara una espera de 4 segundos...\n");
+            } else if (strcmp(argv[0], "help") == 0) {
+                write_out("Los comandos existentes son:\n");
+                for(int i=0; i<(COMMANDS-TESTS); i++){
+                    write_out(help[i]);
+                    write_out("\n");
                 }
-
-                wait(argc, argv);
-            } 
-
-            return;
+            } else if (strcmp(argv[0], "registers") == 0) {
+                if(getRegs(regs)==0){
+                    write_out("Antes de pedir los registros debe apretar la tecla alt izquierda...\n");
+                } else {
+                    for(int i=0; i<cantRegs; i++){
+                        if (i != cantRegs - 1) write_out("-");
+                        write_out(regsNames[i]);
+                        uintToBase(regs[i], aux, 10);
+                        write_out(aux);
+                        write_out("\n");
+                    }
+                }
+            }
+            // ... (Puedes añadir el resto de tus built-ins aquí) ...
+            else {
+                cursor_x = 0;
+                write_out(ERROR_PROMPT);
+                write_out(argv[0]);
+                write_out("\n");
+            }
+        } else {
+            // --- ES UN PROCESO, CREARLO ---
+            // (La función create_process ahora usa STDIN/STDOUT por defecto)
+            int pid = create_process(rip, argv[0], argc, argv);
+            
+            if (foreground && pid > 0) {
+                current_foreground_pid = pid; 
+                char pid_str[16];
+                int_to_str(pid, pid_str);
+                char *wait_argv[2];
+                wait_argv[0] = pid_str;
+                wait_argv[1] = NULL;
+                wait(1, wait_argv);
+                current_foreground_pid = -1; 
+            }
         }
     }
-
-    if (strlen(buffer) == BUFFER_SIZE){
-        write_out("Buenas... una poesia?\n");
-        return;
-    }
-
-    // En caso de no encontrar hacemos esto
-    cursor_x = 0;
-    write_out(ERROR_PROMPT);
-    write_out(buffer);
-    write_out("\n");
-    return;
 }
 
 void shift(){
@@ -401,6 +323,152 @@ void init_shell(){
     font_size = getFontSize();
     rows_to_show = VERT_SIZE/font_size;
     line_size = LINE_SIZE/font_size;
+}
+
+//HELPERS
+static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
+    char *argv_A[MAX_ARGS], *argv_B[MAX_ARGS];
+    int argc_A, argc_B;
+
+    remove_extra_spaces(cmd_A);
+    remove_extra_spaces(cmd_B);
+    argc_A = parse_arguments(cmd_A, argv_A);
+    argc_B = parse_arguments(cmd_B, argv_B);
+
+    if (argc_A == 0 || argc_B == 0) {
+        write_out("Error: sintaxis de pipe invalida.\n");
+        return;
+    }
+
+    void* rip_A = find_command_rip(argv_A[0]);
+    void* rip_B = find_command_rip(argv_B[0]);
+
+    if (rip_A == NULL || rip_B == NULL) {
+        write_out("Error: comando invalido en el pipe.\n");
+        return;
+    }
+
+    // 1. Crear el pipe anónimo (usando la syscall de userlibasm.h)
+    int pipe_ids[2]; // pipe_ids[0] = READ, pipe_ids[1] = WRITE
+    if (_pipe_create_anonymous(pipe_ids) == -1) {
+        write_out("Error: no se pudo crear el pipe.\n");
+        return;
+    }
+    
+    // 2. Preparar los arrays de FDs
+    uint64_t fds_A[2] = {STDIN, pipe_ids[1]}; // Proceso A: Escribe en el pipe
+    uint64_t fds_B[2] = {pipe_ids[0], STDOUT}; // Proceso B: Lee del pipe
+
+    // 3. Crear Proceso A (usando la syscall 'piped' de userlib.h)
+    int pid_A = create_process_piped(rip_A, argv_A[0], argc_A, argv_A, fds_A);
+
+    // 4. Crear Proceso B
+    int pid_B = create_process_piped(rip_B, argv_B[0], argc_B, argv_B, fds_B);
+
+    // 5. Cerrar ambos extremos del pipe en la SHELL (MUY IMPORTANTE)
+    _pipe_close(pipe_ids[0]);
+    _pipe_close(pipe_ids[1]);
+
+    // 6. Esperar a que terminen (si es foreground)
+    if (foreground) {
+        char pid_str[16];
+        char *wait_argv[2];
+        wait_argv[1] = NULL;
+
+        int_to_str(pid_A, pid_str);
+        wait_argv[0] = pid_str;
+        wait(1, wait_argv);
+
+        int_to_str(pid_B, pid_str);
+        wait_argv[0] = pid_str;
+        wait(1, wait_argv);
+    }
+}
+
+/**
+ * @brief Parsea un string de comando (separado por espacios) en un argv.
+ * Devuelve argc.
+ */
+static int parse_arguments(char* buffer, char** argv) {
+    int argc = 0;
+    if (buffer == NULL || *buffer == '\0') {
+        return 0;
+    }
+
+    argv[argc++] = buffer; // El primer argumento es el comando mismo
+
+    for (int i = 0; buffer[i] != '\0' && argc < MAX_ARGS - 1; i++) {
+        if (buffer[i] == ' ') {
+            buffer[i] = '\0';
+            while (buffer[i+1] == ' ') {
+                i++;
+            }
+            if (buffer[i+1] != '\0') { 
+                argv[argc++] = &buffer[i + 1];
+            }
+        }
+    }
+    argv[argc] = NULL;
+    return argc;
+}
+
+/**
+ * @brief Busca en la lista de comandos y devuelve el puntero a la función
+ * (RIP) del programa a ejecutar. Devuelve NULL si es un comando built-in o no existe.
+ */
+static void* find_command_rip(char* name) {
+    // Array de punteros a funciones (RIPs). 
+    // ¡DEBE ESTAR EN EL MISMO ORDEN QUE TU ARRAY 'commands'!
+    static void* command_rips[COMMANDS] = {
+        NULL,                   // "exit"
+        NULL,                   // "clear"
+        NULL,                   // "sleep"
+        NULL,                   // "infoSleep"
+        NULL,                   // "help"
+        NULL,                   // "registers"
+        NULL,                   // "test-div"
+        NULL,                   // "test-invalid"
+        &test_mm_dummy,         // "test-mm"
+        &test_prio_new,         // "test-prio"
+        &test_processes_dummy,  // "test-pcs"
+        &test_sync_dummy,       // "test-sync"
+        &status_count_dummy,    // "mem"
+        NULL,                   // "Tests"
+        &kill_dummy,            // "kill"
+        &get_proc_list_dummy,   // "ps"
+        &be_nice_dummy,         // "nice"
+        NULL,                   // "help-SO"
+        &block_process_dummy,   // "block"
+        &unblock_process_dummy, // "unblock"
+        &loop_dummy,            // "loop"
+        &wc_dummy,              // "wc"
+        &cat_dummy,             // "cat"
+        &filter_dummy,          // "filter"
+        &mvar_dummy             // "mvar"
+    };
+
+    for (int i = 0; i < COMMANDS; i++) {
+        if (strcmp(name, commands[i]) == 0) {
+            return command_rips[i];
+        }
+    }
+    return NULL; // No encontrado
+}
+
+/**
+ * @brief Implementación simple de strchr (busca un caracter en un string)
+ */
+static char* strchr(const char* str, int c) {
+    while (*str != '\0') {
+        if (*str == (char)c) {
+            return (char*)str;
+        }
+        str++;
+    }
+    if (c == '\0') {
+        return (char*)str;
+    }
+    return NULL; // No encontrado
 }
 
 static void remove_extra_spaces(char *str) {

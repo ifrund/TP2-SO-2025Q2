@@ -48,7 +48,7 @@ typedef struct {
 } ProcessInfo;
 
 
-int _create_process(void * rip, const char *name, int argc, char *argv[]);
+int _create_process(void * rip, const char *name, int argc, char *argv[], uint64_t* fds);
 int _kill_process(uint64_t pid);
 int _block_process(uint64_t pid);
 int _unblock_process(uint64_t pid);

@@ -211,6 +211,7 @@ int free(int argc, char ** argv);
 int status_count(int argc, char ** argv);
 
 int create_process(void * rip, const char *name, int argc, char *argv[]);
+int create_process_piped(void * rip, const char *name, int argc, char *argv[], uint64_t* fds);
 int kill_process(int argc, char ** argv);
 void exit_pcs(int ret);
 int block_process(int argc, char ** argv);

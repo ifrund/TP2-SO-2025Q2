@@ -30,7 +30,7 @@ void *sys_alloc(uint64_t size);
 void sys_free(uint64_t address);
 void sys_status_count(uint64_t status_out);
 
-int sys_create_process(uint64_t rip, uint64_t name, uint64_t argc, uint64_t argv);
+int sys_create_process(uint64_t rip, uint64_t name, uint64_t argc, uint64_t argv, uint64_t *fds);
 int sys_kill_process(uint64_t pid);
 int sys_block_process(uint64_t pid);
 int sys_unblock_process(uint64_t pid);

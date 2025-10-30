@@ -81,7 +81,7 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     break;
     
   case (0xA0):
-    sys_create_process(rdi, rsi, rdx, rcx);
+    sys_create_process(rdi, rsi, rdx, rcx, r8);
     break;
   
   case (0xA1):
@@ -252,8 +252,8 @@ int sys_be_nice(uint64_t pid, uint64_t newPrio){
     return be_nice(pid, newPrio);
 }
 
-int sys_create_process(uint64_t rip, uint64_t name, uint64_t argc, uint64_t argv){
-  return create_process((void *) rip, (char *) name, (int) argc, (char **) argv);
+int sys_create_process(uint64_t rip, uint64_t name, uint64_t argc, uint64_t argv, uint64_t *fds){
+  return create_process((void *) rip, (char *) name, (int) argc, (char **) argv, fds);
 }
 
 int sys_kill_process(uint64_t pid){

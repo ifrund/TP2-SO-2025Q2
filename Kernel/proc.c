@@ -9,7 +9,7 @@ static int strlen(char * string){
 }
 
 //tabla de procesos
-int create_process(void * rip, char *name, int argc, char *argv[]){
+int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds){
     int i, myPid=-1;
 
     for (i = 0; i <MAX_PCS; i++){
@@ -120,7 +120,17 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     }
     pcb->blocksAmount = 0;
         
-    memset(pcb->fileDescriptors, 0, sizeof(pcb->fileDescriptors));
+    if (fds == NULL) {
+        // Comportamiento por defecto: STDIN=0, STDOUT=1, STDERR=2
+        pcb->fileDescriptors[0] = 0; // STDIN
+        pcb->fileDescriptors[1] = 1; // STDOUT
+        pcb->fileDescriptors[2] = 2; // STDERR
+    } else {
+        // Comportamiento con pipe: Copia los FDs del array
+        pcb->fileDescriptors[0] = fds[0]; // STDIN (puede ser el pipe de lectura)
+        pcb->fileDescriptors[1] = fds[1]; // STDOUT (puede ser el pipe de escritura)
+        pcb->fileDescriptors[2] = 2;      // STDERR
+    }
     pcb->isYielding = 0;
     //TODO este yield debe ser para todos??
     if(strcmp(name, "wait") == 0){

@@ -47,7 +47,7 @@ void test_processes_dummy(int argc, char **argv) {
 
     // Createmax_processes processes
     for (i = 0; i <max_processes; i++) {
-      p_rqs[i].pid = _create_process(&endless_loop, "endless_loop", 0, argvAux); //aca usamos syscall porq no hay create_pcs dummy 
+      p_rqs[i].pid = create_process(&endless_loop, "endless_loop", 0, argvAux); //aca usamos syscall porq no hay create_pcs dummy 
 
       if (p_rqs[i].pid == -1) {
         write_out("test_processes: ERROR creating process\n");
