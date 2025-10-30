@@ -690,25 +690,61 @@ int wait(int argc, char ** argv){
 // }
 
 void wc_dummy(int argc, char ** argv){
-    char buffer[1];
-    int line_count = 0;
+    char buffer[2];
+    int word_count = 0;
+    int in_word = 0; // Estado: 0 = fuera de palabra, 1 = dentro de palabra
+    int clean_exit = 0; // Para saber si salimos con Ctrl+D
+    buffer[1] = '\0';
 
-    // Lee de STDIN (FD 0)
-    while (read(buffer, 1) > 0) {
-        if (buffer[0] == '\n') {
-            line_count++;
+    while (1) {
+        // 1. Llama a read() para leer de STDIN (FD 0)
+        int bytes_read = read(buffer, 1);
+
+        if (bytes_read > 0) {
+            // 2. Si leyó una tecla...
+            char c = buffer[0];
+
+            if (c == '\x04') { // Ctrl+D (Fin de Archivo)
+                clean_exit = 1; // Marcamos que fue una salida limpia
+                break; // Sale del loop
+            }
+            
+            if (c == '\x03') { // Ctrl+C (Interrupción)
+                break; // Sale del loop (sin salida limpia)
+            }
+
+            print(buffer);
+            
+            // 3. Lógica de Conteo de Palabras
+            if (c == ' ' || c == '\n' || c == '\t') {
+                // Si es un espacio, estamos "fuera de palabra"
+                in_word = 0;
+            } else if (in_word == 0) {
+                // Si NO estábamos en una palabra Y el carácter NO es un espacio,
+                // significa que acabamos de entrar a una nueva palabra.
+                in_word = 1;
+                word_count++;
+            }
+            // Si in_word == 1 y el char no es un espacio,
+            // seguimos dentro de la misma palabra (no hacemos nada).
+
+        } else {
+            // 4. Si read() devolvió 0 (no hay tecla), cede el CPU.
+            sleep_once(); 
         }
     }
-
-    char number[12];
-    uintToBase(line_count, number, 10);
     
-    // Escribe en STDOUT (FD 1)
-    print("Cantidad de lineas: ");
-    print(number);
-    print("\n");
+    // 5. Al salir del loop, solo imprimimos si fue una salida limpia (Ctrl+D)
+    if (clean_exit) {
+        char number_str[12];
+        uintToBase(word_count, number_str, 10);
+        
+        print("Cantidad de palabras: ");
+        print(number_str);
+        print("\n");
+    }
 
-    exit_pcs(EXIT);
+    exit_pcs(EXIT); // Termina el proceso
 }
 
 int wc(int argc, char ** argv){
