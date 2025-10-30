@@ -22,16 +22,16 @@ typedef struct {
     int data_size;
     
     //Semaforos del pipe
-    char sem_mutex_name[MAX_NAME_LENGTH];
-    char sem_full_name[MAX_NAME_LENGTH];
-    char sem_empty_name[MAX_NAME_LENGTH];
+    char sem_pipe_lock_name[MAX_NAME_LENGTH];
+    char sem_items_available_name[MAX_NAME_LENGTH];
+    char sem_empty_space_available_name[MAX_NAME_LENGTH];
     
     //Para almacenamiento interno
     int is_in_use;
 } Pipe;
 
 // Tabla Global de Pipes 
-Pipe global_pipe_table[MAX_PIPES] = {NULL};
+Pipe global_pipe_table[MAX_PIPES];
 
 void pipe_init() {
     // Inicializa el semaforo para la tabla global
@@ -63,13 +63,46 @@ int pipe_close(int pipe_id) {
     //Si no hay mas referencias, liberar recursos
     if (pipe->ref_count == 0) {
         // Liberar recursos asociados al pipe
-        sem_close(pipe->sem_mutex_name);
-        sem_close(pipe->sem_full_name);
-        sem_close(pipe->sem_empty_name);
+        sem_close(pipe->sem_pipe_lock_name);
+        sem_close(pipe->sem_items_available_name);
+        sem_close(pipe->sem_empty_space_available_name);
         pipe->is_in_use = 0; // Marca el slot como libre
     } 
 
     sem_post("GLOBAL_PIPE_TABLE_LOCK");
 
     return 0;
+}
+
+int pipe_read(int pipe_id, char* buffer, int count) {
+    if (pipe_id < 0 || pipe_id >= MAX_PIPES || buffer == NULL || count <= 0 || !global_pipe_table[pipe_id].is_in_use) {
+        return -1; // PipeID invalido o parametros invalidos
+    }
+
+    Pipe* pipe = &global_pipe_table[pipe_id];
+
+    int bytes_read = 0;
+
+    // Leemos byte por byte
+    for (int i = 0; i < count; i++) {
+        // Esperar a que haya datos disponibles
+        sem_wait(pipe->sem_items_available_name);
+
+        // Entramos a la region critica
+        sem_wait(pipe->sem_pipe_lock_name);
+
+        // Leer un byte del buffer del pipe
+        buffer[i] = pipe->buffer[pipe->read_index];
+        pipe->read_index = (pipe->read_index + 1) % PIPE_BUFFER_SIZE;
+
+        // Salimos de la region critica
+        sem_post(pipe->sem_pipe_lock_name);
+
+        //Avisamos que hay espacio
+        sem_post(pipe->sem_empty_space_available_name);
+
+        bytes_read++;
+    }
+
+    return bytes_read;
 }
