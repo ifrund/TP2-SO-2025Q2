@@ -19,7 +19,7 @@ typedef struct {
     char buffer[PIPE_BUFFER_SIZE];
     int read_index;                 //Indice de lectura
     int write_index;                //Indice de escritura
-    int data_size;
+    //int data_size; //Por ahora no lo usamos
     
     //Semaforos del pipe
     char sem_pipe_lock_name[MAX_NAME_LENGTH];
@@ -81,9 +81,10 @@ int pipe_create_anonymous(int pipe_ids[2]) {
     itoa(free_slot, slot_str, 10);
     strcat(anon_name, slot_str);
 
-    sem_post("GLOBAL_PIPE_TABLE_LOCK");
-
     int pipe_id = create_pipe_object(free_slot, anon_name, 0);
+    
+    sem_post("GLOBAL_PIPE_TABLE_LOCK");
+    
     if (pipe_id < 0) {
         sem_wait("GLOBAL_PIPE_TABLE_LOCK");
         global_pipe_table[free_slot].is_in_use = 0;
@@ -95,7 +96,6 @@ int pipe_create_anonymous(int pipe_ids[2]) {
     global_pipe_table[pipe_id].ref_count = 2;
     sem_post("GLOBAL_PIPE_TABLE_LOCK");
 
-
     //Devuelve los dos handles
     pipe_ids[0] = pipe_id; // Handle para pipe_read
     pipe_ids[1] = pipe_id; // Handle para pipe_write
@@ -103,7 +103,7 @@ int pipe_create_anonymous(int pipe_ids[2]) {
     return 0; // Éxito
 }
 
-int pipe_open_named(const char* name) {
+int pipe_create_named(const char* name) {
     if (name == NULL)
         return -1;
 
@@ -138,11 +138,11 @@ int pipe_open_named(const char* name) {
         return -1; // No hay lugar
     }
 
-    // 4. Liberamos el lock global mientras se crean semáforos (operación lenta)
-    sem_post("GLOBAL_PIPE_TABLE_LOCK");
-
     // Crear el objeto pipe (named = 1)
     int pipe_id = create_pipe_object(free_slot, name, 1);
+    
+    // Liberamos el lock global
+    sem_post("GLOBAL_PIPE_TABLE_LOCK");
 
     if (pipe_id < 0) {
         // Rollback si algo falló
@@ -281,11 +281,11 @@ static int create_pipe_object(int pipe_id, const char *name, int is_named) {
     pipe->is_named = is_named;
     pipe->read_index = 0;
     pipe->write_index = 0;
-    pipe->data_size = 0;
+    //pipe->data_size = 0;
 
     build_sem_names(name, pipe);
 
-    sem_post("GLOBAL_PIPE_TABLE_LOCK");
+    //sem_post("GLOBAL_PIPE_TABLE_LOCK");
 
     if (sem_open_init(pipe->sem_pipe_lock_name, 1) < 0)
         return -1;
