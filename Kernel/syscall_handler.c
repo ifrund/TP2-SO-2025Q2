@@ -9,6 +9,7 @@
 #include "include/memory_manager.h"
 #include <proc.h>
 #include <scheduler.h>
+#include <pipes.h>
 
 #define STDIN 0
 #define STDOUT 1
@@ -121,6 +122,26 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
 
   case (0xAA):
     sys_sem_close(rdi);
+    break;
+
+  case (0xAB):
+    sys_pipe_create_anonymous(rdi);
+    break;
+
+  case (0xAC):
+    sys_pipe_create_named(rdi);
+    break;
+
+  case (0xAD):
+    sys_pipe_close(rdi);
+    break;
+
+  case (0xAE): 
+    sys_pipe_write(rdi, rsi, rdx);
+    break;
+
+  case (0xAF):
+    sys_pipe_read(rdi, rsi, rdx);;
     break;
 
   }
@@ -274,3 +295,27 @@ int sys_sem_post(uint64_t name){
 int sys_sem_close(uint64_t name){
   return sem_close((char *)name);
 }
+
+//PIPES
+
+int sys_pipe_create_anonymous(uint64_t pipe_ids){
+  return pipe_create_anonymous((int *) pipe_ids);
+}
+
+int sys_pipe_create_named(uint64_t name){
+  return pipe_create_named((const char*) name);
+}
+
+int sys_pipe_close(uint64_t pipe_id){
+  return pipe_close((int) pipe_id);
+}
+
+int sys_pipe_write(uint64_t pipe_id, uint64_t buffer, uint64_t count){
+  return pipe_write((int) pipe_id, (const char*) buffer, (int) count);
+}
+
+int sys_pipe_read(uint64_t pipe_id, uint64_t buffer, uint64_t count){
+  return pipe_read((int) pipe_id, (char*) buffer, (int) count);
+}
+
+

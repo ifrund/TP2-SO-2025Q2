@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "proc.h"
 #include "sem.h"
+#include <pipes.h>
 
 void syscall_handler();
 void sys_write(uint64_t fd, uint64_t message, uint64_t length);
@@ -42,3 +43,9 @@ int sys_sem_open_init(uint64_t name, uint64_t value);
 int sys_sem_wait(uint64_t name);
 int sys_sem_post(uint64_t name);
 int sys_sem_close(uint64_t name);
+//PIPES
+int sys_pipe_create_named(uint64_t name);
+int sys_pipe_create_anonymous(uint64_t pipe_ids);
+int sys_pipe_close(uint64_t pipe_id);
+int sys_pipe_write(uint64_t pipe_id, uint64_t buffer, uint64_t count);
+int sys_pipe_read(uint64_t pipe_id, uint64_t buffer, uint64_t count);
