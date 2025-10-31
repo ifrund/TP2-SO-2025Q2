@@ -85,7 +85,7 @@ typedef struct {
     //TODO probablmente borrarlas
     uint64_t externWaitingPID;
     bool isWaitingForExtern;
-    //int childrenAmount;
+    //int childrenAmount; TODO, literlamente cambiar este dato de lugar rompe el ps WTF
     uint64_t children[MAX_PCS];
     // Podrías incluir file descriptors si querés: los ids nada más.
     uint64_t fileDescriptors[MAX_FD];
