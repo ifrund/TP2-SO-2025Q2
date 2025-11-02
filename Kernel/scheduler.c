@@ -1,27 +1,25 @@
 #include "include/scheduler.h"
 
 #define IDLE_PID 1
-int process_count = 0;
+int active_processes = 0; //procesos q no estan ZOMBIE
 int current_index = -1;
 
-int find_index_by_pid(int pid) {
-    for (int i = 0; i < process_count; i++) {
-        if (processTable[i] != NULL && processTable[i]->PID == pid)
-            return i;
-    }
-    return -1;  
+int alive(){
+    int i=0;
+    for(int j=0; j<MAX_PCS; j++){
+        if(processTable[j]!=NULL && processTable[j]->state != ZOMBIE){
+            i++;
+        }
+        if(processTable[j]==NULL){
+            break;
+        }
+    }  
+    return i;
 }
-
-//TODO, pensar difernetens situaciones
-//el primer pcs entra al sch
-//hay 3 ya corriendo
-//hay 3 de diferentes prio
-//el pcs pasa a estar ZOMBIE o BLOCKED
-//casos con idle :(
 
 void *scheduling(void *rsp) {
 
-    if (process_count == 0)
+    if (active_processes == 0)
         return rsp; // No hay pcs
 
     if (current_index >= 0 && processTable[current_index] != NULL) {
@@ -62,9 +60,8 @@ void *scheduling(void *rsp) {
     //buscamos READY
     int next_index = current_index;
     int checked = 0;
-
     do {
-        next_index = (next_index + 1) % process_count;
+        next_index = (next_index + 1) % MAX_PCS;
         checked++;
         PCB *candidate = processTable[next_index];
 
@@ -73,11 +70,10 @@ void *scheduling(void *rsp) {
             candidate->state = RUNNING;
             return (void *)candidate->rsp;
         }
-    } while (checked < process_count);
+    } while (checked < MAX_PCS); //TODO, optimizar para q no recorra los 64 lugares antes de llegar al idle
 
     //como no hay ningun proceso en ready, tenemos q dejar algo corriendo en el sch
     //asiq vamos con el idle, q sabemos q siempre es el de pid 1
-    
     processTable[IDLE_PID]->state = RUNNING;
     current_index = IDLE_PID; 
     return (void *)processTable[IDLE_PID]->rsp;

@@ -47,12 +47,17 @@ void test_processes_dummy(int argc, char **argv) {
 
     // Createmax_processes processes
     for (i = 0; i <max_processes; i++) {
-      p_rqs[i].pid = _create_process(&endless_loop, "endless_loop", 0, argvAux); //aca usamos syscall porq no hay create_pcs dummy 
+      p_rqs[i].pid = create_process(&endless_loop, "endless_loop", 0, argvAux); //aca usamos syscall porq no hay create_pcs dummy 
 
       if (p_rqs[i].pid == -1) {
-        write_out("test_processes: ERROR creating process\n");
+        write_out("test_processes: ERROR creating process, no hay mas espacio para procesos\n");
         exit_pcs(ERROR);
-      } else {
+      }
+      if(p_rqs[i].pid == -2){
+        write_out("test_processes: ERROR creating process, error en alloc\n");
+        exit_pcs(ERROR);
+      }
+      else {
         p_rqs[i].state = RUNNING;
         alive++;
       }
@@ -93,7 +98,7 @@ void test_processes_dummy(int argc, char **argv) {
               char *argvB[2];
               argvB[0] = pid_str;
               argvB[1] = NULL;
-              if (/*block_process(argcB, argvB) == -1*/ _block_process(p_rqs[i].pid) != 0) {
+              if (block_process(argcB, argvB) == -1 /*_block_process(p_rqs[i].pid) != 0*/) {
                 write_out("test_processes: ERROR blocking process, pid no existe ");
                 printDec(p_rqs[i].pid);
                 write_out(". \n");
@@ -117,7 +122,7 @@ void test_processes_dummy(int argc, char **argv) {
           char *argvU[2];
           argvU[0] = pid_str;
           argvU[1] = NULL;
-          if (/*unblock_process(argcU, argvU) == -1*/ _unblock_process(p_rqs[i].pid) != 0) { //si o si esta bloqueado por el if de arriba
+          if (unblock_process(argcU, argvU) == -1  /* _unblock_process(p_rqs[i].pid) != 0 */) { //si o si esta bloqueado por el if de arriba
             write_out("test_processes: ERROR unblocking process\n");
             exit_pcs(ERROR);
           }

@@ -7,7 +7,7 @@
 #include "lib.h"
 #include "interrupts.h"
 
-extern int process_count;
+extern int active_processes;
 extern int current_index;
 
 void * scheduling(void *rsp);

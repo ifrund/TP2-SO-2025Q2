@@ -34,7 +34,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     //Inicializamos PCB:
     PCB * pcb = alloc(sizeof(PCB));
     if (pcb == NULL)
-        return -1;
+        return -2;
     processTable[myPid] = pcb; 
 
     //Informacion general
@@ -44,7 +44,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     void* stackBase = alloc(MAX_STACK_SIZE);
     if (stackBase == NULL) {
         free(processTable[i]);
-        return -1; 
+        return -2; 
     }    
     pcb->stackBase = stackBase;
 
@@ -55,7 +55,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
         if (argv_copy == NULL) {
             free(stackBase);
             free(processTable[i]);
-            return -1;
+            return -2;
         }
 
         for (int k = 0; k < argc; k++) {
@@ -68,7 +68,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
                 free(argv_copy);
                 free(stackBase);
                 free(processTable[i]);
-                return -1;
+                return -2;
             }
             memcpy(argv_copy[k], argv[k], len);
         }
@@ -122,13 +122,14 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
         
     memset(pcb->fileDescriptors, 0, sizeof(pcb->fileDescriptors));
     pcb->isYielding = 0;
-    //TODO este yield debe ser para todos??
+
     if(strcmp(name, "wait") == 0){
-        process_count++;
+        active_processes++;
         yield(); //necesitamos q el pcs q crea un wait deje sus quehaceres y se frene
+        return pcb->PID;
     }
 
-    process_count++;
+    active_processes++;
     return pcb->PID;
 }
 
@@ -202,13 +203,13 @@ int kill_process(uint64_t pid){
         init->childProc[init->childrenAmount++] = childPid;
     }
 
-    process_count--;
+    active_processes--;
     last_wish(pid);
     return 0;
 }
 
 ProcessInfo* get_proc_list() {
-    ProcessInfo* list = alloc(sizeof(ProcessInfo) * process_count);
+    ProcessInfo* list = alloc(sizeof(ProcessInfo) * MAX_PCS);
     if (list == NULL)
         return NULL;
 
