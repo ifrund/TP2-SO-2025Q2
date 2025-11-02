@@ -13,7 +13,7 @@
 #define MAX_ARGS 10
 
 // --- PROTOTIPOS EXTERNOS ---
-// (Funciones dummy de userlib.c que find_command_rip necesita)
+// Funciones dummy de userlib.c que find_command_rip necesita
 extern void test_mm_dummy(int argc, char **argv);
 extern uint64_t test_prio_new(uint64_t argc, char **argv);
 extern void test_processes_dummy(int argc, char **argv);
@@ -29,7 +29,6 @@ extern void wc_dummy(int argc, char **argv);
 extern void cat_dummy(int argc, char **argv);
 extern void filter_dummy(int argc, char **argv);
 extern void mvar_dummy(int argc, char **argv);
-// --- FIN DE PROTOTIPOS EXTERNOS ---
 
 // Esto es un "string" manual para poder imprimir el caracter 128 de nuestro font de kernel usando lsa funciones estandar
 #define ERROR_PROMPT "Unknown command: "
@@ -45,7 +44,7 @@ static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help",
 
 //static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
 
-static char* help[COMMANDS-TESTS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
+static char* help[COMMANDS-TESTS] = {"exit", "clear", "sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
     "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock", "loop", "wc", "cat", "filter", "mvar"};
 // 
 // static char* SOcommands[SOCOMS]= {
@@ -138,18 +137,11 @@ void process_key(char key){
 
     if (key == '\x04') { //Ctrl+D
         write_out("Esto es ctrl+d, tdv no esta desarrollado.\n");
-        // if (command_cursor == 0) {
-        //     write_out("\nExit shell\n");
-        //     exit_shell();
-        // } else {
-            
-        //     //TODO
-        // }
+        return;
     }
 
-    if (key == '\x03') { // Ctrl+C
-        write_out("\n");  // para que no se mezcle con la línea actual
-
+    if (key == '\x03') { // Ctrl+C //TODO: REFACTOR
+        write_out("\n");
         if (current_foreground_pid > 0) {
             char pid_str[12];
             char *argv_kill[2];
@@ -161,16 +153,14 @@ void process_key(char key){
             kill_from_shell = 1;           // para que kill_dummy sepa que viene de la shell
             kill_process(1, argv_kill);    // matamos el proceso foreground
 
-            current_foreground_pid = -1;   // limpiamos
+            current_foreground_pid = -1;
             write_out("Proceso foreground terminado.\n");
         } else {
             write_out("No hay proceso en foreground para matar.\n");
+        }
+        write_out(PROMPT_START); // Volvemos al prompt
+        return;
     }
-
-    write_out(PROMPT_START); // Volvemos al prompt
-    return;
-}
-
 
     // a partir de aca si esta lleno el buffer nos vamos
     if (command_cursor == BUFFER_SIZE - 1) 
@@ -186,6 +176,8 @@ void process_command(char* buffer){
     char *argv[MAX_ARGS];
     int argc = 0;
     foreground = 1;
+    char* command_name;
+    char* args_string = NULL; // String que contiene solo los argumentos
 
     // 1. Buscar background
     char* bg_pos = strchr(buffer, '&');
@@ -197,44 +189,62 @@ void process_command(char* buffer){
     // 2. Buscar pipe
     char* pipe_pos = strchr(buffer, '|');
     if (pipe_pos != NULL) {
-        // --- CASO PIPE: "cmd A | cmd B" ---
-        *pipe_pos = '\0'; // Divide el buffer
+        // --- CASO PIPE ---
+        *pipe_pos = '\0';
         char* cmd_A = buffer;
         char* cmd_B = pipe_pos + 1;
-        
         handle_pipe_command(cmd_A, cmd_B, foreground);
 
     } else {
         // --- CASO COMANDO ÚNICO ---
         remove_extra_spaces(buffer);
-        argc = parse_arguments(buffer, argv); // Parsea el comando
+
+        // --- NUEVA LÓGICA DE PARSEO ---
+        command_name = buffer; // El inicio del buffer es el comando
+        char* first_space = strchr(buffer, ' ');
+
+        if (first_space != NULL) {
+            // Si hay un espacio, separamos el comando de los argumentos
+            *first_space = '\0';
+            args_string = first_space + 1;
+            while (*args_string == ' ') args_string++; // Saltar espacios
+        }
         
-        if (argc == 0) return; // Comando vacío
+        // Parseamos SOLO la cadena de argumentos
+        argc = parse_arguments(args_string, argv);
+        // --- FIN NUEVA LÓGICA ---
         
-        void* rip = find_command_rip(argv[0]); // Busca el RIP del comando
+        if (command_name[0] == '\0') return; // Comando vacío
+
+        void* rip = find_command_rip(command_name); // Busca el RIP del comando
         
         if (rip == NULL) {
             // --- MANEJAR COMANDOS BUILT-IN ---
-            if (strcmp(argv[0], "exit") == 0) {
+            if (strcmp(command_name, "exit") == 0) {
                 exit_shell();
-            } else if (strcmp(argv[0], "clear") == 0) {
+            
+            } else if (strcmp(command_name, "clear") == 0) {
                 clearScreen(); 
                 cursor_y = 0;
                 cursor_x = 0;
                 limit_index = VERT_SIZE/font_size - 1;
-            } else if (strcmp(argv[0], "sleep") == 0) {
+            
+            } else if (strcmp(command_name, "sleep") == 0) {
                  write_out("Vamos a esperar 4 segundos... ");
                  sleep(4, 0);
                  write_out("Listo!\n");
-            } else if (strcmp(argv[0], "infoSleep") == 0) {
+            
+            } else if (strcmp(command_name, "infoSleep") == 0) {
                  write_out("El comando sleep efectuara una espera de 4 segundos...\n");
-            } else if (strcmp(argv[0], "help") == 0) {
+            
+            } else if (strcmp(command_name, "help") == 0) {
                 write_out("Los comandos existentes son:\n");
                 for(int i=0; i<(COMMANDS-TESTS); i++){
                     write_out(help[i]);
                     write_out("\n");
                 }
-            } else if (strcmp(argv[0], "registers") == 0) {
+            
+            } else if (strcmp(command_name, "registers") == 0) {
                 if(getRegs(regs)==0){
                     write_out("Antes de pedir los registros debe apretar la tecla alt izquierda...\n");
                 } else {
@@ -246,23 +256,21 @@ void process_command(char* buffer){
                         write_out("\n");
                     }
                 }
-            }
-            // ... (Puedes añadir el resto de tus built-ins aquí) ...
-            else {
+            } else {
                 cursor_x = 0;
                 write_out(ERROR_PROMPT);
-                write_out(argv[0]);
+                write_out(command_name); // Usa command_name
                 write_out("\n");
             }
         } else {
             // --- ES UN PROCESO, CREARLO ---
-            // (La función create_process ahora usa STDIN/STDOUT por defecto)
             write_out("Iniciando proceso...\n");
-            argc--;
-            printDec(argc);
-            int pid = create_process(rip, argv[0], argc, argv);
             
+            // Pasamos argc y argv (que NO contienen el nombre del programa)
+            int pid = create_process(rip, command_name, argc, argv);
+
             if (foreground && pid > 0) {
+                // ... (Tu lógica de wait está bien) ...
                 current_foreground_pid = pid; 
                 char pid_str[16];
                 int_to_str(pid, pid_str);
@@ -388,22 +396,21 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
     }
 }
 
-/**
- * @brief Parsea un string de comando (separado por espacios) en un argv.
- * Devuelve argc.
- */
 static int parse_arguments(char* buffer, char** argv) {
     int argc = 0;
+    
+    // Si la cadena de argumentos es nula o vacía
     if (buffer == NULL || *buffer == '\0') {
+        argv[0] = NULL;
         return 0;
     }
 
-    argv[argc++] = buffer; // El primer argumento es el comando mismo
+    argv[argc++] = buffer; // argv[0] es el primer argumento
 
     for (int i = 0; buffer[i] != '\0' && argc < MAX_ARGS - 1; i++) {
         if (buffer[i] == ' ') {
             buffer[i] = '\0';
-            while (buffer[i+1] == ' ') {
+            while (buffer[i+1] == ' ') { // Saltar espacios extra
                 i++;
             }
             if (buffer[i+1] != '\0') { 
@@ -415,13 +422,9 @@ static int parse_arguments(char* buffer, char** argv) {
     return argc;
 }
 
-/**
- * @brief Busca en la lista de comandos y devuelve el puntero a la función
- * (RIP) del programa a ejecutar. Devuelve NULL si es un comando built-in o no existe.
- */
 static void* find_command_rip(char* name) {
     // Array de punteros a funciones (RIPs). 
-    // ¡DEBE ESTAR EN EL MISMO ORDEN QUE TU ARRAY 'commands'!
+    // MISMO ORDEN QUE COMMANDS
     static void* command_rips[COMMANDS] = {
         NULL,                   // "exit"
         NULL,                   // "clear"
@@ -458,9 +461,6 @@ static void* find_command_rip(char* name) {
     return NULL; // No encontrado
 }
 
-/**
- * @brief Implementación simple de strchr (busca un caracter en un string)
- */
 static char* strchr(const char* str, int c) {
     while (*str != '\0') {
         if (*str == (char)c) {

@@ -56,17 +56,24 @@ int sem_wait(const char* name) {
         return -1;
     }
 
-    _wait(&(sem->lock));     
+    _wait(&(sem->lock));     // 1. Tomar el spinlock
     int pid = get_pid();
 
     sem->value--;
 
-    if(sem->value < 0) { //Toma menos uno como un numero grande positivo y no entra xd
+    if(sem->value < 0) { 
+        // Hay que bloquearse
         sem->blocked_processes[sem->amount_bprocesses++] = pid;
-        block_process(pid);
-    }
+        
+        // --- ARREGLO CRÍTICO ---
+        _post(&(sem->lock)); // 2. Soltar el spinlock ANTES de dormir
+        block_process(pid);  // 3. Dormir (ceder CPU)
+        // -----------------------
 
-    _post(&(sem->lock));
+    } else {
+        // No nos bloqueamos, solo soltamos el spinlock
+        _post(&(sem->lock));
+    }
 
     return 0;
 }

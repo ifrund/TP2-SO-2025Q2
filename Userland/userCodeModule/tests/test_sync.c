@@ -25,19 +25,20 @@ void my_process_inc(uint64_t argc, char *argv[]) {
   }
 
   if ((n = satoi(argv[0])) <= 0){
-    write_out("Erro en el satoi de n\n");
+    write_out("Error en el satoi de n\n");
     exit_pcs(ERROR);
   }
   if ((inc = satoi(argv[1])) == 0){
-    write_out("Erro en el satoi de inc \n");
+    write_out("Error en el satoi de inc \n");
     exit_pcs(ERROR);
   }
   if ((use_sem = satoi(argv[2])) < 0){
-    write_out("Erro en el satoi de use_sem\n");
+    write_out("Error en el satoi de use_sem\n");
     exit_pcs(ERROR);
   }
 
   if (use_sem){
+    write_out("test_sync: Opening semaphore...\n");
     if (_sem_open_init(SEM_ID, 1) == -2) {//si devuelve -1 es porq ya si hizo un open, lo cual es verdad y no un error para este test
       write_out("test_sync: ERROR opening sem\n");
       exit_pcs(ERROR);    
@@ -80,9 +81,13 @@ void test_sync_dummy(int argc, char **argv) { //{n, use_sem}
 
   if (argc != 2){
     write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 2 argumentos.\n");
+    write_out("Enviaste ");
     printDec(argc);
+    write_out(" argumentos\n");
     exit_pcs(ERROR);
   }
+
+  write_out("Iniciando test_sync...\n");
 
   char *argvDec[] = {argv[0], "-1", argv[1], NULL};
   char *argvInc[] = {argv[0], "1", argv[1], NULL};
@@ -97,6 +102,11 @@ void test_sync_dummy(int argc, char **argv) { //{n, use_sem}
 
   int pid = _get_pid();
   for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
+    write_out("Waiting for processes ");
+    printDec(pids[i]);
+    write_out(" and ");
+    printDec(pids[i + TOTAL_PAIR_PROCESSES]);
+    write_out("\n");
     _wait(pids[i], pid);
     _wait(pids[i + TOTAL_PAIR_PROCESSES], pid);
   }
