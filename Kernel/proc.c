@@ -148,11 +148,9 @@ int block_process(int pid){
         yield();
         return -2;
     }
-    else{
+    else{ //si entra aca es ZOMBIE o INVALID
         return -2;
     }
-
-    return 0;
 }
 
 int unblock_process(uint64_t pid){

@@ -154,9 +154,6 @@ void process_command(char* buffer){
 
     if(!foreground){
         argc--;
-        write_out("argc: ");
-        printDec(argc);
-        write_out("\n");
     }
 
     for(int i = 0; i < COMMANDS; i++){
@@ -353,12 +350,14 @@ void process_command(char* buffer){
             for (int i = 0; i < 128; i++)//TODO esta de mas?? se reiniciaria solo el name?
                 name[i] = 0;
                 
+            foreground=1;
             return;
         }
     }
 
     if (strlen(buffer) == BUFFER_SIZE){
         write_out("Buenas... una poesia?\n");
+        foreground = 1;
         return;
     }
 
@@ -367,6 +366,7 @@ void process_command(char* buffer){
     write_out(ERROR_PROMPT);
     write_out(buffer);
     write_out("\n");
+    foreground = 1;
     return;
 }
 
