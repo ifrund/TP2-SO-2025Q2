@@ -38,8 +38,6 @@ typedef struct {
     char my_prio[16];
 
     //TODO probablmente borrarlas
-    uint64_t externWaitingPID;
-    bool isWaitingForExtern;
     int childrenAmount;
     uint64_t children[MAX_PCS];
     // Podrías incluir file descriptors si querés: los ids nada más.
