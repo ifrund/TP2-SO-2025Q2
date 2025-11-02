@@ -653,41 +653,38 @@ void wait_dummy(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
-int wait(int argc, char ** argv){
-    int my_pid = get_pid();
-    char pid_str[21];      
-    int_to_str(my_pid, pid_str);  
+//Wait viejo
+// int wait(int argc, char ** argv){
+//     int my_pid = get_pid();
+//     char pid_str[21];      
+//     int_to_str(my_pid, pid_str);  
 
-    static char *new_argv[3];  
-    new_argv[0] = argv[0];
-    new_argv[1] = pid_str;
-    new_argv[2] = NULL;
-    argc++;
+//     static char *new_argv[3];  
+//     new_argv[0] = argv[0];
+//     new_argv[1] = pid_str;
+//     new_argv[2] = NULL;
+//     argc++;
     
-    return create_process(&wait_dummy, "wait", argc, new_argv);
-}
-
-//TODO aplicar pipes, donde usa argv deberia se el input
-// void wc_dummy(int argc, char ** argv){
-    
-//     char buffer[BUFFER_SIZE];
-//     int n;
-//     int line_count = 0;
-
-//     while ((n = read_input(buffer, sizeof(buffer))) > 0) {
-//         for (int i = 0; i < n; i++) {
-//             if (buffer[i] == '\n') line_count++;
-//         }
-//     }
-
-//     char number[12];
-//     uintToBase(line_count, number, 10);
-//     write_out("Cantidad de lineas: ");
-//     write_out(number);
-//     write_out("\n");
-
-//     exit_pcs(EXIT);
+//     return create_process(&wait_dummy, "wait", argc, new_argv);
 // }
+
+// EN: userlib.c
+
+int wait(int argc, char ** argv){
+    
+    if (argc != 1) { // wait() debe recibir 1 solo argumento: el PID a esperar
+        printError("Error: wait() interno recibió argc != 1\n");
+        return -1;
+    }
+
+    // argv[0] es el string del PID (ej. "4")
+    int target_pid = char_to_int(argv[0]); 
+    int my_pid = get_pid(); // Este es el PID de la shell (o quien llame a wait)
+    
+    // Llama a la syscall _wait, que bloquea ESTE proceso
+    // hasta que el kernel lo despierte (cuando target_pid muera)
+    return _wait(target_pid, my_pid);
+}
 
 void wc_dummy(int argc, char ** argv){
     char buffer[2];

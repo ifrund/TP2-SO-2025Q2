@@ -264,7 +264,7 @@ void process_command(char* buffer){
             }
         } else {
             // --- ES UN PROCESO, CREARLO ---
-            write_out("Iniciando proceso...\n");
+            //write_out("Iniciando proceso...\n");
             
             // Pasamos argc y argv (que NO contienen el nombre del programa)
             int pid = create_process(rip, command_name, argc, argv);
@@ -337,50 +337,71 @@ void init_shell(){
 }
 
 //HELPERS
+// EN: shell.c (Reemplaza la función en la línea 372)
+
 static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
     char *argv_A[MAX_ARGS], *argv_B[MAX_ARGS];
     int argc_A, argc_B;
+    char* command_A, *command_B;
+    char* args_A = NULL, *args_B = NULL;
+    char* first_space;
 
     remove_extra_spaces(cmd_A);
     remove_extra_spaces(cmd_B);
-    argc_A = parse_arguments(cmd_A, argv_A);
-    argc_B = parse_arguments(cmd_B, argv_B);
-
-    if (argc_A == 0 || argc_B == 0) {
-        write_out("Error: sintaxis de pipe invalida.\n");
-        return;
+    
+    // --- Parsear Comando A ---
+    command_A = cmd_A;
+    first_space = strchr(cmd_A, ' ');
+    if (first_space != NULL) {
+        *first_space = '\0';
+        args_A = first_space + 1;
+        while (*args_A == ' ') args_A++;
     }
+    argc_A = parse_arguments(args_A, argv_A); // Parsea solo los argumentos de A
+    
+    // --- Parsear Comando B ---
+    command_B = cmd_B;
+    first_space = strchr(cmd_B, ' ');
+    if (first_space != NULL) {
+        *first_space = '\0';
+        args_B = first_space + 1;
+        while (*args_B == ' ') args_B++;
+    }
+    argc_B = parse_arguments(args_B, argv_B); // Parsea solo los argumentos de B
 
-    void* rip_A = find_command_rip(argv_A[0]);
-    void* rip_B = find_command_rip(argv_B[0]);
+    // (La comprobación de sintaxis inválida se borra 
+    // porque ahora parse_arguments maneja NULL)
+
+    void* rip_A = find_command_rip(command_A); // Busca RIP de A
+    void* rip_B = find_command_rip(command_B); // Busca RIP de B
 
     if (rip_A == NULL || rip_B == NULL) {
         write_out("Error: comando invalido en el pipe.\n");
         return;
     }
 
-    // 1. Crear el pipe anónimo (usando la syscall de userlibasm.h)
-    int pipe_ids[2]; // pipe_ids[0] = READ, pipe_ids[1] = WRITE
+    // 1. Crear el pipe anónimo
+    int pipe_ids[2];
     if (_pipe_create_anonymous(pipe_ids) == -1) {
         write_out("Error: no se pudo crear el pipe.\n");
         return;
     }
     
     // 2. Preparar los arrays de FDs
-    uint64_t fds_A[2] = {STDIN, pipe_ids[1]}; // Proceso A: Escribe en el pipe
-    uint64_t fds_B[2] = {pipe_ids[0], STDOUT}; // Proceso B: Lee del pipe
+    uint64_t fds_A[2] = {STDIN, pipe_ids[1]};
+    uint64_t fds_B[2] = {pipe_ids[0], STDOUT};
 
-    // 3. Crear Proceso A (usando la syscall 'piped' de userlib.h)
-    int pid_A = create_process_piped(rip_A, argv_A[0], argc_A, argv_A, fds_A);
+    // 3. Crear Proceso A (pasando command_A, argc_A y argv_A)
+    int pid_A = create_process_piped(rip_A, command_A, argc_A, argv_A, fds_A);
 
-    // 4. Crear Proceso B
-    int pid_B = create_process_piped(rip_B, argv_B[0], argc_B, argv_B, fds_B);
+    // 4. Crear Proceso B (pasando command_B, argc_B y argv_B)
+    int pid_B = create_process_piped(rip_B, command_B, argc_B, argv_B, fds_B);
 
-    // 5. Cerrar ambos extremos del pipe en la SHELL (MUY IMPORTANTE)
+    // 5. Cerrar ambos extremos del pipe en la SHELL
     _pipe_close(pipe_ids[0]);
     _pipe_close(pipe_ids[1]);
 
-    // 6. Esperar a que terminen (si es foreground)
+    // 6. Esperar
     if (foreground) {
         char pid_str[16];
         char *wait_argv[2];
