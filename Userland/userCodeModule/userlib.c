@@ -751,22 +751,16 @@ int wc(int argc, char ** argv){
     return create_process(&wc_dummy, "WC", argc, argv);
 }
 
-//TODO aplicar pipes, donde usa argv deberia ser el input
-// void cat_dummy(int argc, char ** argv){
-//     for(int i = 0; argv[i] != NULL; i++){
-//         write_out(argv[i]);
-//         write_out(" ");
-//     }
-//     write_out("\n");
-//     exit_pcs(EXIT);
-// }
-
 // EN: userlib.c
 
 void cat_dummy(int argc, char ** argv){
-    char read_buffer[1];
-    char write_buffer[2]; // Buffer para 1 carácter + el terminador nulo '\0'
-    write_buffer[1] = '\0';
+    
+    // Usamos el BUFFER_SIZE definido en userlib.h
+    char line_buffer[BUFFER_SIZE]; 
+    int line_index = 0; // Índice para nuestro buffer de línea
+    char echo_buffer[2];
+    char read_buffer[1]; // Buffer para la syscall read()
+    echo_buffer[1] = '\0';
     
     while (1) {
         // 1. Llama a read() para leer de STDIN (FD 0)
@@ -777,24 +771,44 @@ void cat_dummy(int argc, char ** argv){
             char c = read_buffer[0];
 
             if (c == '\x04') { // Ctrl+D (Fin de Archivo)
+                // Si había algo escrito antes de presionar Ctrl+D,
+                // lo imprimimos.
+                if (line_index > 0) {
+                    line_buffer[line_index] = '\0';
+                    print(line_buffer);
+                }
+                print("\n"); // Salta a una nueva línea al salir
                 break; // Sale del loop y termina el proceso
             }
             
             if (c == '\x03') { // Ctrl+C (Interrupción)
+                print("\n"); // Salta a una nueva línea al salir
                 break; // Sale del loop y termina el proceso
             }
 
-            // 3. Escribe el carácter en STDOUT (FD 1)
-            //    Esto cumple "Imprime el stdin tal como lo recibe"
-            write_buffer[0] = c;
-            print(write_buffer);
+            // --- Lógica de Buffering de Línea ---
+
+            echo_buffer[0] = c;
+            print(echo_buffer);
             
-            // Si el carácter es '\n', la shell (no cat) lo interpretará
-            // y moverá el cursor a la siguiente línea.
+            // 3. Almacena el carácter en nuestro buffer interno
+            if (line_index < BUFFER_SIZE - 1) { // -1 para dejar espacio al '\0'
+                line_buffer[line_index++] = c;
+            }
+
+            // 4. Si la tecla fue 'Enter', imprime la línea completa
+            if (c == '\n') {
+                line_buffer[line_index] = '\0'; // Termina el string
+                print(line_buffer);          // Imprime la línea
+                line_index = 0;              // Resetea el buffer para la prox. línea
+            }
+            
+            // Si no fue 'Enter', simplemente volvemos al loop
+            // para seguir guardando caracteres.
 
         } else {
-            // 4. Si read() devolvió 0 (no hay tecla),
-            //    hacemos lo mismo que la shell: cede el CPU y vuelve a intentar.
+            // 5. Si read() devolvió 0 (no hay tecla),
+            //    cede el CPU y vuelve a intentar (espera activa).
             sleep_once(); 
         }
     }
