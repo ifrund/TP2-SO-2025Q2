@@ -95,9 +95,11 @@ void test_sync_dummy(int argc, char **argv) { //{n, use_sem}
   }
 
   int pid = _get_pid();
+  char name[128];
+  strcpy(name, "my_process_inc");
   for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-    _wait(pids[i], pid);
-    _wait(pids[i + TOTAL_PAIR_PROCESSES], pid);
+    _wait(pids[i], pid, "my_process_inc");
+    _wait(pids[i + TOTAL_PAIR_PROCESSES], pid, "my_process_inc");
   }
 
   write_out("Final value (deberia ser 0): ");

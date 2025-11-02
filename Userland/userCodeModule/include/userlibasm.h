@@ -55,7 +55,7 @@ int _get_pid();
 //Schedulers
 void _yield();
 int _be_nice(int pid, int newPrio);
-int _wait(uint64_t target_pid, uint64_t my_pid);
+int _wait(uint64_t target_pid, uint64_t my_pid, char * name);
 int _sem_open_init(char * name, uint64_t value);
 int _sem_wait(char * name);
 int _sem_post(char * name);

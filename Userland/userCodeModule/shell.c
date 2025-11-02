@@ -161,6 +161,7 @@ void process_command(char* buffer){
 
     for(int i = 0; i < COMMANDS; i++){
         if (!strcmp(buffer, commands[i])){
+            char name[128];
             switch (i) {
                 case 0:
                     exit_shell();
@@ -238,22 +239,27 @@ void process_command(char* buffer){
 
                 case 8: 
                     wait_pid = test_mm(argc, argv);
+                    strcpy(name, "test mm");
                     break;
 
                 case 9:
                     wait_pid = test_prio(argc, argv);
+                    strcpy(name, "test prio");
                     break;
 
                 case 10:
                     wait_pid = test_pcs(argc, argv);
+                    strcpy(name, "test processes");
                     break;
 
                 case 11:
                     wait_pid = test_sync(argc, argv);
+                    strcpy(name, "test sync");
                     break;
 
                 case 12:
                     wait_pid = status_count(argc, argv);
+                    strcpy(name, "status count");
                     break;
                     
                 case 13:
@@ -267,14 +273,17 @@ void process_command(char* buffer){
                 case 14:
                     kill_from_shell = 1; 
                     wait_pid = kill_process(argc,argv);
+                    strcpy(name, "kill");
                     break;
 
                 case 15:
                     wait_pid = get_proc_list(argc, argv);
+                    strcpy(name, "ps");
                     break;
 
                 case 16:
                     wait_pid = be_nice(argc, argv);
+                    strcpy(name, "nice");
                     break;
 
                 case 17:
@@ -287,10 +296,12 @@ void process_command(char* buffer){
 
                 case 18:
                     wait_pid = block_process(argc, argv);
+                    strcpy(name, "block");
                     break;
 
                 case 19:
                     wait_pid = unblock_process(argc, argv);
+                    strcpy(name, "unblock");
                     break;
 
                 case 20:
@@ -298,42 +309,50 @@ void process_command(char* buffer){
                        write_out("Estas creando un loop en foreground, despedite de la shell.\n");
                     }
                     wait_pid = loop(argc, argv);
+                    strcpy(name, "loop");
                     break;
 
                 case 21:
                     wait_pid = wc(argc, argv);
+                    strcpy(name, "WC");
                     break;
 
                 case 22:
                     wait_pid = cat(argc, argv);
+                    strcpy(name, "cat");
                     break;
             
                 case 23:
                     wait_pid = filter(argc, argv);
+                    strcpy(name, "filter");
                     break;
 
                 case 24:
                     wait_pid = mvar(argc, argv);
+                    strcpy(name, "mvar");
                     break;
             }  
 
-            if(foreground && !not_command){
-                //write_out("Jeje fg no esta desarrollado\n");
-                
+            if(foreground && !not_command){  
+                //TODO agregar el name               
                 char pid_str[16];
                 int_to_str(wait_pid, pid_str);
-                char *argv[1];
+                char *argv[3];
                 argv[0] = pid_str;
+                argv[1] = name;
+                argv[2] = 0;
 
-                int argc = 0;
-                while (argc < 1 || argv[argc] != 0) {
-                    argc++;
-                    if (argc == 1) break;
+                int argc_w = 0;
+                while (argv[argc_w] != 0) {
+                    argc_w++;
                 }
 
-                wait(argc, argv);
+                wait(argc_w, argv);
             } 
 
+            for (int i = 0; i < 128; i++)//TODO esta de mas?? se reiniciaria solo el name?
+                name[i] = 0;
+                
             return;
         }
     }

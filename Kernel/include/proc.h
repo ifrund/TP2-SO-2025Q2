@@ -57,7 +57,7 @@ typedef struct {
     Priorities my_prio;
     int time_used;
     int my_max_time;
-    
+
     //Informacion de los hijos:
     int childrenAmount;
     uint64_t childProc[MAX_PCS];
@@ -93,6 +93,6 @@ int kill_process(uint64_t pid);
 ProcessInfo* get_proc_list();
 int get_pid();
 int is_pid_valid(int pid);
-int wait(uint64_t target_pid, uint64_t my_pid);
+int wait(uint64_t target_pid, uint64_t my_pid, char* target_name);
 
 #endif

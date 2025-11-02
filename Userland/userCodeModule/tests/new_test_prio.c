@@ -59,15 +59,15 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
 
     // Expect to see them finish at the same time
     write_out("Primer wait\n");
+    char name[128];
+    strcpy(name, "zero_to_max");
     for (i = 0; i < TOTAL_PROCESSES; i++){
-        //write_out("Wait a ");
-        //printDec(pids[i]);
-        //write_out("-- ");
         static char wpid_str[21];     
         uint_to_str(pids[i], wpid_str);
 
         static char *new_argv[3];  
         new_argv[0] = wpid_str;
+        new_argv[1] = name;
         new_argv[2] = NULL;
         wait(1, new_argv);
     }
@@ -93,6 +93,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
 
         static char *new_argv[3];  
         new_argv[0] = wpid_str;
+        new_argv[1] = name;
         new_argv[2] = NULL;
         wait(1, new_argv);
     }
@@ -123,6 +124,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
         static char *new_argv[3];  
         new_argv[0] = wpid_str;
         new_argv[2] = NULL;
+        new_argv[1] = name;
         wait(1, new_argv);
     }
 

@@ -304,15 +304,19 @@ void cleanup_process(uint64_t pid) {
     processTable[pid] = NULL;
 }
 
-int wait(uint64_t target_pid, uint64_t my_pid){
-    
+int real_wait(uint64_t target_pid, uint64_t my_pid);
+
+int wait(uint64_t target_pid, uint64_t my_pid, char* target_name){
+
     if (!is_pid_valid(target_pid))
         return -1;
     
     if (!is_pid_valid(my_pid)) //TODO cuando entra a aca?? este if no es un "che yo existo??" xd
         return -2;
 
-    PCB* current = processTable[my_pid];
+    if (strcmp(target_name, processTable[target_pid]->name) != 0)
+        return -3;
+
     PCB* target = processTable[target_pid]; //a quien tenemos q esperar
 
     //si el target termino primero, lo terminamos
@@ -321,18 +325,22 @@ int wait(uint64_t target_pid, uint64_t my_pid){
         return 0;
     }
 
+    return real_wait(target_pid, my_pid);
+}
+
+int real_wait(uint64_t target_pid, uint64_t my_pid){
+
     //Si el proceso que deberia esperar termino primero, hacemos el yield
     block_process(my_pid);
     
-    // #################################################################################
-    //  ESPERA ACTIVA - BORRAR SI QUERES BORRAR A BARRACAS CENTRAL
-    // ##################################################################################
     while (is_pid_valid(target_pid) && processTable[target_pid]->state != ZOMBIE) {
         yield();
         //TODO usar sems
+        // #################################################################################
+        //  ESPERA ACTIVA - BORRAR SI QUERES BORRAR A BARRACAS CENTRAL
+        // ##################################################################################
     }
-    // #################################################################################
 
-    unblock_process(my_pid); //este block podria estar re de más porq tmb hay uno en el kill (osea cuando se muere el hijo)
+    unblock_process(my_pid);
     return 0;
 }
