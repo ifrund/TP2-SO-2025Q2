@@ -13,7 +13,7 @@
 #define MAX_ARGS 10
 
 // --- PROTOTIPOS EXTERNOS ---
-// (Funciones dummy de userlib.c que find_command_rip necesita)
+// Funciones dummy de userlib.c que find_command_rip necesita
 extern void test_mm_dummy(int argc, char **argv);
 extern uint64_t test_prio_new(uint64_t argc, char **argv);
 extern void test_processes_dummy(int argc, char **argv);
@@ -29,7 +29,6 @@ extern void wc_dummy(int argc, char **argv);
 extern void cat_dummy(int argc, char **argv);
 extern void filter_dummy(int argc, char **argv);
 extern void mvar_dummy(int argc, char **argv);
-// --- FIN DE PROTOTIPOS EXTERNOS ---
 
 // Esto es un "string" manual para poder imprimir el caracter 128 de nuestro font de kernel usando lsa funciones estandar
 #define ERROR_PROMPT "Unknown command: "
@@ -45,7 +44,7 @@ static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help",
 
 //static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
 
-static char* help[COMMANDS-TESTS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
+static char* help[COMMANDS-TESTS] = {"exit", "clear", "sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
     "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock", "loop", "wc", "cat", "filter", "mvar"};
 // 
 // static char* SOcommands[SOCOMS]= {
@@ -138,18 +137,11 @@ void process_key(char key){
 
     if (key == '\x04') { //Ctrl+D
         write_out("Esto es ctrl+d, tdv no esta desarrollado.\n");
-        // if (command_cursor == 0) {
-        //     write_out("\nExit shell\n");
-        //     exit_shell();
-        // } else {
-            
-        //     //TODO
-        // }
+        return;
     }
 
-    if (key == '\x03') { // Ctrl+C
-        write_out("\n");  // para que no se mezcle con la línea actual
-
+    if (key == '\x03') { // Ctrl+C //TODO: REFACTOR
+        write_out("\n");
         if (current_foreground_pid > 0) {
             char pid_str[12];
             char *argv_kill[2];
@@ -161,16 +153,14 @@ void process_key(char key){
             kill_from_shell = 1;           // para que kill_dummy sepa que viene de la shell
             kill_process(1, argv_kill);    // matamos el proceso foreground
 
-            current_foreground_pid = -1;   // limpiamos
+            current_foreground_pid = -1;
             write_out("Proceso foreground terminado.\n");
         } else {
             write_out("No hay proceso en foreground para matar.\n");
+        }
+        write_out(PROMPT_START); // Volvemos al prompt
+        return;
     }
-
-    write_out(PROMPT_START); // Volvemos al prompt
-    return;
-}
-
 
     // a partir de aca si esta lleno el buffer nos vamos
     if (command_cursor == BUFFER_SIZE - 1) 
@@ -181,8 +171,6 @@ void process_key(char key){
         write_out(char_buffer);
     }
 }
-
-// EN: shell.c (Reemplaza la función en la línea 198)
 
 void process_command(char* buffer){
     char *argv[MAX_ARGS];
@@ -232,10 +220,42 @@ void process_command(char* buffer){
         
         if (rip == NULL) {
             // --- MANEJAR COMANDOS BUILT-IN ---
-            // (Tu lógica de "exit", "clear", "help" está bien)
-            // ...
             if (strcmp(command_name, "exit") == 0) {
-            // ... (etc)
+                exit_shell();
+            
+            } else if (strcmp(command_name, "clear") == 0) {
+                clearScreen(); 
+                cursor_y = 0;
+                cursor_x = 0;
+                limit_index = VERT_SIZE/font_size - 1;
+            
+            } else if (strcmp(command_name, "sleep") == 0) {
+                 write_out("Vamos a esperar 4 segundos... ");
+                 sleep(4, 0);
+                 write_out("Listo!\n");
+            
+            } else if (strcmp(command_name, "infoSleep") == 0) {
+                 write_out("El comando sleep efectuara una espera de 4 segundos...\n");
+            
+            } else if (strcmp(command_name, "help") == 0) {
+                write_out("Los comandos existentes son:\n");
+                for(int i=0; i<(COMMANDS-TESTS); i++){
+                    write_out(help[i]);
+                    write_out("\n");
+                }
+            
+            } else if (strcmp(command_name, "registers") == 0) {
+                if(getRegs(regs)==0){
+                    write_out("Antes de pedir los registros debe apretar la tecla alt izquierda...\n");
+                } else {
+                    for(int i=0; i<cantRegs; i++){
+                        if (i != cantRegs - 1) write_out("-");
+                        write_out(regsNames[i]);
+                        uintToBase(regs[i], aux, 10);
+                        write_out(aux);
+                        write_out("\n");
+                    }
+                }
             } else {
                 cursor_x = 0;
                 write_out(ERROR_PROMPT);
@@ -376,10 +396,6 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
     }
 }
 
-/**
- * @brief Parsea un string de comando (separado por espacios) en un argv.
- * Devuelve argc.
- */
 static int parse_arguments(char* buffer, char** argv) {
     int argc = 0;
     
@@ -406,13 +422,9 @@ static int parse_arguments(char* buffer, char** argv) {
     return argc;
 }
 
-/**
- * @brief Busca en la lista de comandos y devuelve el puntero a la función
- * (RIP) del programa a ejecutar. Devuelve NULL si es un comando built-in o no existe.
- */
 static void* find_command_rip(char* name) {
     // Array de punteros a funciones (RIPs). 
-    // ¡DEBE ESTAR EN EL MISMO ORDEN QUE TU ARRAY 'commands'!
+    // MISMO ORDEN QUE COMMANDS
     static void* command_rips[COMMANDS] = {
         NULL,                   // "exit"
         NULL,                   // "clear"
@@ -449,9 +461,6 @@ static void* find_command_rip(char* name) {
     return NULL; // No encontrado
 }
 
-/**
- * @brief Implementación simple de strchr (busca un caracter en un string)
- */
 static char* strchr(const char* str, int c) {
     while (*str != '\0') {
         if (*str == (char)c) {
