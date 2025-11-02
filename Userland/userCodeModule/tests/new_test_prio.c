@@ -69,7 +69,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
         new_argv[0] = wpid_str;
         new_argv[1] = name;
         new_argv[2] = NULL;
-        wait(1, new_argv);
+        wait(2, new_argv);
     }
 
     write_out("\nSAME PRIORITY, THEN CHANGE IT...\n");
@@ -95,7 +95,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
         new_argv[0] = wpid_str;
         new_argv[1] = name;
         new_argv[2] = NULL;
-        wait(1, new_argv);
+        wait(2, new_argv);
     }
 
     write_out("\nSAME PRIORITY, THEN CHANGE IT WHILE BLOCKED...\n");
@@ -125,7 +125,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
         new_argv[0] = wpid_str;
         new_argv[2] = NULL;
         new_argv[1] = name;
-        wait(1, new_argv);
+        wait(2, new_argv);
     }
 
 
