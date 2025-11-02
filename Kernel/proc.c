@@ -202,7 +202,8 @@ int kill_process(uint64_t pid){
         init->childProc[init->childrenAmount++] = childPid;
     }
 
-    yield();
+    process_count--;
+    last_wish(pid);
     return 0;
 }
 
@@ -287,21 +288,6 @@ int is_pid_valid(int pid){
     return (pid > MAX_PCS || processTable[pid] == NULL) ? 0 : 1;
 }
 
-void cleanup_process(uint64_t pid) {
-    if (!is_pid_valid(pid))
-        return;
-    
-    PCB* pcb = processTable[pid];
-
-    pcb->state = ZOMBIE;
-
-    if (pcb->stackBase)
-        free(pcb->stackBase);
-
-    free(pcb);
-    processTable[pid] = NULL;
-}
-
 int real_wait(uint64_t target_pid, uint64_t my_pid);
 
 int wait(uint64_t target_pid, uint64_t my_pid, char* target_name){
@@ -318,8 +304,7 @@ int wait(uint64_t target_pid, uint64_t my_pid, char* target_name){
     PCB* target = processTable[target_pid]; //a quien tenemos q esperar
 
     //si el target termino primero, lo terminamos
-    if (target->state == ZOMBIE) {
-        cleanup_process(target_pid);
+    if (target->state == ZOMBIE) { 
         return 0;
     }
 

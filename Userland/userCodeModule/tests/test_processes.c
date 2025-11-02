@@ -73,7 +73,7 @@ void test_processes_dummy(int argc, char **argv) {
               char *argvK[2];
               argvK[0] = pid_str;
               argvK[1] = NULL;
-              if (kill_process(argcK, argvK) == -1) {
+              if (kill_process(argcK, argvK) == -1 /*_kill_process(p_rqs[i].pid) == -1*/) {
                 write_out("test_processes: ERROR killing process\n");
                 exit_pcs(ERROR);
               }
@@ -93,7 +93,7 @@ void test_processes_dummy(int argc, char **argv) {
               char *argvB[2];
               argvB[0] = pid_str;
               argvB[1] = NULL;
-              if (block_process(argcB, argvB) == -1) {
+              if (/*block_process(argcB, argvB) == -1*/ _block_process(p_rqs[i].pid) != 0) {
                 write_out("test_processes: ERROR blocking process, pid no existe ");
                 printDec(p_rqs[i].pid);
                 write_out(". \n");
@@ -117,7 +117,7 @@ void test_processes_dummy(int argc, char **argv) {
           char *argvU[2];
           argvU[0] = pid_str;
           argvU[1] = NULL;
-          if (unblock_process(argcU, argvU) == -1) { //si o si esta bloqueado por el if de arriba
+          if (/*unblock_process(argcU, argvU) == -1*/ _unblock_process(p_rqs[i].pid) != 0) { //si o si esta bloqueado por el if de arriba
             write_out("test_processes: ERROR unblocking process\n");
             exit_pcs(ERROR);
           }
@@ -128,7 +128,7 @@ void test_processes_dummy(int argc, char **argv) {
         }
     }
 
-    ProcessInfo* list = _get_proc_list();
+    /*ProcessInfo* list = _get_proc_list();
     write_out("\n=== FAKE Lista de procesos ===\n");
     write_out("PID\tNombre\tEstado\tPPID\n");
     write_out("-------------------------------------------------------------\n");
@@ -151,9 +151,8 @@ void test_processes_dummy(int argc, char **argv) {
     }
 
     write_out("-------------------------------------------------------------\n");
-
-    _free(list);
-    exit_pcs(EXIT);
+    _free(list);*/
   }
+  exit_pcs(EXIT);
 }
 

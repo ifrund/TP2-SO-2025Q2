@@ -90,6 +90,11 @@ void yield(){
     _yield();
 }
 
+void last_wish(int pid){ //no se puede usar yield al final de kill, porq el get_pid devuelve -1 ya q el proceos esta ZOMBIE y no RUNNING
+    processTable[pid]->isYielding = 1;
+    _yield();
+}
+
 static int get_max_time_for_priority(Priorities p) {
     switch (p) {
         case LEVEL_0: return QUANTUM * 5; // 25
