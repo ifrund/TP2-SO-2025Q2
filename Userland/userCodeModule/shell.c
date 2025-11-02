@@ -182,10 +182,14 @@ void process_key(char key){
     }
 }
 
+// EN: shell.c (Reemplaza la función en la línea 198)
+
 void process_command(char* buffer){
     char *argv[MAX_ARGS];
     int argc = 0;
     foreground = 1;
+    char* command_name;
+    char* args_string = NULL; // String que contiene solo los argumentos
 
     // 1. Buscar background
     char* bg_pos = strchr(buffer, '&');
@@ -197,72 +201,56 @@ void process_command(char* buffer){
     // 2. Buscar pipe
     char* pipe_pos = strchr(buffer, '|');
     if (pipe_pos != NULL) {
-        // --- CASO PIPE: "cmd A | cmd B" ---
-        *pipe_pos = '\0'; // Divide el buffer
+        // --- CASO PIPE ---
+        *pipe_pos = '\0';
         char* cmd_A = buffer;
         char* cmd_B = pipe_pos + 1;
-        
         handle_pipe_command(cmd_A, cmd_B, foreground);
 
     } else {
         // --- CASO COMANDO ÚNICO ---
         remove_extra_spaces(buffer);
-        argc = parse_arguments(buffer, argv); // Parsea el comando
+
+        // --- NUEVA LÓGICA DE PARSEO ---
+        command_name = buffer; // El inicio del buffer es el comando
+        char* first_space = strchr(buffer, ' ');
+
+        if (first_space != NULL) {
+            // Si hay un espacio, separamos el comando de los argumentos
+            *first_space = '\0';
+            args_string = first_space + 1;
+            while (*args_string == ' ') args_string++; // Saltar espacios
+        }
         
-        if (argc == 0) return; // Comando vacío
+        // Parseamos SOLO la cadena de argumentos
+        argc = parse_arguments(args_string, argv);
+        // --- FIN NUEVA LÓGICA ---
         
-        void* rip = find_command_rip(argv[0]); // Busca el RIP del comando
+        if (command_name[0] == '\0') return; // Comando vacío
+
+        void* rip = find_command_rip(command_name); // Busca el RIP del comando
         
         if (rip == NULL) {
             // --- MANEJAR COMANDOS BUILT-IN ---
-            if (strcmp(argv[0], "exit") == 0) {
-                exit_shell();
-            } else if (strcmp(argv[0], "clear") == 0) {
-                clearScreen(); 
-                cursor_y = 0;
-                cursor_x = 0;
-                limit_index = VERT_SIZE/font_size - 1;
-            } else if (strcmp(argv[0], "sleep") == 0) {
-                 write_out("Vamos a esperar 4 segundos... ");
-                 sleep(4, 0);
-                 write_out("Listo!\n");
-            } else if (strcmp(argv[0], "infoSleep") == 0) {
-                 write_out("El comando sleep efectuara una espera de 4 segundos...\n");
-            } else if (strcmp(argv[0], "help") == 0) {
-                write_out("Los comandos existentes son:\n");
-                for(int i=0; i<(COMMANDS-TESTS); i++){
-                    write_out(help[i]);
-                    write_out("\n");
-                }
-            } else if (strcmp(argv[0], "registers") == 0) {
-                if(getRegs(regs)==0){
-                    write_out("Antes de pedir los registros debe apretar la tecla alt izquierda...\n");
-                } else {
-                    for(int i=0; i<cantRegs; i++){
-                        if (i != cantRegs - 1) write_out("-");
-                        write_out(regsNames[i]);
-                        uintToBase(regs[i], aux, 10);
-                        write_out(aux);
-                        write_out("\n");
-                    }
-                }
-            }
-            // ... (Puedes añadir el resto de tus built-ins aquí) ...
-            else {
+            // (Tu lógica de "exit", "clear", "help" está bien)
+            // ...
+            if (strcmp(command_name, "exit") == 0) {
+            // ... (etc)
+            } else {
                 cursor_x = 0;
                 write_out(ERROR_PROMPT);
-                write_out(argv[0]);
+                write_out(command_name); // Usa command_name
                 write_out("\n");
             }
         } else {
             // --- ES UN PROCESO, CREARLO ---
-            // (La función create_process ahora usa STDIN/STDOUT por defecto)
             write_out("Iniciando proceso...\n");
-            argc--;
-            printDec(argc);
-            int pid = create_process(rip, argv[0], argc, argv);
             
+            // Pasamos argc y argv (que NO contienen el nombre del programa)
+            int pid = create_process(rip, command_name, argc, argv);
+
             if (foreground && pid > 0) {
+                // ... (Tu lógica de wait está bien) ...
                 current_foreground_pid = pid; 
                 char pid_str[16];
                 int_to_str(pid, pid_str);
@@ -394,16 +382,19 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
  */
 static int parse_arguments(char* buffer, char** argv) {
     int argc = 0;
+    
+    // Si la cadena de argumentos es nula o vacía
     if (buffer == NULL || *buffer == '\0') {
+        argv[0] = NULL;
         return 0;
     }
 
-    argv[argc++] = buffer; // El primer argumento es el comando mismo
+    argv[argc++] = buffer; // argv[0] es el primer argumento
 
     for (int i = 0; buffer[i] != '\0' && argc < MAX_ARGS - 1; i++) {
         if (buffer[i] == ' ') {
             buffer[i] = '\0';
-            while (buffer[i+1] == ' ') {
+            while (buffer[i+1] == ' ') { // Saltar espacios extra
                 i++;
             }
             if (buffer[i+1] != '\0') { 

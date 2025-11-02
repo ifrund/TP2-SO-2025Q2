@@ -192,10 +192,13 @@ int kill_process(uint64_t pid){
 
     uint64_t parentPID = proc->ParentPID;
 
-    if (parentPID < MAX_PCS && processTable[parentPID] != NULL) {
-        PCB* parent = processTable[parentPID];
+if (parentPID >= 0 && parentPID < MAX_PCS && processTable[parentPID] != NULL) {
+        
+        // 2. DESPIERTO A MI PADRE (por si estaba en 'wait')
+        unblock_process(parentPID); // <-- AÑADIR ESTA LÍNEA
 
-        //me elimino del padre
+        // 3. Lógica existente para quitarme de la lista de hijos del padre
+        PCB* parent = processTable[parentPID];
         for (int i = 0; i < MAX_PCS; i++) {
             if (parent->childProc[i] == pid) {
                 parent->childProc[i] = -1;
@@ -331,16 +334,10 @@ int wait(uint64_t target_pid, uint64_t my_pid){
 
     //Si el proceso que deberia esperar termino primero, hacemos el yield
     block_process(my_pid);
-    
-    // #################################################################################
-    //  ESPERA ACTIVA - BORRAR SI QUERES BORRAR A BARRACAS CENTRAL
-    // ##################################################################################
-    while (is_pid_valid(target_pid) && processTable[target_pid]->state != ZOMBIE) {
-        yield();
-        //TODO usar sems
+   
+    if (is_pid_valid(target_pid) && processTable[target_pid]->state == ZOMBIE) {
+        cleanup_process(target_pid);
     }
-    // #################################################################################
 
-    unblock_process(my_pid); //este block podria estar re de más porq tmb hay uno en el kill (osea cuando se muere el hijo)
-    return 0;
+   return 0;
 }
