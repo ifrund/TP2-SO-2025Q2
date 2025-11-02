@@ -715,8 +715,8 @@ void wc_dummy(int argc, char ** argv){
 
             print(buffer);
             
-            // 3. Lógica de Conteo de Palabras
-            if (c == ' ' || c == '\n' || c == '\t') {
+            // 3. Lógica de Conteo de lineas
+            if (c == '\n') {
                 // Si es un espacio, estamos "fuera de palabra"
                 in_word = 0;
             } else if (in_word == 0) {
@@ -739,7 +739,7 @@ void wc_dummy(int argc, char ** argv){
         char number_str[12];
         uintToBase(word_count, number_str, 10);
         
-        print("Cantidad de palabras: ");
+        print("Cantidad de lineas: ");
         print(number_str);
         print("\n");
     }
@@ -785,6 +785,17 @@ void cat_dummy(int argc, char ** argv){
                 print("\n"); // Salta a una nueva línea al salir
                 break; // Sale del loop y termina el proceso
             }
+            
+            if (c == '\b') { // Backspace
+                if (line_index > 0) {
+                    line_index--; // Borra lógicamente el último carácter
+                    
+                    // Imprime el backspace para mover el cursor
+                    echo_buffer[0] = '\b'; 
+                    print(echo_buffer);
+                }
+                continue; // No proceses esta tecla como un char normal
+            }
 
             // --- Lógica de Buffering de Línea ---
 
@@ -820,39 +831,99 @@ int cat(int argc, char ** argv){
     return create_process(&cat_dummy, "cat", argc, argv);
 }
 
-//TODO aplicar pipes, donde dice argv deberia ser el input
-// void filter_dummy(int argc, char ** argv){
-//     for(int i = 0; argv[i] != NULL; i++){
-//         for(int j = 0; argv[i][j] != '\0'; j++){
-//             if(argv[i][j] == 'a' || argv[i][j] == 'e' || argv[i][j] == 'i' || argv[i][j] == 'o' || argv[i][j] == 'u' 
-//             || argv[i][j] == 'A' || argv[i][j] == 'E' || argv[i][j] == 'I' || argv[i][j] == 'O' || argv[i][j] == 'U'){
-//                 char vocal[2] = {argv[i][j], '\0'};
-//                 write_out(vocal);
-//             }
-//         }
-//     }
-//     write_out("\n");
-//     exit_pcs(EXIT);
-// }
-
 void filter_dummy(int argc, char ** argv){
-    char read_buffer[1];
-    char write_buffer[2];
-    write_buffer[1] = '\0';
+    
+    char line_buffer[BUFFER_SIZE];      // Buffer para la línea de entrada
+    char filtered_buffer[BUFFER_SIZE];  // Buffer para la salida filtrada
+    int line_index = 0;
 
-    // Lee de STDIN (FD 0)
-    while (read(read_buffer, 1) > 0) {
-        char c = read_buffer[0];
-        
-        if(c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' ||
-           c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U')
-        {
-            // Escribe en STDOUT (FD 1)
-            write_buffer[0] = c;
-            print(write_buffer); 
+    char read_buffer[1];   // Buffer para la syscall read()
+    char echo_buffer[2];   // Buffer para el "eco"
+    echo_buffer[1] = '\0';
+    
+    while (1) {
+        // 1. Llama a read() para leer de STDIN (FD 0)
+        int bytes_read = read(read_buffer, 1);
+
+        if (bytes_read > 0) {
+            // 2. Si leyó una tecla...
+            char c = read_buffer[0];
+
+            if (c == '\x04') { // Ctrl+D (Fin de Archivo)
+                // Si quedaba algo en el buffer, lo filtramos y mostramos
+                if (line_index > 0) {
+                    int filtered_index = 0;
+                    for (int i = 0; i < line_index; i++) {
+                        char ch = line_buffer[i];
+                        if(ch == 'a' || ch == 'e' || ch == 'i' || ch == 'o' || ch == 'u' ||
+                           ch == 'A' || ch == 'E' || ch == 'I' || ch == 'O' || ch == 'U')
+                        {
+                            filtered_buffer[filtered_index++] = ch;
+                        }
+                    }
+                    filtered_buffer[filtered_index] = '\0';
+                    print(filtered_buffer);
+                }
+                print("\n"); // Salta a una nueva línea al salir
+                break; // Sale del loop
+            }
+            
+            if (c == '\x03') { // Ctrl+C (Interrupción)
+                print("\n"); // Salta a una nueva línea al salir
+                break; // Sale del loop
+            }
+
+            if (c == '\b') { // Backspace
+                if (line_index > 0) {
+                    line_index--; // Borra lógicamente el último carácter
+                    
+                    // Imprime el backspace para mover el cursor
+                    echo_buffer[0] = '\b'; 
+                    print(echo_buffer);
+                }
+                continue; // No proceses esta tecla como un char normal
+            }
+
+            // 3. Imprime el carácter INMEDIATAMENTE (Eco)
+            //    Para que el usuario vea lo que tipea.
+            echo_buffer[0] = c;
+            print(echo_buffer);
+
+            // 4. Almacena el carácter en nuestro buffer de línea
+            if (line_index < BUFFER_SIZE - 1) {
+                line_buffer[line_index++] = c;
+            }
+
+            // 5. Si la tecla fue 'Enter', PROCESA la línea
+            if (c == '\n') {
+                int filtered_index = 0;
+                
+                // Filtramos el buffer de línea
+                for (int i = 0; i < line_index; i++) {
+                    char ch = line_buffer[i];
+                    if(ch == 'a' || ch == 'e' || ch == 'i' || ch == 'o' || ch == 'u' ||
+                       ch == 'A' || ch == 'E' || ch == 'I' || ch == 'O' || ch == 'U')
+                    {
+                        filtered_buffer[filtered_index++] = ch;
+                    }
+                }
+                filtered_buffer[filtered_index] = '\0'; // Terminamos el string filtrado
+                
+                // Imprime el resultado
+                print(filtered_buffer);
+                print("\n"); // (Ya que el '\n' original no es una vocal)
+                
+                line_index = 0; // Resetea el buffer para la prox. línea
+            }
+
+        } else {
+            // 6. Si read() devolvió 0 (no hay tecla),
+            //    cede el CPU y vuelve a intentar (espera activa).
+            sleep_once(); 
         }
     }
-    exit_pcs(EXIT);
+    
+    exit_pcs(EXIT); // Termina el proceso limpiamente
 }
 
 int filter(int argc, char ** argv){
