@@ -80,6 +80,7 @@ void test_sync_dummy(int argc, char **argv) { //{n, use_sem}
 
   if (argc != 2){
     write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 2 argumentos.\n");
+    printDec(argc);
     exit_pcs(ERROR);
   }
 

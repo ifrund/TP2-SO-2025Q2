@@ -257,6 +257,9 @@ void process_command(char* buffer){
         } else {
             // --- ES UN PROCESO, CREARLO ---
             // (La función create_process ahora usa STDIN/STDOUT por defecto)
+            write_out("Iniciando proceso...\n");
+            argc--;
+            printDec(argc);
             int pid = create_process(rip, argv[0], argc, argv);
             
             if (foreground && pid > 0) {
