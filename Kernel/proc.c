@@ -198,7 +198,7 @@ int kill_process(uint64_t pid){
     //a todos mis hijos se los dejo a Init, no improta q este bloqueado
     PCB * init = processTable[INIT_PID];
     for(int i=0; i < proc->childrenAmount; i++){
-        uint64_t childPid = proc->childProc[i];
+        int childPid = proc->childProc[i];
         PCB* child = processTable[childPid];
         child->ParentPID = INIT_PID;
         init->childProc[init->childrenAmount++] = childPid;

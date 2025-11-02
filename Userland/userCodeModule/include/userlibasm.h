@@ -39,7 +39,7 @@ typedef struct {
 
     //TODO probablmente borrarlas
     int childrenAmount;
-    uint64_t children[MAX_PCS];
+    int children[MAX_PCS];
     // Podrías incluir file descriptors si querés: los ids nada más.
     uint64_t fileDescriptors[MAX_FD];
     int fileDescriptorCount;  // Número de FDs válidos
