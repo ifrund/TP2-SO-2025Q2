@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "../include/lib.h"
+#include "../include/buddy_memory_manager.h"
 
 #define LEAF_SIZE 16 // The smallest allocation size (in bytes)
 /*
