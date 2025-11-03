@@ -80,16 +80,12 @@ int pipe_create_anonymous(int pipe_ids[2]) {
 
     int pipe_id = create_pipe_object(free_slot, anon_name, 0);
     
-    sem_post("GLOBAL_PIPE_TABLE_LOCK");
-    
     if (pipe_id < 0) {
-        sem_wait("GLOBAL_PIPE_TABLE_LOCK");
         global_pipe_table[free_slot].is_in_use = 0;
         sem_post("GLOBAL_PIPE_TABLE_LOCK");
         return -1;
     }
 
-    sem_wait("GLOBAL_PIPE_TABLE_LOCK");
     global_pipe_table[pipe_id].ref_count = 2;
     sem_post("GLOBAL_PIPE_TABLE_LOCK");
 
@@ -134,18 +130,14 @@ int pipe_create_named(const char* name) {
     }
 
     int pipe_id = create_pipe_object(free_slot, name, 1);
-    
-    sem_post("GLOBAL_PIPE_TABLE_LOCK");
 
     //Si algo fallo al crear el pipe, liberar el slot
     if (pipe_id < 0) {
-        sem_wait("GLOBAL_PIPE_TABLE_LOCK");
         global_pipe_table[free_slot].is_in_use = 0;
         sem_post("GLOBAL_PIPE_TABLE_LOCK");
         return -1;
     }
 
-    sem_wait("GLOBAL_PIPE_TABLE_LOCK");
     global_pipe_table[pipe_id].ref_count = 1;
     sem_post("GLOBAL_PIPE_TABLE_LOCK");
 
