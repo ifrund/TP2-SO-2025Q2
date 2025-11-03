@@ -127,8 +127,8 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
         pcb->fileDescriptors[2] = 2; // STDERR
     } else {
         // Comportamiento con pipe: Copia los FDs del array
-        pcb->fileDescriptors[0] = fds[0]; // STDIN (puede ser el pipe de lectura)
-        pcb->fileDescriptors[1] = fds[1]; // STDOUT (puede ser el pipe de escritura)
+        pcb->fileDescriptors[0] = fds[0]; // STDIN 
+        pcb->fileDescriptors[1] = fds[1]; // STDOUT
         pcb->fileDescriptors[2] = 2;      // STDERR
     }
     pcb->isYielding = 0;
@@ -194,10 +194,10 @@ int kill_process(uint64_t pid){
 
 if (parentPID >= 0 && parentPID < MAX_PCS && processTable[parentPID] != NULL) {
         
-        // 2. DESPIERTO A MI PADRE (por si estaba en 'wait')
-        unblock_process(parentPID); // <-- AÑADIR ESTA LÍNEA
+        // Despertar al padre
+        unblock_process(parentPID);
 
-        // 3. Lógica existente para quitarme de la lista de hijos del padre
+        //me elimino de la lista de hijos del padre
         PCB* parent = processTable[parentPID];
         for (int i = 0; i < MAX_PCS; i++) {
             if (parent->childProc[i] == pid) {
@@ -231,7 +231,7 @@ ProcessInfo* get_proc_list() {
         ProcessInfo* info = &list[i];
 
         if (p == NULL) {
-            // Proceso vacío
+            // Proceso vacio
             info->pid = -1;
             strncpy(info->state, "INVALID", 15);
             continue;
@@ -332,7 +332,6 @@ int wait(uint64_t target_pid, uint64_t my_pid){
         return 0;
     }
 
-    //Si el proceso que deberia esperar termino primero, hacemos el yield
     block_process(my_pid);
    
     if (is_pid_valid(target_pid) && processTable[target_pid]->state == ZOMBIE) {

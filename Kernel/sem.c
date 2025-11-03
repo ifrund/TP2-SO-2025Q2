@@ -56,7 +56,7 @@ int sem_wait(const char* name) {
         return -1;
     }
 
-    _wait(&(sem->lock));     // 1. Tomar el spinlock
+    _wait(&(sem->lock));
     int pid = get_pid();
 
     sem->value--;
@@ -65,13 +65,11 @@ int sem_wait(const char* name) {
         // Hay que bloquearse
         sem->blocked_processes[sem->amount_bprocesses++] = pid;
         
-        // --- ARREGLO CRÍTICO ---
-        _post(&(sem->lock)); // 2. Soltar el spinlock ANTES de dormir
-        block_process(pid);  // 3. Dormir (ceder CPU)
-        // -----------------------
+        _post(&(sem->lock));
+        block_process(pid); 
 
     } else {
-        // No nos bloqueamos, solo soltamos el spinlock
+        // No se bloquea, solo se suelta el spinlock
         _post(&(sem->lock));
     }
 

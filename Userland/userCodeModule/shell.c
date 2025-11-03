@@ -12,7 +12,6 @@
 #define BUFFER_SIZE 128
 #define MAX_ARGS 10
 
-// --- PROTOTIPOS EXTERNOS ---
 // Funciones dummy de userlib.c que find_command_rip necesita
 extern void test_mm_dummy(int argc, char **argv);
 extern uint64_t test_prio_new(uint64_t argc, char **argv);
@@ -51,7 +50,6 @@ static char* help[COMMANDS-TESTS] = {"exit", "clear", "sleep", "infoSleep", "hel
     // "Aca tiene q ir como funciona cada comando de SO"
 // };
 
-//REFACTOR
 char char_buffer[1];
 
 // Cursors & flags
@@ -115,6 +113,11 @@ void process_key(char key){
         write_out("\n");
         process_command(command_buffer);
 
+        //Limpieza profunda del buffer
+        for (int i = 0; i <= BUFFER_SIZE; i++) {
+            command_buffer[i] = 0;
+        }
+
         command_cursor = 0;
         if(foreground){
             write_out(PROMPT_START);
@@ -151,14 +154,14 @@ void process_key(char key){
             argv_kill[1] = NULL;
 
             kill_from_shell = 1;           // para que kill_dummy sepa que viene de la shell
-            kill_process(1, argv_kill);    // matamos el proceso foreground
+            kill_process(1, argv_kill); 
 
             current_foreground_pid = -1;
             write_out("Proceso foreground terminado.\n");
         } else {
             write_out("No hay proceso en foreground para matar.\n");
         }
-        write_out(PROMPT_START); // Volvemos al prompt
+        write_out(PROMPT_START);
         return;
     }
 
@@ -179,47 +182,43 @@ void process_command(char* buffer){
     char* command_name;
     char* args_string = NULL; // String que contiene solo los argumentos
 
-    // 1. Buscar background
+    // Se busca background o pipe
     char* bg_pos = strchr(buffer, '&');
     if (bg_pos != NULL) {
         foreground = 0;
         *bg_pos = '\0'; // Elimina el '&'
     }
 
-    // 2. Buscar pipe
     char* pipe_pos = strchr(buffer, '|');
     if (pipe_pos != NULL) {
-        // --- CASO PIPE ---
+        // Hay pipe
         *pipe_pos = '\0';
         char* cmd_A = buffer;
         char* cmd_B = pipe_pos + 1;
         handle_pipe_command(cmd_A, cmd_B, foreground);
 
     } else {
-        // --- CASO COMANDO ÚNICO ---
+        // Hay un unico comando sin pipe
         remove_extra_spaces(buffer);
 
-        // --- NUEVA LÓGICA DE PARSEO ---
-        command_name = buffer; // El inicio del buffer es el comando
+        command_name = buffer;
         char* first_space = strchr(buffer, ' ');
 
         if (first_space != NULL) {
             // Si hay un espacio, separamos el comando de los argumentos
             *first_space = '\0';
             args_string = first_space + 1;
-            while (*args_string == ' ') args_string++; // Saltar espacios
+            while (*args_string == ' ') args_string++;
         }
         
-        // Parseamos SOLO la cadena de argumentos
         argc = parse_arguments(args_string, argv);
-        // --- FIN NUEVA LÓGICA ---
         
-        if (command_name[0] == '\0') return; // Comando vacío
-
-        void* rip = find_command_rip(command_name); // Busca el RIP del comando
+        //Checkear si esta vacio y si no, buscar el RIP del comando
+        if (command_name[0] == '\0') return; 
+        void* rip = find_command_rip(command_name);
         
         if (rip == NULL) {
-            // --- MANEJAR COMANDOS BUILT-IN ---
+            // Caso comandos built in
             if (strcmp(command_name, "exit") == 0) {
                 exit_shell();
             
@@ -259,18 +258,16 @@ void process_command(char* buffer){
             } else {
                 cursor_x = 0;
                 write_out(ERROR_PROMPT);
-                write_out(command_name); // Usa command_name
+                write_out(command_name);
                 write_out("\n");
             }
         } else {
-            // --- ES UN PROCESO, CREARLO ---
+            // Caso proceso normal
             //write_out("Iniciando proceso...\n");
             
-            // Pasamos argc y argv (que NO contienen el nombre del programa)
             int pid = create_process(rip, command_name, argc, argv);
 
             if (foreground && pid > 0) {
-                // ... (Tu lógica de wait está bien) ...
                 current_foreground_pid = pid; 
                 char pid_str[16];
                 int_to_str(pid, pid_str);
@@ -336,8 +333,7 @@ void init_shell(){
     line_size = LINE_SIZE/font_size;
 }
 
-//HELPERS
-// EN: shell.c (Reemplaza la función en la línea 372)
+//Helpers
 
 static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
     char *argv_A[MAX_ARGS], *argv_B[MAX_ARGS];
@@ -349,7 +345,7 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
     remove_extra_spaces(cmd_A);
     remove_extra_spaces(cmd_B);
     
-    // --- Parsear Comando A ---
+    // Se parsean ambos comandos, A y B
     command_A = cmd_A;
     first_space = strchr(cmd_A, ' ');
     if (first_space != NULL) {
@@ -357,9 +353,8 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
         args_A = first_space + 1;
         while (*args_A == ' ') args_A++;
     }
-    argc_A = parse_arguments(args_A, argv_A); // Parsea solo los argumentos de A
+    argc_A = parse_arguments(args_A, argv_A); 
     
-    // --- Parsear Comando B ---
     command_B = cmd_B;
     first_space = strchr(cmd_B, ' ');
     if (first_space != NULL) {
@@ -367,41 +362,35 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
         args_B = first_space + 1;
         while (*args_B == ' ') args_B++;
     }
-    argc_B = parse_arguments(args_B, argv_B); // Parsea solo los argumentos de B
+    argc_B = parse_arguments(args_B, argv_B);
 
-    // (La comprobación de sintaxis inválida se borra 
-    // porque ahora parse_arguments maneja NULL)
-
-    void* rip_A = find_command_rip(command_A); // Busca RIP de A
-    void* rip_B = find_command_rip(command_B); // Busca RIP de B
+    //Se buscan ambos RIPs
+    void* rip_A = find_command_rip(command_A);
+    void* rip_B = find_command_rip(command_B);
 
     if (rip_A == NULL || rip_B == NULL) {
         write_out("Error: comando invalido en el pipe.\n");
         return;
     }
 
-    // 1. Crear el pipe anónimo
+    // Manejo de pipes
     int pipe_ids[2];
     if (_pipe_create_anonymous(pipe_ids) == -1) {
         write_out("Error: no se pudo crear el pipe.\n");
         return;
     }
     
-    // 2. Preparar los arrays de FDs
     uint64_t fds_A[2] = {STDIN, pipe_ids[1]};
     uint64_t fds_B[2] = {pipe_ids[0], STDOUT};
 
-    // 3. Crear Proceso A (pasando command_A, argc_A y argv_A)
     int pid_A = create_process_piped(rip_A, command_A, argc_A, argv_A, fds_A);
-
-    // 4. Crear Proceso B (pasando command_B, argc_B y argv_B)
     int pid_B = create_process_piped(rip_B, command_B, argc_B, argv_B, fds_B);
 
-    // 5. Cerrar ambos extremos del pipe en la SHELL
+    // Cerrar ambos extremos del pipe en la shell
     _pipe_close(pipe_ids[0]);
     _pipe_close(pipe_ids[1]);
 
-    // 6. Esperar
+    // Esperar si es foreground
     if (foreground) {
         char pid_str[16];
         char *wait_argv[2];
@@ -419,19 +408,18 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
 
 static int parse_arguments(char* buffer, char** argv) {
     int argc = 0;
-    
-    // Si la cadena de argumentos es nula o vacía
+
     if (buffer == NULL || *buffer == '\0') {
         argv[0] = NULL;
         return 0;
     }
 
-    argv[argc++] = buffer; // argv[0] es el primer argumento
+    argv[argc++] = buffer; 
 
     for (int i = 0; buffer[i] != '\0' && argc < MAX_ARGS - 1; i++) {
         if (buffer[i] == ' ') {
             buffer[i] = '\0';
-            while (buffer[i+1] == ' ') { // Saltar espacios extra
+            while (buffer[i+1] == ' ') {
                 i++;
             }
             if (buffer[i+1] != '\0') { 
@@ -444,7 +432,7 @@ static int parse_arguments(char* buffer, char** argv) {
 }
 
 static void* find_command_rip(char* name) {
-    // Array de punteros a funciones (RIPs). 
+    // Array de punteros a funciones (o sea los RIPs)
     // MISMO ORDEN QUE COMMANDS
     static void* command_rips[COMMANDS] = {
         NULL,                   // "exit"
@@ -479,7 +467,7 @@ static void* find_command_rip(char* name) {
             return command_rips[i];
         }
     }
-    return NULL; // No encontrado
+    return NULL;
 }
 
 static char* strchr(const char* str, int c) {
@@ -492,7 +480,7 @@ static char* strchr(const char* str, int c) {
     if (c == '\0') {
         return (char*)str;
     }
-    return NULL; // No encontrado
+    return NULL;
 }
 
 static void remove_extra_spaces(char *str) {

@@ -52,17 +52,16 @@ void key_handler() { insert_key(_getKey()); }
 
 void insert_key(int key) {
 
-  checkShift(key); // Esto setea 'shifted', 'caps' y 'control'
+  checkShift(key);
 
-  // Variable para saber si agregamos algo al buffer ASCII
   int added_ascii = 0;
 
   if (control == 1) {
     if (key == 0x2E) { // 0x2E es el scancode de C
-      ascii_buf[ascii_insert_index++] = '\x03'; // Bufferea Ctrl+C
+      ascii_buf[ascii_insert_index++] = '\x03'; // Bufferea ctrl+C
       added_ascii = 1;
     } else if (key == 0x20) { // 0x20 es el scancode de D
-      ascii_buf[ascii_insert_index++] = '\x04'; // bufferea Ctrl+D
+      ascii_buf[ascii_insert_index++] = '\x04'; // bufferea ctrl+D
       added_ascii = 1;
     }
   } 
@@ -74,7 +73,6 @@ void insert_key(int key) {
     added_ascii = 1;
   }
 
-  // Manejo de buffer circular y flag 'to_read' para ASCII
   if (added_ascii) {
     if (ascii_insert_index == KEY_BUF_SIZE)
       ascii_insert_index = 0;
@@ -89,7 +87,6 @@ void insert_key(int key) {
     insert_index = 0;
 }
 
-// returns the actual key, 0 if nothing was read
 int read_key(int fd) {
   int toRet;
 
@@ -125,7 +122,6 @@ int read_key(int fd) {
   return toRet;
 }
 
-// flush the input buffer
 void flush_buffer() {
 
   // scan codes

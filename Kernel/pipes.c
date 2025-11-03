@@ -33,7 +33,6 @@ typedef struct {
 // Tabla Global de Pipes 
 Pipe global_pipe_table[MAX_PIPES];
 
-// ---------------------- PROTOTIPOS ----------------------
 static int create_pipe_object(int pipe_id, const char *name, int is_named);
 static void build_sem_names(const char *base_name, Pipe *pipe);
 static void itoa(int n, char s[], int base);
@@ -48,18 +47,16 @@ static char *strncat(char *dest, const char *src, unsigned int n);
 void pipe_init() {
     // Inicializa el semaforo para la tabla global
     sem_open_init("GLOBAL_PIPE_TABLE_LOCK", 1);
-    
-    // Marca todos los slots de pipes como libres
+
     for (int i = 0; i < MAX_PIPES; i++) {
         global_pipe_table[i].is_in_use = 0;
     }
 }
 
 int pipe_create_anonymous(int pipe_ids[2]) {
-    // 1. Bloquea la tabla global de pipes
+    // Se bloquea la tabla global de pipes
     sem_wait("GLOBAL_PIPE_TABLE_LOCK");
 
-    // 2. Busca un slot libre
     int free_slot = -1;
     for (int i = 0; i < MAX_PIPES; i++) {
         if (!global_pipe_table[i].is_in_use) {
@@ -71,10 +68,10 @@ int pipe_create_anonymous(int pipe_ids[2]) {
 
     if (free_slot == -1) {
         sem_post("GLOBAL_PIPE_TABLE_LOCK");
-        return -1; // No hay pipes libres
+        return -1;
     }
     
-    // 3. Genera un nombre único para el pipe anónimo (ej: "anon_3")
+    // Generacion de nombre para el pipe anonimo
     char anon_name[MAX_PIPE_NAME_LENGTH];
     strncopy(anon_name, "anon_", 5);
     char slot_str[10];
@@ -100,30 +97,28 @@ int pipe_create_anonymous(int pipe_ids[2]) {
     pipe_ids[0] = pipe_id; // Handle para pipe_read
     pipe_ids[1] = pipe_id; // Handle para pipe_write
     
-    return 0; // Éxito
+    return 0;
 }
 
 int pipe_create_named(const char* name) {
     if (name == NULL)
         return -1;
 
-    // 1. Bloquear tabla global
     sem_wait("GLOBAL_PIPE_TABLE_LOCK");
 
-    // 2. Verificar si ya existe un pipe con ese nombre
+    // Verificar si existe un pipe con ese nombre
+    // si existe, incrementar ref_count y devolver su ID
     for (int i = 0; i < MAX_PIPES; i++) {
         if (global_pipe_table[i].is_in_use &&
             global_pipe_table[i].is_named &&
             strcmp(global_pipe_table[i].name, name) == 0) 
         {
-            // Ya existe — incrementamos ref_count
             global_pipe_table[i].ref_count++;
             sem_post("GLOBAL_PIPE_TABLE_LOCK");
-            return i; // Devuelve el ID existente
+            return i;
         }
     }
 
-    // 3. Buscar un slot libre
     int free_slot = -1;
     for (int i = 0; i < MAX_PIPES; i++) {
         if (!global_pipe_table[i].is_in_use) {
@@ -135,24 +130,21 @@ int pipe_create_named(const char* name) {
 
     if (free_slot == -1) {
         sem_post("GLOBAL_PIPE_TABLE_LOCK");
-        return -1; // No hay lugar
+        return -1;
     }
 
-    // Crear el objeto pipe (named = 1)
     int pipe_id = create_pipe_object(free_slot, name, 1);
     
-    // Liberamos el lock global
     sem_post("GLOBAL_PIPE_TABLE_LOCK");
 
+    //Si algo fallo al crear el pipe, liberar el slot
     if (pipe_id < 0) {
-        // Rollback si algo falló
         sem_wait("GLOBAL_PIPE_TABLE_LOCK");
         global_pipe_table[free_slot].is_in_use = 0;
         sem_post("GLOBAL_PIPE_TABLE_LOCK");
         return -1;
     }
 
-    // 5. Rebloquear para setear ref_count inicial
     sem_wait("GLOBAL_PIPE_TABLE_LOCK");
     global_pipe_table[pipe_id].ref_count = 1;
     sem_post("GLOBAL_PIPE_TABLE_LOCK");
@@ -163,28 +155,25 @@ int pipe_create_named(const char* name) {
 
 int pipe_close(int pipe_id) {
     if (pipe_id < 0 || pipe_id >= MAX_PIPES) {
-        return -1; // PipeID invalido
+        return -1;
     }
 
     sem_wait("GLOBAL_PIPE_TABLE_LOCK");
 
     if (!global_pipe_table[pipe_id].is_in_use) {
         sem_post("GLOBAL_PIPE_TABLE_LOCK");
-        return -1; // Pipe ya cerrado o invalido
+        return -1;
     }
 
     Pipe* pipe = &global_pipe_table[pipe_id];
 
-    // Disminuir el contador de referencias
+    // Disminuir el contador de referencias y si no hay mas referencias liberar recursos 
     pipe->ref_count--;
-
-    //Si no hay mas referencias, liberar recursos
     if (pipe->ref_count == 0) {
-        // Liberar recursos asociados al pipe
         sem_close(pipe->sem_pipe_lock_name);
         sem_close(pipe->sem_items_available_name);
         sem_close(pipe->sem_empty_space_available_name);
-        pipe->is_in_use = 0; // Marca el slot como libre
+        pipe->is_in_use = 0;
     } 
 
     sem_post("GLOBAL_PIPE_TABLE_LOCK");
@@ -194,7 +183,7 @@ int pipe_close(int pipe_id) {
 
 int pipe_write(int pipe_id, const char* buffer, int count) {
     if (pipe_id < 0 || pipe_id >= MAX_PIPES || buffer == NULL || count <= 0 || !global_pipe_table[pipe_id].is_in_use) {
-        return -1; // PipeID invalido o parametros invalidos
+        return -1;
     }
 
     Pipe* pipe = &global_pipe_table[pipe_id];
@@ -203,7 +192,7 @@ int pipe_write(int pipe_id, const char* buffer, int count) {
 
     // Escribimos byte por byte
     for (int i = 0; i < count; i++) {
-        // 1. Esperamos por espacio disponible en el pipe
+        // Esperamos por espacio disponible en el pipe
         sem_wait(pipe->sem_empty_space_available_name);
 
         // Entramos a la region critica
@@ -227,16 +216,16 @@ int pipe_write(int pipe_id, const char* buffer, int count) {
 
 int pipe_read(int pipe_id, char* buffer, int count) {
     if (pipe_id < 0 || pipe_id >= MAX_PIPES || buffer == NULL || count <= 0 || !global_pipe_table[pipe_id].is_in_use) {
-        return -1; // PipeID invalido o parametros invalidos
+        return -1;
     }
 
     Pipe* pipe = &global_pipe_table[pipe_id];
 
     int bytes_read = 0;
 
-    // Leemos byte por byte
+    // Lectura byte por byte
     for (int i = 0; i < count; i++) {
-        // Esperar a que haya datos disponibles
+        // Se espera a que haya datos disponibles
         sem_wait(pipe->sem_items_available_name);
 
         // Entramos a la region critica
@@ -285,8 +274,6 @@ static int create_pipe_object(int pipe_id, const char *name, int is_named) {
 
     build_sem_names(name, pipe);
 
-    //sem_post("GLOBAL_PIPE_TABLE_LOCK");
-
     if (sem_open_init(pipe->sem_pipe_lock_name, 1) < 0)
         return -1;
 
@@ -303,8 +290,6 @@ static int create_pipe_object(int pipe_id, const char *name, int is_named) {
 
     return pipe_id;
 }
-
-// ---------------------- HELPERS DE STRINGS ----------------------
 
 static int strlen_custom(const char *s) {
     int n = 0;

@@ -71,10 +71,8 @@ uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base)
 	}
 	while (value /= base);
 
-	// Terminate string in buffer.
 	*p = 0;
 
-	//Reverse string in buffer.
 	p1 = buffer;
 	p2 = p - 1;
 	while (p1 < p2)

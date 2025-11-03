@@ -10,6 +10,7 @@
 #include <interrupts.h>
 #include "include/memory_manager.h"
 #include "include/proc.h"
+#include "include/pipes.h"
 
 #define IDLE_PID 1
 
@@ -71,7 +72,7 @@ int main()
     load_idt();
     flush_buffer();
 	create_mm();
-	//TODO init de pipes (?
+	pipe_init();
 	char * argNull[1]={NULL};
 	create_process(shell, "shell", 0, argNull, NULL); //es el primero, se crea con pid 0
 	current_index = 0;
