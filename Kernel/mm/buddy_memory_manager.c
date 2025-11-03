@@ -241,7 +241,14 @@ int list_empty(buddy_list *list)
     return list->next == list;
 }
 
-
 void status_count(int *status_out) {
-    // TODO
+    unsigned int busy = 0;
+    for(int k = 0; k < NSIZES; k++) {
+        for(int i = 0; i <= MAXSIZE*(k+1); i++)
+            if(is_bit_set(buddy_sizes[k].alloc, i))
+                busy += BLK_SIZE(k);
+    }
+    status_out[0] = HEAP_SIZE;
+    status_out[1] = busy;
+    status_out[2] = HEAP_SIZE - busy;
 }
