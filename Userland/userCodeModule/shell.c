@@ -4,7 +4,7 @@
 #include "include/file_descriptors.h"
 #include <stdint.h>
 
-#define COMMANDS 25
+#define COMMANDS 26
 #define TESTS 4
 #define SOCOMS 1
 #define VERT_SIZE 32
@@ -28,6 +28,7 @@ extern void wc_dummy(int argc, char **argv);
 extern void cat_dummy(int argc, char **argv);
 extern void filter_dummy(int argc, char **argv);
 extern void mvar_dummy(int argc, char **argv);
+extern void msg_dummy(int argc, char **argv);
 
 // Esto es un "string" manual para poder imprimir el caracter 128 de nuestro font de kernel usando lsa funciones estandar
 #define ERROR_PROMPT "Unknown command: "
@@ -39,12 +40,12 @@ char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
 static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
     "test-mm", "test-prio", "test-pcs", "test-sync", "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock",
-    "loop", "wc", "cat", "filter", "mvar"};
+    "loop", "wc", "cat", "filter", "mvar", "msg"};
 
 //static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
 
 static char* help[COMMANDS-TESTS] = {"exit", "clear", "sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
-    "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock", "loop", "wc", "cat", "filter", "mvar"};
+    "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock", "loop", "wc", "cat", "filter", "mvar", "msg"};
 // 
 // static char* SOcommands[SOCOMS]= {
     // "Aca tiene q ir como funciona cada comando de SO"
@@ -459,7 +460,8 @@ static void* find_command_rip(char* name) {
         &wc_dummy,              // "wc"
         &cat_dummy,             // "cat"
         &filter_dummy,          // "filter"
-        &mvar_dummy             // "mvar"
+        &mvar_dummy,             // "mvar"
+        &msg_dummy               // "msg"
     };
 
     for (int i = 0; i < COMMANDS; i++) {

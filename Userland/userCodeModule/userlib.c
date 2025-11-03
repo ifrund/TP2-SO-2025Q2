@@ -879,6 +879,15 @@ int filter(int argc, char ** argv){
     return create_process(&filter_dummy, "filter", argc, argv);
 }
 
+void msg_dummy(int argc, char ** argv){
+    write_out("Arquitectura de Computadoras\n");
+    exit_pcs(EXIT);
+}
+
+int msg(int argc, char ** argv){
+    return create_process(&msg_dummy, "msg", argc, argv);
+}
+
 void mvar_dummy(int argc, char ** argv){
     write_out("Tdv no hay nada aca.\n");
     exit_pcs(EXIT);
