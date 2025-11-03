@@ -95,11 +95,7 @@ void test_mm_dummy(int argc, char **argv) {
     // Free
     for (i = 0; i < rq; i++){
       if (mm_rqs[i].address != NULL){
-        //_free(mm_rqs[i].address);
-        void* addr = mm_rqs[i].address;
-        char* argv_free[1];
-        argv_free[0] = (char*) addr; 
-        free(1, argv_free);
+        _free(mm_rqs[i].address);
         //write_out("Libero la memoria ");
       }
     }

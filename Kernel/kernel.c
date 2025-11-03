@@ -81,7 +81,7 @@ int main()
 	//TODO init de pipes (?
 	char * argNull[1]={NULL};
 	init_pid = create_process(&init, "init", 0, argNull); 
-	_sti(); //las desacctivamos porq sino el sch nunca se activa y no toma el proceso init
+	_sti(); //las desactivamos porq sino el sch nunca se activa y no toma el proceso init
 
 	while(1){
 		_hlt();
