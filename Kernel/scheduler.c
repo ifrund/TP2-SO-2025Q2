@@ -28,12 +28,14 @@ void *scheduling(void *rsp) {
 
         if (curr->state == RUNNING){
             curr->time_used++;
+            curr->total_ticks++;
 
             //si consumio su tiempo, resetiamos su tiempo y lo dejamos en ready 
             //esto quiere decir q si le aplicas nice a un pcs recien se va a ver el efecto una vez q consuma su tiempo 
             //y pase por get_max_time_for_priority
             if(curr->time_used >= curr->my_max_time){
                 curr->time_used = 0;
+                curr->changes++;
                 if(strcmp(curr->name, "idle") == 0){ //Si sos el idle te volvemos a bloquear, sino queda ready
                     curr->state = BLOCKED;
                 }   

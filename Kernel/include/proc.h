@@ -57,7 +57,9 @@ typedef struct {
     Priorities my_prio;
     int time_used;
     int my_max_time;
-
+    int total_ticks;
+    int changes;
+    int yield_changes;
     //Informacion de los hijos:
     int childrenAmount;
     int childProc[MAX_PCS];

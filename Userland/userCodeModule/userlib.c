@@ -442,9 +442,9 @@ void block_process_dummy(int argc, char ** argv){
         exit_pcs(ERROR);
     }
     if(ret == SECOND_ERROR){
-        write_out("Este pid ya estaba bloqueado\n");
+        write_out("Este pid ya estaba muerto\n");
         estrellita_bg();
-        exit_pcs(ERROR); 
+        exit_pcs(ERROR);
     }
 
     estrellita_bg();

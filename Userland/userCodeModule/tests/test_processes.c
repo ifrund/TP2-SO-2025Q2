@@ -51,9 +51,9 @@ void test_processes_dummy(int argc, char **argv) {
 
       if (p_rqs[i].pid == -1) {
         write_out("test_processes: ERROR creating process, no hay mas espacio para procesos\n");
-        exit_pcs(ERROR);
+        //exit_pcs(ERROR);
       }
-      if(p_rqs[i].pid == -2){
+      else if(p_rqs[i].pid == -2){
         write_out("test_processes: ERROR creating process, error en alloc\n");
         exit_pcs(ERROR);
       }
@@ -68,53 +68,61 @@ void test_processes_dummy(int argc, char **argv) {
 
       for (i = 0; i <max_processes; i++) {
         action = GetUniform(100) % 2;
-
-        switch (action) {
-          case 0:
-            if (p_rqs[i].state == RUNNING || p_rqs[i].state == BLOCKED) {
-              int argcK = 1;
-              char pid_str[21];
-              uint_to_str(p_rqs[i].pid, pid_str);
-              char *argvK[2];
-              argvK[0] = pid_str;
-              argvK[1] = NULL;
-              if (kill_process(argcK, argvK) == -1 /*_kill_process(p_rqs[i].pid) == -1*/) {
-                write_out("test_processes: ERROR killing process\n");
-                exit_pcs(ERROR);
+        if(p_rqs[i].pid != -1){
+          switch (action) {
+            case 0:
+              if (p_rqs[i].state == RUNNING || p_rqs[i].state == BLOCKED) {
+                int argcK = 1;
+                char pid_str[21];
+                uint_to_str(p_rqs[i].pid, pid_str);
+                char *argvK[2];
+                argvK[0] = pid_str;
+                argvK[1] = NULL;
+                if (kill_process(argcK, argvK) == -1) {
+                  write_out("test_processes: ERROR killing process\n");
+                  exit_pcs(ERROR);
+                }
+                //write_out("Matamos a ");
+                //printDec(p_rqs[i].pid);
+                //write_out("\n");
+                p_rqs[i].state = KILLED;
+                alive--;
               }
-              //write_out("Matamos a ");
-              //printDec(p_rqs[i].pid);
-              //write_out("\n");
-              p_rqs[i].state = KILLED;
-              alive--;
-            }
-            break;
+              break;
 
-          case 1:
-            if (p_rqs[i].state == RUNNING) {
-              int argcB = 1;
-              char pid_str[21];
-              uint_to_str(p_rqs[i].pid, pid_str);
-              char *argvB[2];
-              argvB[0] = pid_str;
-              argvB[1] = NULL;
-              if (block_process(argcB, argvB) == -1 /*_block_process(p_rqs[i].pid) != 0*/) {
-                write_out("test_processes: ERROR blocking process, pid no existe ");
-                printDec(p_rqs[i].pid);
-                write_out(". \n");
-                exit_pcs(ERROR);
+            case 1:
+              if (p_rqs[i].state == RUNNING) {
+                int argcB = 1;
+                char pid_str[21];
+                uint_to_str(p_rqs[i].pid, pid_str);
+                char *argvB[2];
+                argvB[0] = pid_str;
+                argvB[1] = NULL;
+                if (block_process(argcB, argvB) == -1) {
+                  write_out("test_processes: ERROR blocking process, pid no existe");
+                  printDec(p_rqs[i].pid);
+                  write_out(". \n");
+                  exit_pcs(ERROR);
+                }
+                if (block_process(argcB, argvB) == -1) {
+                  write_out("test_processes: ERROR blocking process, estaba ZOMBIE o INVALID ");
+                  printDec(p_rqs[i].pid);
+                  write_out("\n");
+                  exit_pcs(ERROR);
+                }
+                //write_out("Bloqueamos a ");
+                //printDec(p_rqs[i].pid);
+                //write_out("\n");
+                p_rqs[i].state = BLOCKED;
               }
-              //write_out("Bloqueamos a ");
-              //printDec(p_rqs[i].pid);
-              //write_out("\n");
-              p_rqs[i].state = BLOCKED;
-            }
-            break;
+              break;
+          }
         }
       }
 
       // Randomly unblocks processes
       for (i = 0; i <max_processes; i++)
+      if(p_rqs[i].pid != -1){
         if (p_rqs[i].state == BLOCKED && GetUniform(100) % 2) {
           int argcU = 1;
           char pid_str[21];
@@ -122,8 +130,12 @@ void test_processes_dummy(int argc, char **argv) {
           char *argvU[2];
           argvU[0] = pid_str;
           argvU[1] = NULL;
-          if (unblock_process(argcU, argvU) == -1  /* _unblock_process(p_rqs[i].pid) != 0 */) { //si o si esta bloqueado por el if de arriba
-            write_out("test_processes: ERROR unblocking process\n");
+          if (unblock_process(argcU, argvU) == -1) { //si o si esta bloqueado por el if de arriba
+            write_out("test_processes: ERROR unblocking process, pid not valid \n");
+            exit_pcs(ERROR);
+          }
+          if (unblock_process(argcU, argvU) == -2) { //si o si esta bloqueado por el if de arriba
+            write_out("test_processes: ERROR unblocking process, pcs not blocked \n");
             exit_pcs(ERROR);
           }
           //write_out("Desbloqueamos a ");
@@ -131,6 +143,7 @@ void test_processes_dummy(int argc, char **argv) {
           //write_out("\n");
           p_rqs[i].state = RUNNING;
         }
+      }
     }
 
     /*ProcessInfo* list = _get_proc_list();

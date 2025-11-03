@@ -122,7 +122,10 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
         
     memset(pcb->fileDescriptors, 0, sizeof(pcb->fileDescriptors));
     pcb->isYielding = 0;
-
+    pcb->total_ticks = 0;
+    pcb->changes = 0;
+    pcb->yield_changes = 0;
+    
     if(strcmp(name, "wait") == 0){
         active_processes++;
         yield(); //necesitamos q el pcs q crea un wait deje sus quehaceres y se frene
@@ -147,7 +150,7 @@ int block_process(int pid){
     if(state == BLOCKED){
         processTable[pid]->blocksAmount++;
         yield();
-        return -2;
+        return 0;
     }
     else{ //si entra aca es ZOMBIE o INVALID
         return -2;
