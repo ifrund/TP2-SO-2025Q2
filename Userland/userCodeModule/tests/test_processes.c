@@ -68,17 +68,10 @@ void test_processes_dummy(int argc, char **argv) {
 
       for (i = 0; i <max_processes; i++) {
         action = GetUniform(100) % 2;
-        if(p_rqs[i].pid != -1){
           switch (action) {
             case 0:
               if (p_rqs[i].state == RUNNING || p_rqs[i].state == BLOCKED) {
-                int argcK = 1;
-                char pid_str[21];
-                uint_to_str(p_rqs[i].pid, pid_str);
-                char *argvK[2];
-                argvK[0] = pid_str;
-                argvK[1] = NULL;
-                if (kill_process(argcK, argvK) == -1) {
+                if (_kill_process(p_rqs[i].pid) == -1) {
                   write_out("test_processes: ERROR killing process\n");
                   exit_pcs(ERROR);
                 }
@@ -94,13 +87,7 @@ void test_processes_dummy(int argc, char **argv) {
 
             case 1:
               if (p_rqs[i].state == RUNNING) {
-                int argcB = 1;
-                char pid_str[21];
-                uint_to_str(p_rqs[i].pid, pid_str);
-                char *argvB[2];
-                argvB[0] = pid_str;
-                argvB[1] = NULL;
-                int block = block_process(argcB, argvB);
+                int block = _block_process(p_rqs[i].pid);
                 if (block == -1) {
                   write_out("test_processes: ERROR blocking process, pid no valido ");
                   printDec(p_rqs[i].pid);
@@ -120,20 +107,12 @@ void test_processes_dummy(int argc, char **argv) {
               }
               break;
           }
-        }
       }
 
       // Randomly unblocks processes
       for (i = 0; i <max_processes; i++)
-      if(p_rqs[i].pid != -1){
         if (p_rqs[i].state == BLOCKED && GetUniform(100) % 2) {
-          int argcU = 1;
-          char pid_str[21];
-          uint_to_str(p_rqs[i].pid, pid_str);
-          char *argvU[2];
-          argvU[0] = pid_str;
-          argvU[1] = NULL;
-          int ublock = unblock_process(argcU, argvU);
+          int ublock = _unblock_process(p_rqs[i].pid);
           if (ublock == -1) { //si o si esta bloqueado por el if de arriba
             write_out("test_processes: ERROR unblocking process, pid not valid \n");
             exit_pcs(ERROR);
@@ -147,7 +126,6 @@ void test_processes_dummy(int argc, char **argv) {
           //write_out("\n");
           p_rqs[i].state = RUNNING;
         }
-      }
     }
 
     /*ProcessInfo* list = _get_proc_list();
@@ -174,6 +152,8 @@ void test_processes_dummy(int argc, char **argv) {
 
     write_out("-------------------------------------------------------------\n");
     _free(list);*/
+
+    //TODO un wait por si creamos muchos procesos y se llega a maxear nuestro array de procesos
   }
   exit_pcs(EXIT);
 }
