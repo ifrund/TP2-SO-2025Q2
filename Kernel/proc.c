@@ -196,6 +196,7 @@ int kill_process(uint64_t pid){
                 break;
             }
         }
+        unblock_process(parentPID);
     }
 
     //a todos mis hijos se los dejo a Init, no improta q este bloqueado
@@ -329,6 +330,5 @@ int real_wait(uint64_t target_pid, uint64_t my_pid){
         // ##################################################################################
     }
 
-    unblock_process(my_pid);
     return 0;
 }

@@ -31,6 +31,8 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
     int64_t pids[TOTAL_PROCESSES];
     char *ztm_argv[] = {0};
     uint64_t i;
+    static char *pcs_name = "zero_to_max";
+    int my_pid = _get_pid();
 
     if (argc != 1){
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 argumento.\n");
@@ -51,7 +53,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
     write_out("SAME PRIORITY...\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++){
-        pids[i] = create_process(&zero_to_max, "zero_to_max", 0, ztm_argv);
+        pids[i] = create_process(&zero_to_max, pcs_name, 0, ztm_argv);
         write_out("CREATED: ");
         printDec(pids[i]);
         write_out("  ");
@@ -60,32 +62,15 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
 
     // Expect to see them finish at the same time
     write_out("Primer wait\n");
-    char name[128];
-    strcpy(name, "zero_to_max");
     for (i = 0; i < TOTAL_PROCESSES; i++){
-        static char wpid_str[21];     
-        uint_to_str(pids[i], wpid_str);
-
-        static char *new_argv[3];  
-        new_argv[0] = wpid_str;
-        new_argv[1] = name;
-        new_argv[2] = NULL;
-        wait(2, new_argv);
+        _wait(pids[i], my_pid, pcs_name);
     }
 
     write_out("\nSAME PRIORITY, THEN CHANGE IT...\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++) {
         pids[i] = create_process(&zero_to_max, "zero_to_max", 0, ztm_argv);
-        static char pid_str[21];   
-        static char prio_str[21];
-        uint_to_str(pids[i], pid_str);
-        uint_to_str(prio[i], prio_str);
-        static char *new_argv[3];  
-        new_argv[0] = pid_str;
-        new_argv[1] = prio_str;
-        new_argv[2] = NULL;
-        be_nice(2, new_argv);
+        _be_nice(pids[i], prio[i]);
         write_out("PROCESS ");
         printDec(pids[i]);
         write_out(" NEW PRIORITY:");
@@ -97,34 +82,15 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
 
     write_out("Segundo wait\n");
     for (i = 0; i < TOTAL_PROCESSES; i++){
-        static char wpid_str[21];     
-        uint_to_str(pids[i], wpid_str);
-
-        static char *new_argv[3];  
-        new_argv[0] = wpid_str;
-        new_argv[1] = name;
-        new_argv[2] = NULL;
-        wait(2, new_argv);
+        _wait(pids[i], my_pid, pcs_name);
     }
 
     write_out("\nSAME PRIORITY, THEN CHANGE IT WHILE BLOCKED...\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++) {
         pids[i] = create_process(&zero_to_max, "zero_to_max", 0, ztm_argv);
-        static char pid_str[21];
-        uint_to_str(pids[i], pid_str);
-        static char* new_argv[1];
-        new_argv[0]=pid_str;
-        block_process(1, new_argv);
-        static char pid_str2[21];   
-        static char prio_str[21];
-        uint_to_str(pids[i], pid_str2);
-        uint_to_str(prio[i], prio_str);
-        static char *new_argv2[3];  
-        new_argv2[0] = pid_str2;
-        new_argv2[1] = prio_str;
-        new_argv2[2] = NULL;
-        be_nice(2, new_argv2);
+        _block_process(pids[i]);
+        _be_nice(pids[i], prio[i]);
         write_out("PROCESS ");
         printDec(pids[i]);
         write_out(" NEW PRIORITY:");
@@ -133,26 +99,14 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
     }
 
     for (i = 0; i < TOTAL_PROCESSES; i++){
-        static char pid_str[21];
-        uint_to_str(pids[i], pid_str);
-        static char* new_argv[1];
-        new_argv[0]=pid_str;
-        unblock_process(1, new_argv);
-        //_unblock_process(pids[i]);
+        _unblock_process(pids[i]);
     }
 
     // Expect the priorities to take effect
 
     write_out("Tercer wait\n");
     for (i = 0; i < TOTAL_PROCESSES; i++){
-        static char wpid_str[21];     
-        uint_to_str(pids[i], wpid_str);
-
-        static char *new_argv[3];  
-        new_argv[0] = wpid_str;
-        new_argv[2] = NULL;
-        new_argv[1] = name;
-        wait(2, new_argv);
+        _wait(pids[i], my_pid, pcs_name);
     }
 
 
