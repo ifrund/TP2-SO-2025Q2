@@ -100,6 +100,5 @@ void test_mm_dummy(int argc, char **argv) {
       }
     }
     //write_out("\n");
-
   }
 }
