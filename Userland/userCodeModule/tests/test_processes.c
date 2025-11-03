@@ -51,7 +51,7 @@ void test_processes_dummy(int argc, char **argv) {
 
       if (p_rqs[i].pid == -1) {
         write_out("test_processes: ERROR creating process, no hay mas espacio para procesos\n");
-        //exit_pcs(ERROR);
+        exit_pcs(ERROR);
       }
       else if(p_rqs[i].pid == -2){
         write_out("test_processes: ERROR creating process, error en alloc\n");
@@ -82,9 +82,11 @@ void test_processes_dummy(int argc, char **argv) {
                   write_out("test_processes: ERROR killing process\n");
                   exit_pcs(ERROR);
                 }
-                //write_out("Matamos a ");
-                //printDec(p_rqs[i].pid);
-                //write_out("\n");
+                /*write_out("M");
+                char pid_str1[21];
+                uint_to_str(p_rqs[i].pid, pid_str1);
+                write_out(pid_str1);
+                write_out("  ");*/
                 p_rqs[i].state = KILLED;
                 alive--;
               }
@@ -98,13 +100,14 @@ void test_processes_dummy(int argc, char **argv) {
                 char *argvB[2];
                 argvB[0] = pid_str;
                 argvB[1] = NULL;
-                if (block_process(argcB, argvB) == -1) {
-                  write_out("test_processes: ERROR blocking process, pid no existe");
+                int block = block_process(argcB, argvB);
+                if (block == -1) {
+                  write_out("test_processes: ERROR blocking process, pid no valido ");
                   printDec(p_rqs[i].pid);
                   write_out(". \n");
                   exit_pcs(ERROR);
                 }
-                if (block_process(argcB, argvB) == -1) {
+                if (block == -2) {
                   write_out("test_processes: ERROR blocking process, estaba ZOMBIE o INVALID ");
                   printDec(p_rqs[i].pid);
                   write_out("\n");
@@ -130,11 +133,12 @@ void test_processes_dummy(int argc, char **argv) {
           char *argvU[2];
           argvU[0] = pid_str;
           argvU[1] = NULL;
-          if (unblock_process(argcU, argvU) == -1) { //si o si esta bloqueado por el if de arriba
+          int ublock = unblock_process(argcU, argvU);
+          if (ublock == -1) { //si o si esta bloqueado por el if de arriba
             write_out("test_processes: ERROR unblocking process, pid not valid \n");
             exit_pcs(ERROR);
           }
-          if (unblock_process(argcU, argvU) == -2) { //si o si esta bloqueado por el if de arriba
+          if (ublock == -2) { //si o si esta bloqueado por el if de arriba
             write_out("test_processes: ERROR unblocking process, pcs not blocked \n");
             exit_pcs(ERROR);
           }

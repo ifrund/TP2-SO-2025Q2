@@ -442,9 +442,11 @@ void block_process_dummy(int argc, char ** argv){
         exit_pcs(ERROR);
     }
     if(ret == SECOND_ERROR){
+        /*
         write_out("Este pid ya estaba muerto\n");
         estrellita_bg();
         exit_pcs(ERROR);
+        */
     }
 
     estrellita_bg();
@@ -471,9 +473,11 @@ void unblock_process_dummy(int argc, char ** argv){
         exit_pcs(ERROR);
     }
     if(ret == SECOND_ERROR){ 
+        /*
         write_out("Este proceso no esta bloqueado, asique no lo podemos desbloquear\n");
         estrellita_bg();
         exit_pcs(ERROR);
+        */
     }
 
     estrellita_bg();
@@ -505,22 +509,32 @@ void get_proc_list_dummy(int argc, char ** argv){
         if (p->pid == -1)  // Slot vacío
             continue;
 
-        printDec(p->pid);
+        char pid_str[21];
+        int_to_str(p->pid, pid_str);
+        write_out(pid_str);
         write_out("\t");
         write_out(p->name);
         write_out("\t");
         write_out(p->state);
         write_out("\t");
         if (p->parentPid == (uint64_t)-1) write_out("-1");
-        else printDec(p->parentPid);
+        else {
+            char ppid_str[21];
+            int_to_str(p->parentPid, ppid_str);
+            write_out(ppid_str);
+        }
         write_out("\t0x");
-        printHex((uint64_t)p->rsp); 
+        printHex((uint64_t)p->rsp); //TODO pasar a char y write_out asi se ve bien
         write_out("\t");
         write_out(p->my_prio);
         write_out("\t");
-        printDec(p->childrenAmount);
+        char chi_str[21];
+        int_to_str(p->childrenAmount, chi_str);
+        write_out(chi_str);
         write_out("\t");
-        printDec(p->fileDescriptorCount);
+        char fdc_str[21];
+        int_to_str(p->fileDescriptorCount, fdc_str);
+        write_out(fdc_str);
         write_out("\n");
     }
 

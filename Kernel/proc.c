@@ -125,7 +125,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     pcb->total_ticks = 0;
     pcb->changes = 0;
     pcb->yield_changes = 0;
-    
+
     if(strcmp(name, "wait") == 0){
         active_processes++;
         yield(); //necesitamos q el pcs q crea un wait deje sus quehaceres y se frene
@@ -299,7 +299,7 @@ int wait(uint64_t target_pid, uint64_t my_pid, char* target_name){
     if (!is_pid_valid(target_pid))
         return -1;
     
-    if (!is_pid_valid(my_pid)) //TODO cuando entra a aca?? este if no es un "che yo existo??" xd
+    if (!is_pid_valid(my_pid)) 
         return -2;
 
     if (strcmp(target_name, processTable[target_pid]->name) != 0)
