@@ -17,7 +17,7 @@ typedef struct block_info
     unsigned int contiguous_blocks; // Cantidad de bloques contiguos, si se pide más memoria que BLOCK_SIZE. Luego deben liberarse todos juntos.
 } block_info;
 
-block_info block_array[TOTAL_BLOCK_COUNT];  // TODO: tira warning porque void* es system-dependent.
+block_info block_array[TOTAL_BLOCK_COUNT];
 static bool is_initialized = 0;
 
 unsigned int first_free_index = 0;
@@ -55,8 +55,6 @@ void* alloc(const unsigned long int size){
     
     for (int found_index = first_free_index, found = 0; found_index <= TOTAL_BLOCK_COUNT - blocks_to_alloc; found_index++) {
 
-        // TODO: no deberia tener que explicarlo, pero me parece un poco confuso este algoritmo. Idealmente debería ser más simple, para no precisar explicación
-        // TODO: en OSDev se recomienda consultar, para una implementacion similar, if(addr_next_block - (addr_current_block - size_of_header) > size). No estamos usandolo.
         // En el primer ciclo, este if es true (porque se garantiza que first_free_index apunta a un bloque disponible)
         // Si el bloque actual esta disponible, comienzo desde el mismo.
         // Luego, verifico si los bloques posteriores a este están ocupados, según los bloques contiguos que necesite. Si alguno lo está corto la verificación y continúo desde el siguiente
@@ -96,8 +94,7 @@ void* alloc(const unsigned long int size){
 void free (void * address){
     if (address == NULL)
         return;
-
-    // TODO: esta funcion seria mas simple si los headers fueran parte de la pagina...
+    
     unsigned int index = (unsigned int)(address - MEMORY_START) / BLOCK_SIZE;
     unsigned int blocks_to_free = block_array[index].contiguous_blocks;
 
