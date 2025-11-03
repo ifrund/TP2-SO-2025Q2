@@ -11,15 +11,12 @@
 #include "include/memory_manager.h"
 #include "include/proc.h"
 
-#define IDLE_PID 1
-
 extern uint8_t text;
 extern uint8_t rodata;
 extern uint8_t data;
 extern uint8_t bss;
 extern uint8_t endOfKernelBinary;
 extern uint8_t endOfKernel;
-
 static const uint64_t PageSize = 0x1000;
 
 static void * const userspaceAddress = (void*)0x400000;
@@ -61,9 +58,19 @@ static void* const shell = (void *) 0x400000;
 
 //proceso basura cuando no hay ninguno ready, llama constantemente a halt, osea al sch, osea a q pase al proximo pcs
 static void idle(){
+	
 	while(1){
 		_hlt();
 	}
+}
+
+int init_pid;
+
+void init(){
+	char * argNull[1]={NULL};
+	IDLE_PID = create_process(&idle, "idle", 0, argNull); 
+	create_process(shell, "shell", 0, argNull); 
+	kill_process(init_pid);
 }
 
 int main()
@@ -73,15 +80,12 @@ int main()
 	create_mm();
 	//TODO init de pipes (?
 	char * argNull[1]={NULL};
-	create_process(shell, "shell", 0, argNull); //es el primero, se crea con pid 0
-	current_index = 0;
-	create_process(idle, "idle", 0, argNull); //es el segundo, se crea con pid 1
+	init_pid = create_process(&init, "init", 0, argNull); 
+	_sti(); //las desacctivamos porq sino el sch nunca se activa y no toma el proceso init
 
-	_setUser();
-
-//    Esto no hace falta porque el salto se hace en set user
-//    ((EntryPoint) userspaceAddress)();
+	while(1){
+		_hlt();
+	}
     
 	return 0;
-
 }

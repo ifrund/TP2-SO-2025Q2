@@ -1,6 +1,5 @@
 #include "include/scheduler.h"
 
-#define IDLE_PID 1
 int active_processes = 0; //procesos q no estan ZOMBIE
 int current_index = -1;
 

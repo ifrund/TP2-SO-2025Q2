@@ -1,7 +1,7 @@
 #include "include/userlib.h"
 
-#define SHELL_PID 0
-#define IDLE_PID 1
+#define SHELL_PID 2 //TODO
+#define IDLE_PID 1 //TODO
 
 static char buffer[64] = {'0'};
 static char* char_buffer = " ";

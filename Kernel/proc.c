@@ -1,6 +1,7 @@
 #include "proc.h"
 
 PCB* processTable[MAX_PCS]= {NULL}; 
+int IDLE_PID;
 
 static int strlen(char * string){
     int i=0;
@@ -198,11 +199,11 @@ int kill_process(uint64_t pid){
     }
 
     //a todos mis hijos se los dejo a Init, no improta q este bloqueado
-    PCB * init = processTable[INIT_PID];
+    PCB * init = processTable[IDLE_PID];
     for(int i=0; i < proc->childrenAmount; i++){
         int childPid = proc->childProc[i];
         PCB* child = processTable[childPid];
-        child->ParentPID = INIT_PID;
+        child->ParentPID = IDLE_PID;
         init->childProc[init->childrenAmount++] = childPid;
     }
 
