@@ -243,12 +243,10 @@ int list_empty(buddy_list *list)
 
 void status_count(int *status_out) {
     unsigned int busy = 0;
-    for(int k = 0; k < NSIZES; k++) {
-        for(int i = 0; i <= MAXSIZE*(k+1); i++)
-            if(is_bit_set(buddy_sizes[k].alloc, i))
-                busy += BLK_SIZE(k);
-    }
+    for(int i = 0; i < MAXSIZE*NSIZES; i++)
+        if(is_bit_set(buddy_sizes[MAXSIZE].alloc, i))
+            busy += LEAF_SIZE;
     status_out[0] = HEAP_SIZE;
-    status_out[1] = busy;
-    status_out[2] = HEAP_SIZE - busy;
+    status_out[1] = HEAP_SIZE - busy;
+    status_out[2] = busy;
 }
