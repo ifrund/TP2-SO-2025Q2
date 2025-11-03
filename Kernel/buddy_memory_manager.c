@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "../include/lib.h"
+#include "../include/memory_manager.h"
 
 #define LEAF_SIZE 16 // The smallest allocation size (in bytes)
 /*
@@ -53,31 +54,29 @@ void list_push(buddy_list *, void *);
 void *list_pop(buddy_list *);
 int list_empty(buddy_list *);
 
-// Return 1 if bit at position index in array is 1
-int is_bit_set(char *array, int index)
-{
-    char b = array[index / 8];
-    char m = (1 << (index ^ 8));
-    return (b & m) == m;
+// Return 1 if bit at position index in array is set to 1
+int is_bit_set(char* array, int index) {
+  char b = array[index / 8];
+  char m = (1 << (index % 8));
+  return (b & m) == m;
 }
 
 // Set bit at position index in array to 1
-void set_bit(char *array, int index)
-{
-    char b = array[index / 8];
-    char m = (1 << (index % 8));
-    array[index / 8] = (b | m);
+void set_bit(char* array, int index) {
+  char b = array[index / 8];
+  char m = (1 << (index % 8));
+  array[index / 8] = (b | m);
 }
 
 // Clear bit at position index in array
-void clear_bit(char *array, int index)
-{
-    char b = array[index / 8];
-    char m = (1 << (index % 8));
-    array[index / 8] = (b & ~m);
+void clear_bit(char* array, int index) {
+  char b = array[index / 8];
+  char m = (1 << (index % 8));
+  array[index / 8] = (b & ~m);
 }
 
-#define LINEAR_ALLOCATOR_START (0x600000 + 1 * 1000 * 1000 * (uint64_t)1000 * 8)
+//#define LINEAR_ALLOCATOR_START (0x600000 + 1 * 1000 * 1000 * (uint64_t)1000 * 8)
+#define LINEAR_ALLOCATOR_START (void*)(0x0000000000500000)
 
 static uint64_t allocated;
 
@@ -88,14 +87,9 @@ void *linearMalloc(uint64_t size)
     ;
 }
 
-void linearFree(void *ptr)
-{
-    return;
-}
-
 // Allocate memory for the heap managed by the allocator, and allocate
 // memory for the data structures of the allocator.
-void buddy_init()
+void create_mm()
 {
     buddy_base = linearMalloc(HEAP_SIZE);
     for (int k = 0; k < NSIZES; k++)
@@ -141,7 +135,7 @@ void *bi_to_addr(int k, int bi)
     return (char *)buddy_base + n;
 }
 
-void *buddy_malloc(size_t nbytes)
+void *alloc(const unsigned long int nbytes)
 {
     int power, k;
     if (buddy_base == NULL)
@@ -180,30 +174,33 @@ int block_size(char *p)
     return 0;
 }
 
-void buddy_free(void *p)
+void free(void *p)
 {
-    /*
+    
     void *q;
-  int k;
+    int k;
 
-  for (k = size(p); k < MAXSIZE; k++) {
-    int bi = addr_to_bi(k, p);
-    bit_clear(bd_sizes[k].alloc, bi);
-    int buddy = (bi % 2 == 0) ? bi+1 : bi-1;
-    if (bit_isset(bd_sizes[k].alloc, buddy)) {
-      break;
+    for (k = block_size(p); k < MAXSIZE; k++)
+    {
+        int bi = addr_to_bi(k, p);
+        clear_bit(buddy_sizes[k].alloc, bi);
+        int buddy = (bi % 2 == 0) ? bi + 1 : bi - 1;
+        if (is_bit_set(buddy_sizes[k].alloc, buddy))
+        {
+            break;
+        }
+        // budy is free; merge with buddy
+        q = bi_to_addr(k, buddy);
+        list_remove(q);
+        if (buddy % 2 == 0)
+        {
+            p = q;
+        }
+        clear_bit(buddy_sizes[k + 1].split, addr_to_bi(k + 1, p));
     }
-    // budy is free; merge with buddy
-    q = addr(k, buddy);
-    list_remove(q);
-    if(buddy % 2 == 0) {
-      p = q;
-    }
-    bit_clear(bd_sizes[k+1].split, addr_to_bi(k+1, p));
-  }
-  // printf("free %p @ %d\n", p, k);
-  list_push(&bd_sizes[k].free, p);
-    */
+    // printf("free %p @ %d\n", p, k);
+    list_push(&buddy_sizes[k].free, p);
+    
 }
 
 // Implementation of lists: double-linked and circular. Double-linked
@@ -243,4 +240,14 @@ void *list_pop(buddy_list *list)
 int list_empty(buddy_list *list)
 {
     return list->next == list;
+}
+
+void status_count(int *status_out) {
+    unsigned int busy = 0;
+    for(int i = 0; i < MAXSIZE*NSIZES; i++)
+        if(is_bit_set(buddy_sizes[MAXSIZE].alloc, i))
+            busy += LEAF_SIZE;
+    status_out[0] = HEAP_SIZE;
+    status_out[1] = HEAP_SIZE - busy;
+    status_out[2] = busy;
 }
