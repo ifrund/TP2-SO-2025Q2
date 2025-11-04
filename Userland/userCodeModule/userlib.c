@@ -521,7 +521,20 @@ void get_proc_list_dummy(int argc, char ** argv){
             write_out(ppid_str);
         }
         write_out("\t0x");
-        printHex((uint64_t)p->rsp); //TODO pasar a char y write_out asi se ve bien
+        const char hex_chars[] = "0123456789ABCDEF";
+        char hex_buffer[17];  // solo los dígitos hex, sin prefijo
+        for (int i = 0; i < 16; i++) {
+            int shift = (15 - i) * 4;
+            hex_buffer[i] = hex_chars[(p->rsp >> shift) & 0xF];
+        }
+        hex_buffer[16] = '\0';
+        // Saltar ceros a la izquierda
+        int start = 0;
+        while (hex_buffer[start] == '0' && start < 15) {
+            start++;
+        }
+        if (start == 16) start = 15;    // Si todo era 0, mostrar un solo 0
+        write_out(&hex_buffer[start]);
         write_out("\t");
         write_out(p->my_prio);
         write_out("\t");
