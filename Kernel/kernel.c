@@ -57,20 +57,14 @@ void * initializeKernelBinary()
 static void* const shell = (void *) 0x400000;
 
 //proceso basura cuando no hay ninguno ready, llama constantemente a halt, osea al sch, osea a q pase al proximo pcs
+//tmb lo usamos como init
 static void idle(){
-	
+	char * argNull[1]={NULL};
+	SHELL_PID = create_process(shell, "shell", 0, argNull); 
+
 	while(1){
 		_hlt();
 	}
-}
-
-int init_pid;
-
-void init(){
-	char * argNull[1]={NULL};
-	IDLE_PID = create_process(&idle, "idle", 0, argNull); 
-	create_process(shell, "shell", 0, argNull); 
-	kill_process(init_pid);
 }
 
 int main()
@@ -80,7 +74,7 @@ int main()
 	create_mm();
 	//TODO init de pipes (?
 	char * argNull[1]={NULL};
-	init_pid = create_process(&init, "init", 0, argNull); 
+	IDLE_PID = create_process(&idle, "idle", 0, argNull);  
 	_sti(); //las desactivamos porq sino el sch nunca se activa y no toma el proceso init
 
 	while(1){

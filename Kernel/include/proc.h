@@ -18,7 +18,8 @@
 #define MAX_ARGUMENTS 16
 #define MAX_ARG_LENGTH 64 
 
-extern int IDLE_PID;  //TODO cambiar a 0 cuando este listo
+extern int IDLE_PID; 
+extern int SHELL_PID;
 
 //Estados del proceso
 typedef enum {
@@ -96,5 +97,7 @@ ProcessInfo* get_proc_list();
 int get_pid();
 int is_pid_valid(int pid);
 int wait(uint64_t target_pid, uint64_t my_pid, char* target_name);
+int get_shell_pid();
+int get_idle_pid();
 
 #endif

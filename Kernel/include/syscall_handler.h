@@ -42,3 +42,6 @@ int sys_sem_open_init(uint64_t name, uint64_t value);
 int sys_sem_wait(uint64_t name);
 int sys_sem_post(uint64_t name);
 int sys_sem_close(uint64_t name);
+
+int sys_get_shell();
+int sys_get_idle();

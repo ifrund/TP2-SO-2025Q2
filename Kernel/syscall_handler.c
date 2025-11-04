@@ -123,6 +123,14 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     sys_sem_close(rdi);
     break;
 
+  case (0xAB):
+    sys_get_shell();
+    break;
+
+  case (0xAC):
+    sys_get_idle();
+    break;
+    
   }
 }
 
@@ -273,4 +281,12 @@ int sys_sem_post(uint64_t name){
 
 int sys_sem_close(uint64_t name){
   return sem_close((char *)name);
+}
+
+int sys_get_shell(){
+  return get_shell_pid();
+}
+
+int sys_get_idle(){
+  return get_idle_pid();
 }

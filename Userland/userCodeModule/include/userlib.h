@@ -17,6 +17,8 @@
 
 extern int kill_from_shell;
 extern int foreground;
+extern int shell_pid;
+extern int idle_pid;
 
 //================================================================================================================================
 // Writting

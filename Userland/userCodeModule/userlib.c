@@ -1,10 +1,9 @@
 #include "include/userlib.h"
 
-#define SHELL_PID 2 //TODO
-#define IDLE_PID 1 //TODO
-
 static char buffer[64] = {'0'};
 static char* char_buffer = " ";
+int shell_pid;
+int idle_pid;
 
 //================================================================================================================================
 // Writting
@@ -344,12 +343,12 @@ void kill_dummy(int argc, char ** argv){
     argc_1(argc);
 
     int toKill = char_to_int(argv[0]);
-    if(toKill == SHELL_PID){
+    if(toKill == shell_pid){
         write_out("Para matar la shell tenes que usar Exit. \n");
         estrellita_bg();
         exit_pcs(EXIT);
     }
-    if(toKill == IDLE_PID){
+    if(toKill == idle_pid){
         write_out("No te podemos permitir matar el idle ¯\\_(ツ)_/¯\n");
         estrellita_bg();
         exit_pcs(EXIT);
@@ -424,10 +423,12 @@ void block_process_dummy(int argc, char ** argv){
     argc_1(argc);
 
     int pid = char_to_int(argv[0]);
-    if(pid == 0){
+    if(pid == shell_pid){
         write_out("Por ahora la shell no es bloqueante, asiq... adios\n");
     }
-
+    if(pid == idle_pid){
+        write_out("Bloquear el idle... no sos muy inteligente\n");
+    }
     if(pid == get_pid()){
         write_out("Que haces loco, nos vas a meter en problemas raja de aca.\n");
         estrellita_bg();
@@ -442,11 +443,9 @@ void block_process_dummy(int argc, char ** argv){
         exit_pcs(ERROR);
     }
     if(ret == SECOND_ERROR){
-        /*
         write_out("Este pid ya estaba muerto\n");
         estrellita_bg();
         exit_pcs(ERROR);
-        */
     }
 
     estrellita_bg();
@@ -462,7 +461,7 @@ void unblock_process_dummy(int argc, char ** argv){
     argc_1(argc);
     int pid = char_to_int(argv[0]);
 
-    if(pid == IDLE_PID){
+    if(pid == idle_pid){
         write_out("Que estas haciendo?? esto no sirve de nada, va a volver estar blocked cuando hagas ps.\n");
     }
     int ret = _unblock_process(pid);
@@ -473,11 +472,9 @@ void unblock_process_dummy(int argc, char ** argv){
         exit_pcs(ERROR);
     }
     if(ret == SECOND_ERROR){ 
-        /*
         write_out("Este proceso no esta bloqueado, asique no lo podemos desbloquear\n");
         estrellita_bg();
         exit_pcs(ERROR);
-        */
     }
 
     estrellita_bg();

@@ -37,7 +37,6 @@ typedef struct {
     uint64_t rsp;
     char my_prio[16];
 
-    //TODO probablmente borrarlas
     int childrenAmount;
     int children[MAX_PCS];
     // Podrías incluir file descriptors si querés: los ids nada más.
@@ -60,5 +59,7 @@ int _sem_open_init(char * name, uint64_t value);
 int _sem_wait(char * name);
 int _sem_post(char * name);
 int _sem_close(char * name);
+int _shell_pid();
+int _idle_pid();
 
 #endif // USERLIBASM_H

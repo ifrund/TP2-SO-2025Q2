@@ -2,6 +2,7 @@
 
 PCB* processTable[MAX_PCS]= {NULL}; 
 int IDLE_PID;
+int SHELL_PID;
 
 static int strlen(char * string){
     int i=0;
@@ -343,4 +344,12 @@ int real_wait(uint64_t target_pid, uint64_t my_pid){
     }
 
     return 0;
+}
+
+int get_shell_pid(){
+    return SHELL_PID;
+}
+
+int get_idle_pid(){
+    return IDLE_PID;
 }

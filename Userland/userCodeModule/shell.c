@@ -331,7 +331,6 @@ void process_command(char* buffer){
             }  
 
             if(foreground && !not_command){  
-                //TODO agregar el name               
                 char pid_str[16];
                 int_to_str(wait_pid, pid_str);
                 char *argv[3];
@@ -346,9 +345,6 @@ void process_command(char* buffer){
 
                 wait(argc_w, argv);
             } 
-
-            for (int i = 0; i < 128; i++)//TODO esta de mas?? se reiniciaria solo el name?
-                name[i] = 0;
                 
             foreground=1;
             return;
@@ -420,6 +416,8 @@ void init_shell(){
     font_size = getFontSize();
     rows_to_show = VERT_SIZE/font_size;
     line_size = LINE_SIZE/font_size;
+    shell_pid = _shell_pid();
+    idle_pid = _idle_pid();
 }
 
 static void remove_extra_spaces(char *str) {
