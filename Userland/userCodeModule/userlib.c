@@ -680,6 +680,23 @@ void wc_dummy(int argc, char ** argv){
             
             write_out(buffer);
 
+            if (c == '\x04') { // Ctrl+D
+                char number_str[12];
+                uintToBase(line_count, number_str, 10);
+                write_out("Cantidad de lineas (en if): ");
+                write_out(number_str);
+                write_out("\n");
+                break;
+            }
+            
+            if (c == '\x03') { // Ctrl+C
+                break;
+            }  
+
+            if(c == '\x74'){
+                write_out("en la t");
+            }
+
             if (c == '\n') {             // Conteo de lineas
                 line_count++;
             } 
@@ -689,7 +706,7 @@ void wc_dummy(int argc, char ** argv){
             if (c == '\x04') { // Ctrl+D
                 char number_str[12];
                 uintToBase(line_count, number_str, 10);
-                write_out("Cantidad de lineas: ");
+                write_out("Cantidad de lineas (en else): ");
                 write_out(number_str);
                 write_out("\n");
                 break;
