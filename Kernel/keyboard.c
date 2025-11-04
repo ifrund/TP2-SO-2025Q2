@@ -3,6 +3,7 @@
 #include <naiveConsole.h>
 #include <stdint.h>
 #include <videoDriver.h>
+#include "include/sem.h"
 
 #define KEY_BUF_SIZE 16
 #define STDIN 0
@@ -79,6 +80,8 @@ void insert_key(int key) {
     ascii_to_read = 1;
   }
 
+  sem_post("sem_stdin");
+  
   // Esta parte es para STDKEYS (scancodes crudos), siempre se debe ejecutar
   // incluso si la tecla fue solo "Ctrl" (que no genera ASCII)
   to_read = 1;

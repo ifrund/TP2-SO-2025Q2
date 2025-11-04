@@ -48,7 +48,11 @@ void pipe_init() {
     // Inicializa el semaforo para la tabla global
     sem_open_init("GLOBAL_PIPE_TABLE_LOCK", 1);
 
-    for (int i = 0; i < MAX_PIPES; i++) {
+    global_pipe_table[0].is_in_use = 1; // Reservado para STDIN
+    global_pipe_table[1].is_in_use = 1; // Reservado para STDOUT
+    global_pipe_table[2].is_in_use = 1; // Reservado para STDERR
+    
+    for (int i = 3; i < MAX_PIPES; i++) {
         global_pipe_table[i].is_in_use = 0;
     }
 }

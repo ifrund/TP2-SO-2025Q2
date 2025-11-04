@@ -94,10 +94,10 @@ int shell(){
     write_out(PROMPT_START);
 
     while(!exit_command){
-        if (read(char_buffer, 1) == 1){
+        // read() ahora es bloqueante. No se necesita sleep_once().
+        if (read(char_buffer, 1) == 1){ 
             process_key(char_buffer[0]);
         }
-        sleep_once();
     }
 
     clearScreen();
@@ -332,6 +332,7 @@ void init_shell(){
     font_size = getFontSize();
     rows_to_show = VERT_SIZE/font_size;
     line_size = LINE_SIZE/font_size;
+    clearScreen();
 }
 
 //Helpers
@@ -380,7 +381,10 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
         write_out("Error: no se pudo crear el pipe.\n");
         return;
     }
-    
+
+    printDec(pipe_ids[0]);
+    write_out(" ");
+    printDec(pipe_ids[1]);
     uint64_t fds_A[2] = {STDIN, pipe_ids[1]};
     uint64_t fds_B[2] = {pipe_ids[0], STDOUT};
 

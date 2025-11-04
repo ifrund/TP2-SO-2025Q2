@@ -7,9 +7,9 @@
 #include <registers.h>
 #include <sound.h>
 #include "include/memory_manager.h"
-#include <proc.h>
-#include <scheduler.h>
-#include <pipes.h>
+#include "include/proc.h"
+#include "include/scheduler.h"
+#include "include/pipes.h"
 
 #define STDIN 0
 #define STDOUT 1
@@ -148,32 +148,88 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
 }
 
 void sys_write(uint64_t fd, uint64_t message, uint64_t length) {
-  switch (fd) {
-      case (STDOUT):
-        printCant((char *)message, length);
-        break;
+  int current_pid = get_pid();
+  if (!is_pid_valid(current_pid)) return;
+  PCB* pcb = processTable[current_pid];
 
-      case (STDERR):
-        printColorCant((char *)message, length, ERRCOLORFONT, ERRCOLORBACK);
-        break;
+  if (fd >= MAX_FD) return;
+  int real_fd = pcb->fileDescriptors[fd];
+
+  switch (real_fd) {
+    case (STDOUT): // El FD real es 1
+      printCant((char *)message, length);
+      break;
+
+    case (STDERR): // El FD real es 2
+      printColorCant((char *)message, length, ERRCOLORFONT, ERRCOLORBACK);
+      break;
+    
+    default:
+      // Si no es STDOUT o STDERR, asumimos que es un PIPE
+      if (real_fd > STDERR) {
+          sys_pipe_write(real_fd, message, length);
       }
+    break;
+  }
 }
 
 int sys_read(uint64_t fd, uint64_t buffer, uint64_t length) {
-  int retVal = 0;
-  retVal = read_chars(fd, (char *)buffer, length);
-  return retVal;
+    
+    int current_pid = get_pid();
+    if (!is_pid_valid(current_pid)) return -1;
+    PCB* pcb = processTable[current_pid];
+
+    if (fd >= MAX_FD) return -1;
+    int real_fd = pcb->fileDescriptors[fd]; 
+
+    if (real_fd == STDIN) {
+        // El FD real es 0 (STDIN/Teclado) -> Llama a read_chars (NO bloqueante)
+        return read_chars(real_fd, (char*)buffer, length);
+    } 
+    
+    if (real_fd > STDERR) { 
+        // El FD real es un pipe -> Llama a sys_pipe_read (BLOQUEANTE)
+        return sys_pipe_read(real_fd, buffer, length);
+    }
+
+    return -1; // No se puede leer de STDOUT/STDERR
 }
 
 int read_chars(int fd, char *buffer, int length) {
+  if (fd != STDIN) {
+      int chars_read = 0;
+      for (int i = 0; i < length; i++) {
+          buffer[i] = read_key(fd);
+          if (buffer[i] == 0) {
+              return chars_read; 
+          }
+          chars_read++;
+      }
+      return chars_read;
+  }
   int chars_read = 0;
-  for (int i = 0; i < length; i++) {
-    chars_read++;
-    buffer[i] = read_key(fd);
-    if (buffer[i] == 0) {
-      i = length; // si llego a un null dejo de leer
-      chars_read--;
-    }
+  while (chars_read < length) {
+      
+      sem_wait("sem_stdin");
+
+      char c = read_key(fd);
+
+      if (c == 0) continue;
+
+      // (Ctrl+D)
+      if (c == '\x04') {
+          return chars_read;
+      }
+      
+      if (c == '\x03') { // Ctrl+C
+          return chars_read; 
+      }
+      
+      buffer[chars_read++] = c;
+
+      if (c == '\n') {
+          return chars_read;
+      }
   }
   return chars_read;
 }

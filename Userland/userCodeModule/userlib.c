@@ -700,7 +700,7 @@ void wc_dummy(int argc, char ** argv){
                 word_count++;
             }
         } else {
-            sleep_once(); 
+           break;
         }
     }
     
@@ -776,7 +776,7 @@ void cat_dummy(int argc, char ** argv){
         } else {
             // TODO: CORREGIR 
             // Si read devolvio 0, cede el CPU y vuelve a intentar (espera activa).
-            sleep_once(); 
+            break;
         }
     }
     
@@ -868,7 +868,7 @@ void filter_dummy(int argc, char ** argv){
         } else {
             // TODO: CORREGIR 
             // Si read devolvio 0, cede el CPU y vuelve a intentar (espera activa).
-            sleep_once(); 
+            break;
         }
     }
     
@@ -880,7 +880,7 @@ int filter(int argc, char ** argv){
 }
 
 void msg_dummy(int argc, char ** argv){
-    write_out("Arquitectura de Computadoras\n");
+    write_out("Arquitectura de Computadoras\n\n");
     exit_pcs(EXIT);
 }
 

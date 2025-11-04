@@ -2,6 +2,7 @@
 #include <idtLoader.h>
 #include <interrupts.h>
 #include <stdint.h>
+#include "include/sem.h"
 
 #pragma pack(push) /* Push de la alineación actual */
 #pragma pack(1)    /* Alinear las siguiente estructuras a 1 byte */
@@ -33,6 +34,8 @@ void load_idt() {
   setup_IDT_entry(0x06, (uint64_t)&_exception6Handler);
   setup_IDT_entry(0x80, (uint64_t)&_irq128Handler);
 
+
+  sem_open_init("sem_stdin", 0);
   // Solo interrupcion timer tick habilitadas
   picMasterMask(0xFC);
   picSlaveMask(0xFF);
