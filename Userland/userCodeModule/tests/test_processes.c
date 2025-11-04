@@ -42,12 +42,13 @@ void test_processes_dummy(int argc, char **argv) {
   //printDec(max_processes);
   //write_out("\n");
   p_rq p_rqs[max_processes];
-
+  int my_pid = _get_pid();
+  char *name = "endless_loop";
   while (1) {
 
     // Createmax_processes processes
     for (i = 0; i <max_processes; i++) {
-      p_rqs[i].pid = create_process(&endless_loop, "endless_loop", 0, argvAux); //aca usamos syscall porq no hay create_pcs dummy 
+      p_rqs[i].pid = create_process(&endless_loop, name, 0, argvAux); //aca usamos syscall porq no hay create_pcs dummy 
 
       if (p_rqs[i].pid == -1) {
         write_out("test_processes: ERROR creating process, no hay mas espacio para procesos\n");
@@ -153,7 +154,19 @@ void test_processes_dummy(int argc, char **argv) {
     write_out("-------------------------------------------------------------\n");
     _free(list);*/
 
-    //TODO un wait por si creamos muchos procesos y se llega a maxear nuestro array de procesos
+    //un wait por si creamos muchos procesos
+    //así no se maxea nuestro array de procesos
+    for (i = 0; i < max_processes; i++) {
+      if (p_rqs[i].pid > 0) {
+          // Esperamos a que termine cada proceso que creamos
+          int ret = _wait(p_rqs[i].pid, my_pid, name);
+          if (ret == -1) {
+              write_out("test_processes: ERROR waiting process, pid no valido ");
+              printDec(p_rqs[i].pid);
+              write_out("\n");
+          }
+      }
+    }
   }
   exit_pcs(EXIT);
 }
