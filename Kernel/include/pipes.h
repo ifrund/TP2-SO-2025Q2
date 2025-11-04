@@ -18,4 +18,6 @@ int pipe_write(int pipe_id, const char* buffer, int count);
 // Reads up to 'count' bytes from the pipe identified by 'pipe_id' into 'buffer'.
 int pipe_read(int pipe_id, char* buffer, int count);
 
+void pipe_init();
+
 #endif // _PIPES_H_

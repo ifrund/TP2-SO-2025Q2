@@ -308,8 +308,8 @@ int sys_be_nice(uint64_t pid, uint64_t newPrio){
     return be_nice(pid, newPrio);
 }
 
-int sys_create_process(uint64_t rip, uint64_t name, uint64_t argc, uint64_t argv, uint64_t *fds){
-  return create_process((void *) rip, (char *) name, (int) argc, (char **) argv, fds);
+int sys_create_process(uint64_t rip, uint64_t name, uint64_t argc, uint64_t argv, uint64_t fds){
+  return create_process((void *) rip, (char *) name, (int) argc, (char **) argv, (uint64_t*) fds);
 }
 
 int sys_kill_process(uint64_t pid){

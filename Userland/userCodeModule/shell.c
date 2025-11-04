@@ -390,10 +390,6 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
     int pid_A = create_process_piped(rip_A, command_A, argc_A, argv_A, fds_A);
     int pid_B = create_process_piped(rip_B, command_B, argc_B, argv_B, fds_B);
 
-    // Cerrar ambos extremos del pipe en la shell
-    _pipe_close(pipe_ids[0]);
-    _pipe_close(pipe_ids[1]);
-
     // Esperar si es foreground
     if (foreground) {
         char pid_str[16];
@@ -408,6 +404,11 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
         wait_argv[0] = pid_str;
         wait(1, wait_argv);
     }
+
+    // Cerrar ambos extremos del pipe en la shell
+    _pipe_close(pipe_ids[0]);
+    _pipe_close(pipe_ids[1]);
+    
 }
 
 static int parse_arguments(char* buffer, char** argv) {
