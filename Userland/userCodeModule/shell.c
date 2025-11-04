@@ -94,7 +94,6 @@ int shell(){
     write_out(PROMPT_START);
 
     while(!exit_command){
-        // read() ahora es bloqueante. No se necesita sleep_once().
         if (read(char_buffer, 1) == 1){ 
             process_key(char_buffer[0]);
         }

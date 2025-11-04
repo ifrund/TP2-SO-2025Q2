@@ -165,7 +165,7 @@ void sys_write(uint64_t fd, uint64_t message, uint64_t length) {
       break;
     
     default:
-      // Si no es STDOUT o STDERR, asumimos que es un PIPE
+      // Si no es STDOUT o STDERR asumimos que es un PIPE
       if (real_fd > STDERR) {
           sys_pipe_write(real_fd, message, length);
       }
@@ -183,16 +183,16 @@ int sys_read(uint64_t fd, uint64_t buffer, uint64_t length) {
     int real_fd = pcb->fileDescriptors[fd]; 
 
     if (real_fd == STDIN) {
-        // El FD real es 0 (STDIN/Teclado) -> Llama a read_chars (NO bloqueante)
+        // El FD real es 0 (STDIN/Teclado)
         return read_chars(real_fd, (char*)buffer, length);
     } 
     
     if (real_fd > STDERR) { 
-        // El FD real es un pipe -> Llama a sys_pipe_read (BLOQUEANTE)
+        // El FD real es un pipe
         return sys_pipe_read(real_fd, buffer, length);
     }
 
-    return -1; // No se puede leer de STDOUT/STDERR
+    return -1;
 }
 
 int read_chars(int fd, char *buffer, int length) {
