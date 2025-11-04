@@ -15,7 +15,7 @@
     13 => 64k (2**12 * 16)
     27 => 1G (2**26 * 2**4 = 2**27-1 * 16 = 2**NSIZES-1 * LEAF_SIZE)
 */
-#define NSIZES 13                             // Number of entries in bd_sizes array TODO: modificar segun la memoria indicada
+#define NSIZES 20                             // Number of entries in bd_sizes array TODO: modificar segun la memoria indicada
 #define MAXSIZE (NSIZES - 1)                  // Largest index in bd_sizes array
 #define BLK_SIZE(k) ((1L << (k)) * LEAF_SIZE) // Size in bytes for size k
 #define HEAP_SIZE BLK_SIZE(MAXSIZE)
