@@ -331,19 +331,8 @@ void process_command(char* buffer){
             }  
 
             if(foreground && !not_command){  
-                char pid_str[16];
-                int_to_str(wait_pid, pid_str);
-                char *argv[3];
-                argv[0] = pid_str;
-                argv[1] = name;
-                argv[2] = 0;
-
-                int argc_w = 0;
-                while (argv[argc_w] != 0) {
-                    argc_w++;
-                }
-
-                wait(argc_w, argv);
+                int pid = get_pid();
+                _wait(wait_pid, pid, name);
             } 
                 
             foreground=1;

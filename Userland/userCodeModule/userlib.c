@@ -650,48 +650,6 @@ int loop(int argc, char ** argv){
     return create_process(&loop_dummy,"loop", argc, argv);
 }
 
-void wait_dummy(int argc, char ** argv){
-    
-    if(argc!=3){//especial
-        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 2 argumentos.\n");
-        exit_pcs(ERROR);
-    }
-
-    int t_pid = char_to_int(argv[0]);
-    int my_pid = char_to_int(argv[1]);
-    int ret = _wait(t_pid, my_pid, argv[2]);
-
-    if(ret == ERROR){
-        write_out("Este pid no es valido\n");
-        exit_pcs(ERROR);
-    }
-    if(ret == SECOND_ERROR){
-        write_out("Como llegaste a aca?? se rompio todo\n");
-        exit_pcs(ERROR);
-    }
-    if(ret == -3){
-        write_out("Nombre incorrecto, o hay un typo en el codigo o el proceso murio antes del wait.\n");
-        exit_pcs(ERROR);
-    }
-
-    exit_pcs(EXIT);
-}
-
-int wait(int argc, char ** argv){
-    int my_pid = get_pid(); 
-    char pid_str[21];      
-    int_to_str(my_pid, pid_str);  
-
-    static char *new_argv[3];  
-    new_argv[0] = argv[0];
-    new_argv[1] = pid_str;
-    new_argv[2] = argv[1];
-    new_argv[3] = NULL;
-    argc++;
-    
-    return create_process(&wait_dummy, "wait", argc, new_argv);
-}
-
 //TODO aplicar pipes, donde usa argv deberia se el input
 void wc_dummy(int argc, char ** argv){
     
