@@ -212,13 +212,13 @@ int kill_process(uint64_t pid){
         unblock_process(parentPID);
     }
 
-    //a todos mis hijos se los dejo a Init, no improta q este bloqueado
-    PCB * init = processTable[IDLE_PID];
+    //a todos mis hijos se los dejo a idle, no improta q este bloqueado
+    PCB * idle = processTable[IDLE_PID];
     for(int i=0; i < proc->childrenAmount; i++){
         int childPid = proc->childProc[i];
         PCB* child = processTable[childPid];
         child->ParentPID = IDLE_PID;
-        init->childProc[init->childrenAmount++] = childPid;
+        idle->childProc[idle->childrenAmount++] = childPid;
     }
 
     active_processes--;

@@ -3,19 +3,6 @@
 int active_processes = 0; //procesos q no estan ZOMBIE
 int current_index = -1;
 
-int alive(){
-    int i=0;
-    for(int j=0; j<MAX_PCS; j++){
-        if(processTable[j]!=NULL && processTable[j]->state != ZOMBIE){
-            i++;
-        }
-        if(processTable[j]==NULL){
-            break;
-        }
-    }  
-    return i;
-}
-
 void *scheduling(void *rsp) {
 
     if (active_processes == 0)
@@ -71,7 +58,7 @@ void *scheduling(void *rsp) {
             candidate->state = RUNNING;
             return (void *)candidate->rsp;
         }
-    } while (checked < MAX_PCS); //TODO, optimizar para q no recorra los 64 lugares antes de llegar al idle
+    } while (checked < MAX_PCS); 
 
     //como no hay ningun proceso en ready, tenemos q dejar algo corriendo en el sch
     //asiq vamos con el idle, q sabemos q siempre es el de pid 1

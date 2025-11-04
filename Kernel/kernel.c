@@ -75,7 +75,7 @@ int main()
 	//TODO init de pipes (?
 	char * argNull[1]={NULL};
 	IDLE_PID = create_process(&idle, "idle", 0, argNull);  
-	_sti(); //las desactivamos porq sino el sch nunca se activa y no toma el proceso init
+	_sti(); //las desactivamos porq sino el sch nunca se activa y no toma el proceso idle
 
 	while(1){
 		_hlt();
