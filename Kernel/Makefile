@@ -3,10 +3,8 @@ include Makefile.inc
 KERNEL=kernel.bin
 SOURCES = $(filter-out memory_manager.c buddy_memory_manager.c, $(wildcard *.c))
 SOURCES_ASM=$(wildcard asm/*.asm)
-#TODO falta un SOURCES_TEST
 OBJECTS=$(SOURCES:.c=.o)
 OBJECTS_ASM=$(SOURCES_ASM:.asm=.o)
-#TODO falta un OBJECTS_TEST
 
 LOADERSRC=loader.asm
 LOADEROBJECT=$(LOADERSRC:.asm=.o)
@@ -22,7 +20,6 @@ buddy: $(LOADEROBJECT) $(OBJECTS) buddy_memory_manager.o $(STATICLIBS) $(OBJECTS
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -I./include -c $< -o $@
-#TODO -I../Tests
 
 %.o : %.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
@@ -32,7 +29,6 @@ $(LOADEROBJECT):
 
 clean:
 	rm -rf asm/*.o *.o *.bin
-#TODO agregar al rm los test
 
 .PHONY: all buddy clean
 .NOTPARALLEL: all buddy
