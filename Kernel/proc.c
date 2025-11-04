@@ -18,10 +18,19 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
             myPid = i;
             break;
         }
-       if(processTable[i]->state == ZOMBIE){ 
-            free(processTable[i]->stackBase);
-            free(processTable[i]);
-            free(processTable[i]->argv);
+       if(processTable[i]->state == ZOMBIE){   
+            PCB *zombie = processTable[i];
+
+            if (zombie->argv != NULL) {
+                for (int j = 0; zombie->argv[j] != NULL; j++) {
+                    free(zombie->argv[j]);
+                }
+                free(zombie->argv);
+            }
+
+            free(zombie->stackBase);
+            free(zombie);
+            processTable[i] = NULL;
             myPid = i;
             break;
         }
@@ -44,7 +53,8 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
     //Reservamos espacio para el stack
     void* stackBase = alloc(MAX_STACK_SIZE);
     if (stackBase == NULL) {
-        free(processTable[i]);
+        free(pcb);
+        processTable[i] = NULL;
         return -2; 
     }    
     pcb->stackBase = stackBase;
@@ -56,6 +66,7 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
         if (argv_copy == NULL) {
             free(stackBase);
             free(processTable[i]);
+            processTable[i] = NULL;
             return -2;
         }
 
@@ -68,7 +79,8 @@ int create_process(void * rip, char *name, int argc, char *argv[]){
                     free(argv_copy[m]);
                 free(argv_copy);
                 free(stackBase);
-                free(processTable[i]);
+                free(pcb);
+                processTable[i] = NULL;
                 return -2;
             }
             memcpy(argv_copy[k], argv[k], len);
