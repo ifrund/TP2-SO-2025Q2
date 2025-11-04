@@ -2,7 +2,6 @@
 
 #define SHELL_PID 0
 #define IDLE_PID 1
-
 static char buffer[64] = {'0'};
 static char* char_buffer = " ";
 
@@ -669,48 +668,37 @@ int wait(int argc, char ** argv){
 
 void wc_dummy(int argc, char ** argv){
     char buffer[2];
-    int word_count = 0;
-    int in_word = 0; 
-    int clean_exit = 0;
+    int line_count = 0;
     buffer[1] = '\0';
 
     while (1) {
         // Se llama a read para leer de STDIN (o sea FD 0)
         int bytes_read = read(buffer, 1);
+        char c = buffer[0];
 
         if (bytes_read > 0) {
-            char c = buffer[0];
+            
+            write_out(buffer);
 
+            if (c == '\n') {             // Conteo de lineas
+                line_count++;
+            } 
+
+        } 
+        else {
             if (c == '\x04') { // Ctrl+D
-                clean_exit = 1;
+                char number_str[12];
+                uintToBase(line_count, number_str, 10);
+                write_out("Cantidad de lineas: ");
+                write_out(number_str);
+                write_out("\n");
                 break;
             }
             
             if (c == '\x03') { // Ctrl+C
                 break;
-            }
-
-            print(buffer);
-            
-            // Conteo de lineas
-            if (c == '\n') {
-                in_word = 0;
-            } else if (in_word == 0) {
-                in_word = 1;
-                word_count++;
-            }
-        } else {
-           break;
+            }        
         }
-    }
-    
-    if (clean_exit) {
-        char number_str[12];
-        uintToBase(word_count, number_str, 10);
-        
-        print("Cantidad de lineas: ");
-        print(number_str);
-        print("\n");
     }
 
     exit_pcs(EXIT);
