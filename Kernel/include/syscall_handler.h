@@ -46,6 +46,6 @@ int sys_sem_close(uint64_t name);
 //PIPES
 int sys_pipe_create_named(uint64_t name);
 int sys_pipe_create_anonymous(uint64_t pipe_ids);
-int sys_pipe_close(uint64_t pipe_id);
+int sys_pipe_close(uint64_t pipe_id, uint64_t mode);
 int sys_pipe_write(uint64_t pipe_id, uint64_t buffer, uint64_t count);
 int sys_pipe_read(uint64_t pipe_id, uint64_t buffer, uint64_t count);

@@ -3,6 +3,7 @@
 #include "memory_manager.h" 
 #include "lib.h"
 #include <stddef.h>
+#include "videoDriver.h"
 
 #define MAX_PIPES            16 
 #define PIPE_BUFFER_SIZE     1024    // Tamaño del buffer
@@ -14,6 +15,9 @@ typedef struct {
     char name[MAX_PIPE_NAME_LENGTH];
    
     int ref_count;
+    int write_open_count;
+    int read_open_count;
+    int eof_signaled;
 
     //Datos del pipe
     char buffer[PIPE_BUFFER_SIZE];
@@ -91,6 +95,9 @@ int pipe_create_anonymous(int pipe_ids[2]) {
     }
 
     global_pipe_table[pipe_id].ref_count = 2;
+    global_pipe_table[pipe_id].write_open_count = 1;
+    global_pipe_table[pipe_id].read_open_count = 1;
+    global_pipe_table[pipe_id].eof_signaled = 0;
     sem_post("GLOBAL_PIPE_TABLE_LOCK");
 
     //Devuelve los dos handles
@@ -149,33 +156,44 @@ int pipe_create_named(const char* name) {
 }
 
 
-int pipe_close(int pipe_id) {
-    if (pipe_id < 0 || pipe_id >= MAX_PIPES) {
+int pipe_close(int pipe_id, int mode) {
+    if (pipe_id < 0 || pipe_id >= MAX_PIPES)
         return -1;
-    }
 
     sem_wait("GLOBAL_PIPE_TABLE_LOCK");
 
-    if (!global_pipe_table[pipe_id].is_in_use) {
+    Pipe *pipe = &global_pipe_table[pipe_id];
+    if (!pipe->is_in_use) {
         sem_post("GLOBAL_PIPE_TABLE_LOCK");
         return -1;
     }
 
-    Pipe* pipe = &global_pipe_table[pipe_id];
+    if (mode == PIPE_WRITE_END) {
+        if (pipe->write_open_count > 0)
+            pipe->write_open_count--;
+        if (pipe->write_open_count == 0 && !pipe->eof_signaled) {
+            pipe->eof_signaled = 1;
+            // despertar lectores bloqueados
+            for (int i = 0; i < 10; i++)
+                sem_post(pipe->sem_items_available_name);
+        }
+    } else if (mode == PIPE_READ_END) {
+        if (pipe->read_open_count > 0)
+            pipe->read_open_count--;
+    }
 
-    // Disminuir el contador de referencias y si no hay mas referencias liberar recursos 
     pipe->ref_count--;
     if (pipe->ref_count == 0) {
         sem_close(pipe->sem_pipe_lock_name);
         sem_close(pipe->sem_items_available_name);
         sem_close(pipe->sem_empty_space_available_name);
         pipe->is_in_use = 0;
-    } 
+    }
 
     sem_post("GLOBAL_PIPE_TABLE_LOCK");
-
     return 0;
 }
+
 
 int pipe_write(int pipe_id, const char* buffer, int count) {
     if (pipe_id < 0 || pipe_id >= MAX_PIPES || buffer == NULL || count <= 0 || !global_pipe_table[pipe_id].is_in_use) {
@@ -194,8 +212,11 @@ int pipe_write(int pipe_id, const char* buffer, int count) {
         // Entramos a la region critica
         sem_wait(pipe->sem_pipe_lock_name);
 
+
         // Escribir el byte
         pipe->buffer[pipe->write_index] = buffer[i];
+        // print("Escribiendo en el pipe: "); // DEBUG
+        // printChar(pipe->buffer[pipe->write_index]); // DEBUG
         pipe->write_index = (pipe->write_index + 1) % PIPE_BUFFER_SIZE;
 
         // Salimos de la region critica
@@ -216,20 +237,38 @@ int pipe_read(int pipe_id, char* buffer, int count) {
     }
 
     Pipe* pipe = &global_pipe_table[pipe_id];
-
     int bytes_read = 0;
 
     // Lectura byte por byte
     for (int i = 0; i < count; i++) {
+        if (pipe->read_index == pipe->write_index && pipe->eof_signaled) {
+            return bytes_read;  // EOF → devolvemos lo leído
+        }
+
         // Se espera a que haya datos disponibles
         sem_wait(pipe->sem_items_available_name);
 
         // Entramos a la region critica
         sem_wait(pipe->sem_pipe_lock_name);
 
+        if (pipe->read_index == pipe->write_index && pipe->eof_signaled) {
+            sem_post(pipe->sem_pipe_lock_name);
+            return bytes_read; // EOF → devuelve 0 si no se leyó nada
+        }
+
+        // Si no hay datos pero no EOF (puede pasar si varios readers fueron despertados)
+        if (pipe->read_index == pipe->write_index) {
+            sem_post(pipe->sem_pipe_lock_name);
+            continue;
+        }
+
         // Leer un byte del buffer del pipe
-        buffer[i] = pipe->buffer[pipe->read_index];
+        buffer[bytes_read] = pipe->buffer[pipe->read_index];
+        print("Leyendo del pipe: "); // DEBUG
+        printChar(buffer[bytes_read]); // DEBUG
         pipe->read_index = (pipe->read_index + 1) % PIPE_BUFFER_SIZE;
+        bytes_read++;
+
 
         // Salimos de la region critica
         sem_post(pipe->sem_pipe_lock_name);
@@ -237,7 +276,6 @@ int pipe_read(int pipe_id, char* buffer, int count) {
         //Avisamos que hay espacio
         sem_post(pipe->sem_empty_space_available_name);
 
-        bytes_read++;
     }
 
     return bytes_read;

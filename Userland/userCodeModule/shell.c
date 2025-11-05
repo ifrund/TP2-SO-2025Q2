@@ -381,9 +381,6 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
         return;
     }
 
-    printDec(pipe_ids[0]);
-    write_out(" ");
-    printDec(pipe_ids[1]);
     uint64_t fds_A[2] = {STDIN, pipe_ids[1]};
     uint64_t fds_B[2] = {pipe_ids[0], STDOUT};
 
@@ -405,9 +402,15 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
         wait(1, wait_argv);
     }
 
+    write_out("Pipe to close: ESCRITURA:");
+    printDec(pipe_ids[1]);
+    write_out(" LECTURA:");
+    printDec(pipe_ids[0]);
+    write_out("\n");
     // Cerrar ambos extremos del pipe en la shell
-    _pipe_close(pipe_ids[0]);
-    _pipe_close(pipe_ids[1]);
+    _pipe_close(pipe_ids[0], PIPE_READ_END); //Cierra el pipe 3
+    _pipe_close(pipe_ids[1], PIPE_WRITE_END); //Cierra el pipe 3
+
     
 }
 

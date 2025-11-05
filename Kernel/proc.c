@@ -1,4 +1,5 @@
 #include "proc.h"
+#include "pipes.h"
 
 PCB* processTable[MAX_PCS]= {NULL}; 
 
@@ -189,6 +190,13 @@ int kill_process(uint64_t pid){
 
     PCB* proc = processTable[pid];    
     processTable[pid]->state = ZOMBIE;
+
+for (int i = 0; i < MAX_FD; i++) {
+        if (proc->fileDescriptors[i] > 2) { 
+            pipe_close(proc->fileDescriptors[i], PIPE_READ_END);
+            pipe_close(proc->fileDescriptors[i], PIPE_WRITE_END);
+        }
+    }
 
     uint64_t parentPID = proc->ParentPID;
 

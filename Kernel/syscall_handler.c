@@ -135,7 +135,7 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     break;
 
   case (0xAD):
-    sys_pipe_close(rdi);
+    sys_pipe_close(rdi, rsi);
     break;
 
   case (0xAE): 
@@ -368,8 +368,8 @@ int sys_pipe_create_named(uint64_t name){
   return pipe_create_named((const char*) name);
 }
 
-int sys_pipe_close(uint64_t pipe_id){
-  return pipe_close((int) pipe_id);
+int sys_pipe_close(uint64_t pipe_id, uint64_t mode){
+  return pipe_close((int) pipe_id, (int) mode);
 }
 
 int sys_pipe_write(uint64_t pipe_id, uint64_t buffer, uint64_t count){
