@@ -4,9 +4,8 @@
 // Implementation based on https://pdos.csail.mit.edu/6.828/2019/lec/malloc.c
 
 #include <stddef.h>
-#include <stdint.h>
-#include "../include/lib.h"
-#include "../include/memory_manager.h"
+#include "include/lib.h"
+#include "include/memory_manager.h"
 
 #define LEAF_SIZE 16 // The smallest allocation size (in bytes)
 /*
@@ -15,7 +14,7 @@
     13 => 64k (2**12 * 16)
     27 => 1G (2**26 * 2**4 = 2**27-1 * 16 = 2**NSIZES-1 * LEAF_SIZE)
 */
-#define NSIZES 20                             // Number of entries in bd_sizes array TODO: modificar segun la memoria indicada
+#define NSIZES 25                             // Number of entries in bd_sizes array TODO: modificar segun la memoria indicada
 #define MAXSIZE (NSIZES - 1)                  // Largest index in bd_sizes array
 #define BLK_SIZE(k) ((1L << (k)) * LEAF_SIZE) // Size in bytes for size k
 #define HEAP_SIZE BLK_SIZE(MAXSIZE)
@@ -55,21 +54,21 @@ void *list_pop(buddy_list *);
 int list_empty(buddy_list *);
 
 // Return 1 if bit at position index in array is set to 1
-int is_bit_set(char* array, int index) {
+bool is_bit_set(char* array, uint32_t index) {
   char b = array[index / 8];
   char m = (1 << (index % 8));
   return (b & m) == m;
 }
 
 // Set bit at position index in array to 1
-void set_bit(char* array, int index) {
+void set_bit(char* array, uint32_t index) {
   char b = array[index / 8];
   char m = (1 << (index % 8));
   array[index / 8] = (b | m);
 }
 
 // Clear bit at position index in array
-void clear_bit(char* array, int index) {
+void clear_bit(char* array, uint32_t index) {
   char b = array[index / 8];
   char m = (1 << (index % 8));
   array[index / 8] = (b & ~m);
@@ -92,16 +91,16 @@ void *linearMalloc(uint64_t size)
 void create_mm()
 {
     buddy_base = linearMalloc(HEAP_SIZE);
-    for (int k = 0; k < NSIZES; k++)
+    for (uint16_t k = 0; k < NSIZES; k++)
     {
         list_init(&buddy_sizes[k].free);
-        int size = sizeof(char) * ROUNDUP(NBLK(k), 8) / 8;
+        uint32_t size = sizeof(char) * ROUNDUP(NBLK(k), 8) / 8;
         buddy_sizes[k].alloc = linearMalloc(size);
         memset(buddy_sizes[k].alloc, 0, size);
     }
-    for (int k = 1; k < NSIZES; k++)
+    for (uint16_t k = 1; k < NSIZES; k++)
     {
-        int size = sizeof(char) * ROUNDUP(NBLK(k), 8) / 8;
+        uint32_t size = sizeof(char) * ROUNDUP(NBLK(k), 8) / 8;
         buddy_sizes[k].split = linearMalloc(size);
         memset(buddy_sizes[k].split, 0, size);
     }
@@ -109,10 +108,10 @@ void create_mm()
 }
 
 // Return the first power of 2 such that 2^k >= n
-int first_power(size_t n)
+uint16_t first_power(uint64_t n)
 {
-    int k = 0;
-    size_t size = LEAF_SIZE;
+    uint16_t k = 0;
+    uint64_t size = LEAF_SIZE;
     while (size < n)
     {
         k++;
@@ -122,22 +121,22 @@ int first_power(size_t n)
 }
 
 // Compute the block index for address p at size k
-int addr_to_bi(int k, char *p)
+uint16_t addr_to_bi(uint16_t k, char *p)
 {
-    int n = p - (char *)buddy_base;
+    uint16_t n = p - (char *)buddy_base;
     return n / BLK_SIZE(k);
 }
 
 // Convert a block index at size k back into an address
-void *bi_to_addr(int k, int bi)
+void *bi_to_addr(uint16_t k, uint16_t bi)
 {
-    int n = bi * BLK_SIZE(k);
+    uint32_t n = bi * BLK_SIZE(k);
     return (char *)buddy_base + n;
 }
 
-void *alloc(const unsigned long int nbytes)
+void *alloc(const uint64_t nbytes)
 {
-    int power, k;
+    uint16_t power, k;
     if (buddy_base == NULL)
         return NULL;
 
@@ -164,9 +163,9 @@ void *alloc(const unsigned long int nbytes)
     return p;
 }
 
-int block_size(char *p)
+uint32_t block_size(char *p)
 {
-    for (int k = 0; k < NSIZES; k++)
+    for (uint16_t k = 0; k < NSIZES; k++)
     {
         if (is_bit_set(buddy_sizes[k + 1].split, addr_to_bi(k + 1, p)))
             return k;
@@ -178,13 +177,13 @@ void free(void *p)
 {
     
     void *q;
-    int k;
+    uint16_t k;
 
     for (k = block_size(p); k < MAXSIZE; k++)
     {
-        int bi = addr_to_bi(k, p);
+        uint16_t bi = addr_to_bi(k, p);
         clear_bit(buddy_sizes[k].alloc, bi);
-        int buddy = (bi % 2 == 0) ? bi + 1 : bi - 1;
+        uint16_t buddy = (bi % 2 == 0) ? bi + 1 : bi - 1;
         if (is_bit_set(buddy_sizes[k].alloc, buddy))
         {
             break;
@@ -242,12 +241,12 @@ int list_empty(buddy_list *list)
     return list->next == list;
 }
 
-void status_count(int *status_out) {
-    unsigned int busy = 0;
-    for(int i = 0; i < MAXSIZE*NSIZES; i++)
+void status_count(uint32_t *status_out) {
+    uint8_t busy = 0;
+    for(uint32_t i = 0; i < MAXSIZE*NSIZES; i++)
         if(is_bit_set(buddy_sizes[MAXSIZE].alloc, i))
             busy += LEAF_SIZE;
     status_out[0] = HEAP_SIZE;
-    status_out[1] = HEAP_SIZE - busy;
-    status_out[2] = busy;
+    status_out[1] = busy;
+    status_out[2] = HEAP_SIZE - busy;
 }

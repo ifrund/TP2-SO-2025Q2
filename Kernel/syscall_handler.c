@@ -228,7 +228,7 @@ void sys_free(uint64_t address){
 }
 
 void sys_status_count(uint64_t status_out){
-  status_count((int *) status_out);
+  status_count((uint32_t *) status_out);
 }
 
 void sys_yield(){

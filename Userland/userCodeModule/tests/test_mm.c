@@ -1,6 +1,6 @@
 #include "test_util.h"
 
-#define MAX_BLOCKS 128
+#define MAX_BLOCKS 128  //~260858 como maximo con make all
 
 typedef struct MM_rq {
   void *address;
