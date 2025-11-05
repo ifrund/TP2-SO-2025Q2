@@ -15,6 +15,8 @@
 #define STDOUT 1
 #define STDERR 2
 
+extern int d_flag;
+extern int c_flag;
 
 
 void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t r8, uint64_t rax) {
@@ -217,11 +219,15 @@ int read_chars(int fd, char *buffer, int length) {
       if (c == 0) continue;
 
       // (Ctrl+D)
-      if (c == '\x04') {
+      if (d_flag == 1) {
+          d_flag=0;
+          buffer[chars_read++] = '\x04';
           return chars_read;
       }
       
-      if (c == '\x03') { // Ctrl+C
+      if (c_flag == 1) { // Ctrl+C
+          c_flag=0;
+          buffer[chars_read++] = '\x03';
           return chars_read; 
       }
       
