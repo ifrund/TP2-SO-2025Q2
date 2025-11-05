@@ -697,10 +697,6 @@ void wc_dummy(int argc, char ** argv){
                 break;
             }  
 
-            if(c == '\x74'){
-                write_out("en la t");
-            }
-
         } 
         else {
             break;
