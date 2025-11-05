@@ -77,11 +77,8 @@ int main()
 	create_process(shell, "shell", 0, argNull, NULL); //es el primero, se crea con pid 0
 	current_index = 0;
 	create_process(idle, "idle", 0, argNull, NULL); //es el segundo, se crea con pid 1
-
+	_hlt();
 	_setUser();
-
-//    Esto no hace falta porque el salto se hace en set user
-//    ((EntryPoint) userspaceAddress)();
     
 	return 0;
 
