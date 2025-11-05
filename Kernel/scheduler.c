@@ -1,6 +1,6 @@
 #include "include/scheduler.h"
 
-#define IDLE_PID 1
+#define IDLE_PID 0
 int process_count = 0;
 int current_index = -1;
 
