@@ -1,27 +1,11 @@
 #include "include/scheduler.h"
 
-#define IDLE_PID 0
-int process_count = 0;
+int active_processes = 0; //procesos q no estan ZOMBIE
 int current_index = -1;
-
-int find_index_by_pid(int pid) {
-    for (int i = 0; i < process_count; i++) {
-        if (processTable[i] != NULL && processTable[i]->PID == pid)
-            return i;
-    }
-    return -1;  
-}
-
-//TODO, pensar difernetens situaciones
-//el primer pcs entra al sch
-//hay 3 ya corriendo
-//hay 3 de diferentes prio
-//el pcs pasa a estar ZOMBIE o BLOCKED
-//casos con idle :(
 
 void *scheduling(void *rsp) {
 
-    if (process_count == 0)
+    if (active_processes == 0)
         return rsp; // No hay pcs
 
     if (current_index >= 0 && processTable[current_index] != NULL) {
@@ -30,12 +14,14 @@ void *scheduling(void *rsp) {
 
         if (curr->state == RUNNING){
             curr->time_used++;
+            curr->total_ticks++;
 
             //si consumio su tiempo, resetiamos su tiempo y lo dejamos en ready 
             //esto quiere decir q si le aplicas nice a un pcs recien se va a ver el efecto una vez q consuma su tiempo 
             //y pase por get_max_time_for_priority
             if(curr->time_used >= curr->my_max_time){
                 curr->time_used = 0;
+                curr->changes++;
                 if(strcmp(curr->name, "idle") == 0){ //Si sos el idle te volvemos a bloquear, sino queda ready
                     curr->state = BLOCKED;
                 }   
@@ -62,9 +48,8 @@ void *scheduling(void *rsp) {
     //buscamos READY
     int next_index = current_index;
     int checked = 0;
-
     do {
-        next_index = (next_index + 1) % process_count;
+        next_index = (next_index + 1) % MAX_PCS;
         checked++;
         PCB *candidate = processTable[next_index];
 
@@ -73,11 +58,10 @@ void *scheduling(void *rsp) {
             candidate->state = RUNNING;
             return (void *)candidate->rsp;
         }
-    } while (checked < process_count);
+    } while (checked < MAX_PCS); 
 
     //como no hay ningun proceso en ready, tenemos q dejar algo corriendo en el sch
     //asiq vamos con el idle, q sabemos q siempre es el de pid 1
-    
     processTable[IDLE_PID]->state = RUNNING;
     current_index = IDLE_PID; 
     return (void *)processTable[IDLE_PID]->rsp;
@@ -87,6 +71,11 @@ void yield(){
     //forzamos un tick y al proceso q esta forzando el tick aka cediendo el CPU
     //y activamos el flag, para que el sch sepa que lo tiene que sacar de ready
     processTable[get_pid()]->isYielding = 1;
+    _yield();
+}
+
+void last_wish(int pid){ //no se puede usar yield al final de kill, porq el get_pid devuelve -1 ya q el proceos esta ZOMBIE y no RUNNING
+    processTable[pid]->isYielding = 1;
     _yield();
 }
 

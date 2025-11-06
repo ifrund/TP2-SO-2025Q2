@@ -12,15 +12,12 @@
 #include "include/proc.h"
 #include "include/pipes.h"
 
-#define IDLE_PID 0
-
 extern uint8_t text;
 extern uint8_t rodata;
 extern uint8_t data;
 extern uint8_t bss;
 extern uint8_t endOfKernelBinary;
 extern uint8_t endOfKernel;
-
 static const uint64_t PageSize = 0x1000;
 
 static void * const userspaceAddress = (void*)0x400000;
@@ -64,7 +61,7 @@ static void* const shell = (void *) 0x400000;
 //tmb lo usamos como init
 static void idle(){
 	char * argNull[1]={NULL};
-	create_process(shell, "shell", 0, argNull, NULL); 
+	SHELL_PID = create_process(shell, "shell", 0, argNull, NULL); 
 
 	while(1){
 		_hlt();
@@ -78,8 +75,8 @@ int main()
 	create_mm();
 	pipe_init();
 	char * argNull[1]={NULL};
-	create_process(&idle, "idle", 0, argNull, NULL);  
-	_sti(); //las desactivamos porq sino el sch nunca se activa y no toma el proceso init
+	IDLE_PID = create_process(&idle, "idle", 0, argNull, NULL);  
+	_sti(); //las desactivamos porq sino el sch nunca se activa y no toma el proceso idle
 
 	while(1){
 		_hlt();

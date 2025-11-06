@@ -1,9 +1,9 @@
 #include "include/userlib.h"
 
-#define SHELL_PID 1
-#define IDLE_PID 0
 static char buffer[64] = {'0'};
 static char* char_buffer = " ";
+int shell_pid;
+int idle_pid;
 
 //================================================================================================================================
 // Writting
@@ -347,12 +347,12 @@ void kill_dummy(int argc, char ** argv){
     argc_1(argc);
 
     int toKill = char_to_int(argv[0]);
-    if(toKill == SHELL_PID){
+    if(toKill == shell_pid){
         write_out("Para matar la shell tenes que usar Exit. \n");
         estrellita_bg();
         exit_pcs(EXIT);
     }
-    if(toKill == IDLE_PID){
+    if(toKill == idle_pid){
         write_out("No te podemos permitir matar el idle ¯\\_(ツ)_/¯\n");
         estrellita_bg();
         exit_pcs(EXIT);
@@ -427,10 +427,12 @@ void block_process_dummy(int argc, char ** argv){
     argc_1(argc);
 
     int pid = char_to_int(argv[0]);
-    if(pid == 0){
+    if(pid == shell_pid){
         write_out("Por ahora la shell no es bloqueante, asiq... adios\n");
     }
-
+    if(pid == idle_pid){
+        write_out("Bloquear el idle... no sos muy inteligente\n");
+    }
     if(pid == get_pid()){
         write_out("Que haces loco, nos vas a meter en problemas raja de aca.\n");
         estrellita_bg();
@@ -445,9 +447,9 @@ void block_process_dummy(int argc, char ** argv){
         exit_pcs(ERROR);
     }
     if(ret == SECOND_ERROR){
-        write_out("Este pid ya estaba bloqueado\n");
+        write_out("Este pid ya estaba muerto\n");
         estrellita_bg();
-        exit_pcs(ERROR); 
+        exit_pcs(ERROR);
     }
 
     estrellita_bg();
@@ -463,7 +465,7 @@ void unblock_process_dummy(int argc, char ** argv){
     argc_1(argc);
     int pid = char_to_int(argv[0]);
 
-    if(pid == IDLE_PID){
+    if(pid == idle_pid){
         write_out("Que estas haciendo?? esto no sirve de nada, va a volver estar blocked cuando hagas ps.\n");
     }
     int ret = _unblock_process(pid);
@@ -508,22 +510,45 @@ void get_proc_list_dummy(int argc, char ** argv){
         if (p->pid == -1)  // Slot vacío
             continue;
 
-        printDec(p->pid);
+        char pid_str[21];
+        int_to_str(p->pid, pid_str);
+        write_out(pid_str);
         write_out("\t");
         write_out(p->name);
         write_out("\t");
         write_out(p->state);
         write_out("\t");
         if (p->parentPid == (uint64_t)-1) write_out("-1");
-        else printDec(p->parentPid);
+        else {
+            char ppid_str[21];
+            int_to_str(p->parentPid, ppid_str);
+            write_out(ppid_str);
+        }
         write_out("\t0x");
-        printHex((uint64_t)p->rsp); 
+        const char hex_chars[] = "0123456789ABCDEF";
+        char hex_buffer[17];  // solo los dígitos hex, sin prefijo
+        for (int i = 0; i < 16; i++) {
+            int shift = (15 - i) * 4;
+            hex_buffer[i] = hex_chars[(p->rsp >> shift) & 0xF];
+        }
+        hex_buffer[16] = '\0';
+        // Saltar ceros a la izquierda
+        int start = 0;
+        while (hex_buffer[start] == '0' && start < 15) {
+            start++;
+        }
+        if (start == 16) start = 15;    // Si todo era 0, mostrar un solo 0
+        write_out(&hex_buffer[start]);
         write_out("\t");
         write_out(p->my_prio);
         write_out("\t");
-        printDec(p->childrenAmount);
+        char chi_str[21];
+        int_to_str(p->childrenAmount, chi_str);
+        write_out(chi_str);
         write_out("\t");
-        printDec(p->fileDescriptorCount);
+        char fdc_str[21];
+        int_to_str(p->fileDescriptorCount, fdc_str);
+        write_out(fdc_str);
         write_out("\n");
     }
 
@@ -627,43 +652,6 @@ void loop_dummy(int argc, char ** argv){
 
 int loop(int argc, char ** argv){
     return create_process(&loop_dummy,"loop", argc, argv);
-}
-
-void wait_dummy(int argc, char ** argv){
-    
-    if(argc!=2){//especial
-        write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 solo argumento.\n");
-        exit_pcs(ERROR);
-    }
-
-    int t_pid = char_to_int(argv[0]);
-    int my_pid = char_to_int(argv[1]);
-    int ret = _wait(t_pid, my_pid);
-
-    if(ret == ERROR){
-        write_out("Este pid no es valido\n");
-        exit_pcs(ERROR);
-    }
-    if(ret == SECOND_ERROR){
-        write_out("Como llegaste a aca?? se rompio todo\n");
-        exit_pcs(ERROR);
-    }
-
-    exit_pcs(EXIT);
-}
-
-int wait(int argc, char ** argv){
-    
-    if (argc != 1) {
-        printError("Error: wait() interno recibió argc != 1\n");
-        return -1;
-    }
-
-    int target_pid = char_to_int(argv[0]); 
-    int my_pid = get_pid();
-    
-    // Se bloquea este proceso hasta que el kernel lo despierte (cuando target_pid muera)
-    return _wait(target_pid, my_pid);
 }
 
 void wc_dummy(int argc, char ** argv){

@@ -36,7 +36,7 @@ int sys_block_process(uint64_t pid);
 int sys_unblock_process(uint64_t pid);
 ProcessInfo* sys_get_proc_list();
 int sys_get_pid();
-int sys_wait(uint64_t target_pid, uint64_t my_pid);
+int sys_wait(uint64_t target_pid, uint64_t my_pid, uint64_t name);
 void sys_yield();
 int sys_be_nice(uint64_t pid, uint64_t newPrio);
 int sys_sem_open_init(uint64_t name, uint64_t value);
@@ -49,3 +49,6 @@ int sys_pipe_create_anonymous(uint64_t pipe_ids);
 int sys_pipe_close(uint64_t pipe_id);
 int sys_pipe_write(uint64_t pipe_id, uint64_t buffer, uint64_t count);
 int sys_pipe_read(uint64_t pipe_id, uint64_t buffer, uint64_t count);
+
+int sys_get_shell();
+int sys_get_idle();

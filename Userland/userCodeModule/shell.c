@@ -256,6 +256,13 @@ void process_command(char* buffer){
                     }
                 }
             } else {
+
+                if (strlen(buffer) == BUFFER_SIZE){
+                    write_out("Buenas... una poesia?\n");
+                    foreground = 1;
+                    return;
+                }
+
                 cursor_x = 0;
                 write_out(ERROR_PROMPT);
                 write_out(command_name);
@@ -269,12 +276,8 @@ void process_command(char* buffer){
 
             if (foreground && pid > 0) {
                 current_foreground_pid = pid; 
-                char pid_str[16];
-                int_to_str(pid, pid_str);
-                char *wait_argv[2];
-                wait_argv[0] = pid_str;
-                wait_argv[1] = NULL;
-                wait(1, wait_argv);
+                int myPid = _get_pid();
+                _wait(pid, myPid, command_name);
                 current_foreground_pid = -1; 
             }
         }
@@ -330,8 +333,10 @@ void write_out(char* string){
 void init_shell(){
     font_size = getFontSize();
     rows_to_show = VERT_SIZE/font_size;
-    line_size = LINE_SIZE/font_size;
-    clearScreen();
+    line_size = LINE_SIZE/font_size;\
+    //clearScreen(); TODO: VER SI SACARLO
+    shell_pid = _shell_pid();
+    idle_pid = _idle_pid();
 }
 
 //Helpers

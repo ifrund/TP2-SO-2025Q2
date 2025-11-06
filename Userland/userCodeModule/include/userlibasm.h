@@ -38,8 +38,8 @@ typedef struct {
     char my_prio[16];
     int childrenAmount;
 
-    //TODO probablmente borrarlas
-    uint64_t children[MAX_PCS];
+    int childrenAmount;
+    int children[MAX_PCS];
     uint64_t fileDescriptors[MAX_FD];
     int fileDescriptorCount;  // Número de FDs válidos
 } ProcessInfo;
@@ -54,11 +54,13 @@ int _get_pid();
 //Schedulers
 void _yield();
 int _be_nice(int pid, int newPrio);
-int _wait(uint64_t target_pid, uint64_t my_pid);
+int _wait(uint64_t target_pid, uint64_t my_pid, char * name);
 int _sem_open_init(char * name, uint64_t value);
 int _sem_wait(char * name);
 int _sem_post(char * name);
 int _sem_close(char * name);
+int _shell_pid();
+int _idle_pid();
 
 //PIPES
 int _pipe_create_anonymous(int pipe_ids[2]);
