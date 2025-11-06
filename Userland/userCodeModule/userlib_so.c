@@ -3,7 +3,6 @@
 int shell_pid;
 int idle_pid;
 
-
 void estrellita_bg(){
     if(!foreground){
            write_out(PROMPT_START);
@@ -68,11 +67,17 @@ void status_count_dummy(int argc, char ** argv){
 
     write_out("\n=== Estado del sistema de memoria ===\n");
     write_out("Bloques totales: ");
-    printDec(status[0]);
+    char s0_str[21];
+    int_to_str(status[0], s0_str);
+    write_out(s0_str);
     write_out("\nBloques usados: ");
-    printDec(status[1]);
+    char s1_str[21];
+    int_to_str(status[1], s1_str);
+    write_out(s1_str);
     write_out("\nBloques libres: ");
-    printDec(status[2]);
+    char s2_str[21];
+    int_to_str(status[2], s2_str);
+    write_out(s2_str);
     write_out("\n");
     
     estrellita_bg();
@@ -121,7 +126,9 @@ void kill_dummy(int argc, char ** argv){
     int ret = _kill_process(toKill); 
     if(ret == ERROR){
         write_out("... O no\nEl pid ");
-        printDec(toKill);
+        char k_str[21];
+        int_to_str(toKill, k_str);
+        write_out(k_str);
         write_out(" no es valido, asique no podemos matar a ningun proceso de ese pid... bobo.\n");
         estrellita_bg();
         exit_pcs(EXIT);
@@ -140,31 +147,27 @@ int kill_process(int argc, char ** argv){
 void exit_pcs(int ret){
     
     int pid = _get_pid(); 
+    char pid_str[21];
+    int_to_str(pid, pid_str);
 
     if(ret == ERROR){
         write_out("El proceso de pid ");
-        printDec(pid);
+        write_out(pid_str);
         write_out(" cerro con error\n");
         write_out(PROMPT_START);
-        exit_pcs(EXIT);
     }
     /* 
     else if(ret == EXIT){
         write_out("Proceso de pid ");
-        printDec(pid);
-        write_out(" cerro bien :)\n");
+        write_out(pid_str);
+        write_out(" cerro bien:)\n");
     }
     */
 
     int ret_del_kill = _kill_process(pid);
     if(ret_del_kill == ERROR){
         write_out("Hubo un error en el exit ya que el pid ");
-        if(pid==-1){
-            write_out("-1");
-        }
-        else{
-            printDec(pid);
-        }
+        write_out(pid_str);
         write_out(" no es valido... big problem, no deberias llegar a aca nunca\n");
         estrellita_bg();
         exit_pcs(EXIT);
@@ -386,12 +389,16 @@ void loop_dummy(int argc, char ** argv){
     argc_1(argc);
     int pid = get_pid(); //agarro mi priopio pid
     int cloop=0;
-    int tiempo = char_to_int(argv[0]);
+    int tiempo = char_to_int(argv[0]);   
+    char pid_str[21];
+    int_to_str(pid, pid_str);
     while (1){
         write_out("Hola soy el loop, y mi pid es: ");
-        printDec(pid);
+        write_out(pid_str);
         write_out(".\t Esta es mi vuelta ");
-        printDec(cloop);
+        char c_str[21];
+        int_to_str(cloop, c_str);
+        write_out(c_str);
         cloop++;
         write_out(".\n");
         write_out(PROMPT_START);
@@ -415,8 +422,6 @@ void wc_dummy(int argc, char ** argv){
 
         if (bytes_read > 0) {
             
-            write_out(buffer);
-
             if (c == '\n') {             // Conteo de lineas
                 line_count++;
             } 
@@ -424,16 +429,17 @@ void wc_dummy(int argc, char ** argv){
             if (c == '\x04') { // Ctrl+D
                 char number_str[12];
                 uintToBase(line_count, number_str, 10);
-                write_out("Cantidad de lineas: ");
+                write_out("\nCantidad de lineas: ");
                 write_out(number_str);
                 write_out("\n");
                 break;
             }
             
-            if (c == '\x03') { // Ctrl+C
+            if (c == '\x03') { // Ctrl+C TODO
                 break;
             }  
 
+            write_out(buffer);
         } 
         else {
             break;
@@ -465,14 +471,15 @@ void cat_dummy(int argc, char ** argv){
             if (c == '\x04') { // Ctrl+D
                 if (line_index > 0) {
                     line_buffer[line_index] = '\0';
-                    print(line_buffer);
+                    write_out("\n"); 
+                    write_out(line_buffer);
                 }
-                print("\n"); 
+                write_out("\n"); 
                 break;
             }
             
             if (c == '\x03') { // Ctrl+C
-                print("\n"); 
+                write_out("\n");  //TODO
                 break;
             }
             
@@ -481,13 +488,13 @@ void cat_dummy(int argc, char ** argv){
                     line_index--;
                     // Imprime el backspace para mover el cursor
                     echo_buffer[0] = '\b'; 
-                    print(echo_buffer);
+                    write_out(echo_buffer);
                 }
                 continue;
             }
 
             echo_buffer[0] = c;
-            print(echo_buffer);
+            write_out(echo_buffer);
             
             if (line_index < BUFFER_SIZE - 1) {
                 line_buffer[line_index++] = c;
@@ -496,7 +503,7 @@ void cat_dummy(int argc, char ** argv){
             // Si se toco 'Enter', imprimir linea completa
             if (c == '\n') {
                 line_buffer[line_index] = '\0';
-                print(line_buffer);
+                write_out(line_buffer);
                 line_index = 0; 
             }
 
@@ -542,14 +549,14 @@ void filter_dummy(int argc, char ** argv){
                         }
                     }
                     filtered_buffer[filtered_index] = '\0';
-                    print(filtered_buffer);
+                    write_out(filtered_buffer);
                 }
-                print("\n");
+                write_out("\n");
                 break; 
             }
             
             if (c == '\x03') { // Ctrl+C 
-                print("\n"); 
+                write_out("\n"); 
                 break;
             }
 
@@ -559,13 +566,13 @@ void filter_dummy(int argc, char ** argv){
                     
                     // Imprime el backspace para mover el cursor
                     echo_buffer[0] = '\b'; 
-                    print(echo_buffer);
+                    write_out(echo_buffer);
                 }
                 continue;
             }
 
             echo_buffer[0] = c;
-            print(echo_buffer);
+            write_out(echo_buffer);
 
             if (line_index < BUFFER_SIZE - 1) {
                 line_buffer[line_index++] = c;
@@ -586,8 +593,8 @@ void filter_dummy(int argc, char ** argv){
                 filtered_buffer[filtered_index] = '\0';
                 
                 // Imprime el resultado
-                print(filtered_buffer);
-                print("\n");
+                write_out(filtered_buffer);
+                write_out("\n");
                 
                 line_index = 0; 
             }

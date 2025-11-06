@@ -139,12 +139,12 @@ void process_key(char key){
     }
 
     if (key == '\x04') { //Ctrl+D
-        write_out("Esto es ctrl+d, tdv no esta desarrollado.\n");
+        write_out("Esto es ctrl+d, tdv no esta desarrollado.\n"); //TODO
+        write_out(PROMPT_START);
         return;
     }
 
-    if (key == '\x03') { // Ctrl+C //TODO: REFACTOR
-        write_out("\n");
+    if (key == '\x03') { // Ctrl+C TODO
         if (current_foreground_pid > 0) {
             char pid_str[12];
             char *argv_kill[2];
@@ -161,7 +161,8 @@ void process_key(char key){
         } else {
             write_out("No hay proceso en foreground para matar.\n");
         }
-        write_out(PROMPT_START);
+        write_out(PROMPT_START);        
+        
         return;
     }
 

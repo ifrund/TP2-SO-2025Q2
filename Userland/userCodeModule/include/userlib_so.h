@@ -49,5 +49,4 @@ int sem_wait(int argc, char ** argv);
 int sem_post(int argc, char ** argv);
 int sem_close(int argc, char ** argv);
 
-
 #endif
