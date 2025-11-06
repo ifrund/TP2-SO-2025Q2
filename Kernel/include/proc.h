@@ -81,7 +81,6 @@ typedef struct {
     char my_prio[16];
     int childrenAmount;
 
-    int childrenAmount;
     int children[MAX_PCS];
     // Podrías incluir file descriptors si querés: los ids nada más.
     uint64_t fileDescriptors[MAX_FD];

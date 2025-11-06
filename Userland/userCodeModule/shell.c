@@ -397,17 +397,9 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
 
     // Esperar si es foreground
     if (foreground) {
-        char pid_str[16];
-        char *wait_argv[2];
-        wait_argv[1] = NULL;
-
-        int_to_str(pid_A, pid_str);
-        wait_argv[0] = pid_str;
-        wait(1, wait_argv);
-
-        int_to_str(pid_B, pid_str);
-        wait_argv[0] = pid_str;
-        wait(1, wait_argv);
+        int myPid = _get_pid();
+        _wait(pid_A, myPid, command_A);
+        _wait(pid_B, myPid, command_B);
     }
 
     // Cerrar ambos extremos del pipe en la shell

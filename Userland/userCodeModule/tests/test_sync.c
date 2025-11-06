@@ -113,7 +113,7 @@ void test_sync_dummy(int argc, char **argv) { //{n, use_sem}
     _wait(pids[i + TOTAL_PAIR_PROCESSES], pid, "my_process_inc");
   }
 
-  write_out("Final value (deberia ser 0): ");
+  write_out("Final value (deberia ser 0 si usaste sem): ");
   printDec(global);
   write_out("\n");
 

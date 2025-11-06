@@ -38,7 +38,6 @@ typedef struct {
     char my_prio[16];
     int childrenAmount;
 
-    int childrenAmount;
     int children[MAX_PCS];
     uint64_t fileDescriptors[MAX_FD];
     int fileDescriptorCount;  // Número de FDs válidos
