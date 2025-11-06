@@ -107,7 +107,7 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     break;
 
   case (0xA6):
-    sys_wait(rdi, rsi);
+    sys_wait(rdi, rsi, rdx);
     break;
 
   case (0xA7):
@@ -144,6 +144,18 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
 
   case (0xAF):
     sys_pipe_read(rdi, rsi, rdx);;
+    break;
+
+  case (0xB0):
+    sys_get_shell();
+    break;
+
+  case (0xB1):
+    sys_get_idle();
+    break;
+    
+  case (0xB2):
+    sys_foreground(rdi);
     break;
 
   }
@@ -217,19 +229,6 @@ int read_chars(int fd, char *buffer, int length) {
       char c = read_key(fd);
 
       if (c == 0) continue;
-
-      // (Ctrl+D)
-      if (d_flag == 1) {
-          d_flag=0;
-          buffer[chars_read++] = '\x04';
-          return chars_read;
-      }
-      
-      if (c_flag == 1) { // Ctrl+C
-          c_flag=0;
-          buffer[chars_read++] = '\x03';
-          return chars_read; 
-      }
       
       buffer[chars_read++] = c;
 
@@ -303,7 +302,7 @@ void sys_free(uint64_t address){
 }
 
 void sys_status_count(uint64_t status_out){
-  status_count((int *) status_out);
+  status_count((uint32_t *) status_out);
 }
 
 void sys_yield(){
@@ -338,8 +337,8 @@ int sys_get_pid(){
   return get_pid();
 }
 
-int sys_wait(uint64_t target_pid, uint64_t my_pid){
-  return wait(target_pid, my_pid);
+int sys_wait(uint64_t target_pid, uint64_t my_pid, uint64_t name){
+  return wait(target_pid, my_pid, (char *)name);
 }
 
 int sys_sem_open_init(uint64_t name, uint64_t value){
@@ -381,3 +380,14 @@ int sys_pipe_read(uint64_t pipe_id, uint64_t buffer, uint64_t count){
 }
 
 
+int sys_get_shell(){
+  return get_shell_pid();
+}
+
+int sys_get_idle(){
+  return get_idle_pid();
+}
+
+void sys_foreground(int pid){
+    foreground_pid = pid;
+}

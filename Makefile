@@ -1,5 +1,7 @@
 
-all:  bootloader kernel toolchain userland image
+all: bootloader kernel toolchain userland image
+
+buddy: bootloader kernel-buddy toolchain userland image
 
 bootloader:
 	cd Bootloader; make all
@@ -7,16 +9,17 @@ bootloader:
 kernel:
 	cd Kernel; make all
 
+kernel-buddy:
+	cd Kernel; make buddy
+
 toolchain:
 	cd Toolchain; make all
 
 userland:
 	cd Userland; make all
 
-image: kernel bootloader toolchain userland
+image:
 	cd Image; make all
-
-#TODO los archivos de Tests
 
 clean:
 	cd Bootloader; make clean
@@ -25,4 +28,5 @@ clean:
 	cd Toolchain; make clean
 	cd Userland; make clean
 
-.PHONY: bootloader image collections kernel toolchain userland all clean
+.PHONY: bootloader image collections kernel kernel-buddy toolchain userland all buddy clean
+.NOTPARALLEL: all buddy

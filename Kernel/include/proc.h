@@ -15,10 +15,11 @@
 #define PROCESS_NAME_MAX_LENGTH 32
 #define QUANTUM 5
 #define IDLE_Q 1
-#define INIT_PID 1 //TODO cambiar a 0 cuando este listo
 #define MAX_ARGUMENTS 16
 #define MAX_ARG_LENGTH 64 
 
+extern int IDLE_PID; 
+extern int SHELL_PID;
 
 //Estados del proceso
 typedef enum {
@@ -57,10 +58,12 @@ typedef struct {
     Priorities my_prio;
     int time_used;
     int my_max_time;
-
+    int total_ticks;
+    int changes;
+    int yield_changes;
     //Informacion de los hijos:
     int childrenAmount;
-    uint64_t childProc[MAX_PCS];
+    int childProc[MAX_PCS];
     int blocksAmount;
 
     int isYielding; //1 true, 0 false
@@ -78,8 +81,8 @@ typedef struct {
     char my_prio[16];
     int childrenAmount;
 
-    //TODO probablmente borrarlas
-    uint64_t children[MAX_PCS];
+    int children[MAX_PCS];
+    // Podrías incluir file descriptors si querés: los ids nada más.
     uint64_t fileDescriptors[MAX_FD];
     int fileDescriptorCount;  // Número de FDs válidos
 } ProcessInfo;
@@ -93,6 +96,8 @@ int kill_process(uint64_t pid);
 ProcessInfo* get_proc_list();
 int get_pid();
 int is_pid_valid(int pid);
-int wait(uint64_t target_pid, uint64_t my_pid);
+int wait(uint64_t target_pid, uint64_t my_pid, char* target_name);
+int get_shell_pid();
+int get_idle_pid();
 
 #endif

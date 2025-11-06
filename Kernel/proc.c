@@ -2,6 +2,8 @@
 #include "pipes.h"
 
 PCB* processTable[MAX_PCS]= {NULL}; 
+int IDLE_PID;
+int SHELL_PID;
 
 static int strlen(char * string){
     int i=0;
@@ -18,10 +20,19 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
             myPid = i;
             break;
         }
-       if(processTable[i]->state == ZOMBIE){ 
-            free(processTable[i]->stackBase);
-            free(processTable[i]);
-            free(processTable[i]->argv);
+       if(processTable[i]->state == ZOMBIE){   
+            PCB *zombie = processTable[i];
+
+            if (zombie->argv != NULL) {
+                for (int j = 0; zombie->argv[j] != NULL; j++) {
+                    free(zombie->argv[j]);
+                }
+                free(zombie->argv);
+            }
+
+            free(zombie->stackBase);
+            free(zombie);
+            processTable[i] = NULL;
             myPid = i;
             break;
         }
@@ -35,7 +46,7 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
     //Inicializamos PCB:
     PCB * pcb = alloc(sizeof(PCB));
     if (pcb == NULL)
-        return -1;
+        return -2;
     processTable[myPid] = pcb; 
 
     //Informacion general
@@ -44,8 +55,9 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
     //Reservamos espacio para el stack
     void* stackBase = alloc(MAX_STACK_SIZE);
     if (stackBase == NULL) {
-        free(processTable[i]);
-        return -1; 
+        free(pcb);
+        processTable[i] = NULL;
+        return -2; 
     }    
     pcb->stackBase = stackBase;
 
@@ -56,7 +68,8 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
         if (argv_copy == NULL) {
             free(stackBase);
             free(processTable[i]);
-            return -1;
+            processTable[i] = NULL;
+            return -2;
         }
 
         for (int k = 0; k < argc; k++) {
@@ -68,8 +81,9 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
                     free(argv_copy[m]);
                 free(argv_copy);
                 free(stackBase);
-                free(processTable[i]);
-                return -1;
+                free(pcb);
+                processTable[i] = NULL;
+                return -2;
             }
             memcpy(argv_copy[k], argv[k], len);
         }
@@ -133,13 +147,17 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
         pcb->fileDescriptors[2] = 2;      // STDERR
     }
     pcb->isYielding = 0;
-    //TODO este yield debe ser para todos??
+    pcb->total_ticks = 0;
+    pcb->changes = 0;
+    pcb->yield_changes = 0;
+
     if(strcmp(name, "wait") == 0){
-        process_count++;
+        active_processes++;
         yield(); //necesitamos q el pcs q crea un wait deje sus quehaceres y se frene
+        return pcb->PID;
     }
 
-    process_count++;
+    active_processes++;
     return pcb->PID;
 }
 
@@ -157,13 +175,11 @@ int block_process(int pid){
     if(state == BLOCKED){
         processTable[pid]->blocksAmount++;
         yield();
+        return 0;
+    }
+    else{ //si entra aca es ZOMBIE o INVALID
         return -2;
     }
-    else{
-        return -2;
-    }
-
-    return 0;
 }
 
 int unblock_process(uint64_t pid){
@@ -200,7 +216,7 @@ for (int i = 0; i < MAX_FD; i++) {
 
     uint64_t parentPID = proc->ParentPID;
 
-if (parentPID >= 0 && parentPID < MAX_PCS && processTable[parentPID] != NULL) {
+    if (parentPID >= 0 && parentPID < MAX_PCS && processTable[parentPID] != NULL) {
         
         // Despertar al padre
         unblock_process(parentPID);
@@ -216,21 +232,22 @@ if (parentPID >= 0 && parentPID < MAX_PCS && processTable[parentPID] != NULL) {
         }
     }
 
-    //a todos mis hijos se los dejo a Init, no improta q este bloqueado
-    PCB * init = processTable[INIT_PID];
+    //a todos mis hijos se los dejo a idle, no improta q este bloqueado
+    PCB * idle = processTable[IDLE_PID];
     for(int i=0; i < proc->childrenAmount; i++){
-        uint64_t childPid = proc->childProc[i];
+        int childPid = proc->childProc[i];
         PCB* child = processTable[childPid];
-        child->ParentPID = INIT_PID;
-        init->childProc[init->childrenAmount++] = childPid;
+        child->ParentPID = IDLE_PID;
+        idle->childProc[idle->childrenAmount++] = childPid;
     }
 
-    yield();
+    active_processes--;
+    last_wish(pid);
     return 0;
 }
 
 ProcessInfo* get_proc_list() {
-    ProcessInfo* list = alloc(sizeof(ProcessInfo) * process_count);
+    ProcessInfo* list = alloc(sizeof(ProcessInfo) * MAX_PCS);
     if (list == NULL)
         return NULL;
 
@@ -275,6 +292,7 @@ ProcessInfo* get_proc_list() {
 
         info->my_prio[15] = '\0';
 
+
         info->childrenAmount = p->childrenAmount;
         for (int j = 0; j < MAX_PCS; j++)
             info->children[j] = p->childProc[j];
@@ -309,42 +327,32 @@ int is_pid_valid(int pid){
     return (pid > MAX_PCS || processTable[pid] == NULL) ? 0 : 1;
 }
 
-void cleanup_process(uint64_t pid) {
-    if (!is_pid_valid(pid))
-        return;
-    
-    PCB* pcb = processTable[pid];
+int wait(uint64_t target_pid, uint64_t my_pid, char* target_name){
 
-    pcb->state = ZOMBIE;
-
-    if (pcb->stackBase)
-        free(pcb->stackBase);
-
-    free(pcb);
-    processTable[pid] = NULL;
-}
-
-int wait(uint64_t target_pid, uint64_t my_pid){
-    
     if (!is_pid_valid(target_pid))
         return -1;
     
-    if (!is_pid_valid(my_pid)) //TODO cuando entra a aca?? este if no es un "che yo existo??" xd
+    if (!is_pid_valid(my_pid)) 
         return -2;
+
+    if (strcmp(target_name, processTable[target_pid]->name) != 0)
+        return -3;
 
     PCB* target = processTable[target_pid]; //a quien tenemos q esperar
 
     //si el target termino primero, lo terminamos
-    if (target->state == ZOMBIE) {
-        cleanup_process(target_pid);
+    if (target->state == ZOMBIE) { 
         return 0;
     }
 
     block_process(my_pid);
-   
-    if (is_pid_valid(target_pid) && processTable[target_pid]->state == ZOMBIE) {
-        cleanup_process(target_pid);
-    }
+    return 0;
+}
 
-   return 0;
+int get_shell_pid(){
+    return SHELL_PID;
+}
+
+int get_idle_pid(){
+    return IDLE_PID;
 }
