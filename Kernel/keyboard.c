@@ -62,7 +62,9 @@ void insert_key(int key) {
     if (key == 0x2E) { // 0x2E es el scancode de C
       ascii_buf[ascii_insert_index++] = '\x03'; // Bufferea ctrl+C
       added_ascii = 1;
-      kill_process(foreground_pid);
+      if(foreground_pid!=SHELL_PID){
+        kill_process(foreground_pid);
+      }
       return;
     } 
     else if (key == 0x20) { // 0x20 es el scancode de D
