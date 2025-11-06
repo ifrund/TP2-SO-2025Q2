@@ -4,7 +4,7 @@
 #include "include/file_descriptors.h"
 #include <stdint.h>
 
-#define COMMANDS 26
+#define COMMANDS 23
 #define TESTS 4
 #define SOCOMS 1
 #define VERT_SIZE 32
@@ -38,18 +38,13 @@ int current_foreground_pid = -1;
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
-static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
-    "test-mm", "test-prio", "test-pcs", "test-sync", "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock",
-    "loop", "wc", "cat", "filter", "mvar", "msg"};
-
-//static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
-
-static char* help[COMMANDS-TESTS] = {"exit", "clear", "sleep", "infoSleep", "help", "registers", "test-div", "test-invalid", 
-    "mem", "Tests", "kill", "ps", "nice", "help-SO", "block", "unblock", "loop", "wc", "cat", "filter", "mvar", "msg"};
-// 
-// static char* SOcommands[SOCOMS]= {
-    // "Aca tiene q ir como funciona cada comando de SO"
-// };
+static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-mm", "test-prio", 
+    "test-pcs", "test-sync", "mem", "Tests", "kill", "ps", "nice", "block", "unblock", "loop", "wc", "cat", "filter", "mvar", "msg"};
+static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
+static char* help[COMMANDS-TESTS] = {"exit", "clear", "sleep", "infoSleep", "help", "registers", "mem", "Tests",
+    "kill", "ps", "nice", "block", "unblock", "loop", "wc", "cat", "filter", "mvar", "msg"};
+static char* info[COMMANDS-TESTS] = {"-", "-", "-por ahora", "-", "-", "-", "-", "-", "(el pid a matar)", "-", "(pid a afectar) (nueva prioridad)", 
+    "(pid a bloquear)", "(pid a desbloquear)", "(segundos entre aparaciones del loop)", "-", "-", "-", "-", "<-- eliminar"};
 
 char char_buffer[1];
 
@@ -144,25 +139,9 @@ void process_key(char key){
         return;
     }
 
-    if (key == '\x03') { // Ctrl+C TODO
-        if (current_foreground_pid > 0) {
-            char pid_str[12];
-            char *argv_kill[2];
-
-            int_to_str(current_foreground_pid, pid_str);
-            argv_kill[0] = pid_str;
-            argv_kill[1] = NULL;
-
-            kill_from_shell = 1;           // para que kill_dummy sepa que viene de la shell
-            kill_process(1, argv_kill); 
-
-            current_foreground_pid = -1;
-            write_out("Proceso foreground terminado.\n");
-        } else {
-            write_out("No hay proceso en foreground para matar.\n");
-        }
-        write_out(PROMPT_START);        
-        
+    if (key == '\x03') { // Ctrl+C    
+        write_out("Esto es ctrl+c, tdv no esta desarrollado.\n"); //TODO
+        write_out(PROMPT_START);
         return;
     }
 
@@ -241,6 +220,8 @@ void process_command(char* buffer){
                 write_out("Los comandos existentes son:\n");
                 for(int i=0; i<(COMMANDS-TESTS); i++){
                     write_out(help[i]);
+                    write_out(" ");
+                    write_out(info[i]);
                     write_out("\n");
                 }
             
@@ -256,7 +237,14 @@ void process_command(char* buffer){
                         write_out("\n");
                     }
                 }
-            } else {
+            } else if (strcmp(command_name, "Tests") == 0){
+                write_out("Los test existentes son:\n");
+                for(int i=0; i<(TESTS); i++){
+                    write_out(tests[i]);
+                    write_out("\n");
+                }
+            } 
+            else {
 
                 if (strlen(buffer) == BUFFER_SIZE){
                     write_out("Buenas... una poesia?\n");
@@ -444,8 +432,6 @@ static void* find_command_rip(char* name) {
         NULL,                   // "infoSleep"
         NULL,                   // "help"
         NULL,                   // "registers"
-        NULL,                   // "test-div"
-        NULL,                   // "test-invalid"
         &test_mm_dummy,         // "test-mm"
         &test_prio_new,         // "test-prio"
         &test_processes_dummy,  // "test-pcs"
@@ -455,7 +441,6 @@ static void* find_command_rip(char* name) {
         &kill_dummy,            // "kill"
         &get_proc_list_dummy,   // "ps"
         &be_nice_dummy,         // "nice"
-        NULL,                   // "help-SO"
         &block_process_dummy,   // "block"
         &unblock_process_dummy, // "unblock"
         &loop_dummy,            // "loop"
