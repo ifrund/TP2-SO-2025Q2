@@ -4,9 +4,8 @@
 #include "include/file_descriptors.h"
 #include <stdint.h>
 
-#define COMMANDS 23
+#define COMMANDS 22
 #define TESTS 4
-#define SOCOMS 1
 #define VERT_SIZE 32
 #define LINE_SIZE 63
 #define BUFFER_SIZE 128
@@ -38,12 +37,12 @@ int current_foreground_pid;
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
-static char* commands[COMMANDS] = {"exit", "clear","sleep", "infoSleep", "help", "registers", "test-mm", "test-prio", 
+static char* commands[COMMANDS] = {"exit", "clear","sleep", "help", "registers", "test-mm", "test-prio", 
     "test-pcs", "test-sync", "mem", "Tests", "kill", "ps", "nice", "block", "unblock", "loop", "wc", "cat", "filter", "mvar", "msg"};
 static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
-static char* help[COMMANDS-TESTS] = {"exit", "clear", "sleep", "infoSleep", "help", "registers", "mem", "Tests",
+static char* help[COMMANDS-TESTS] = {"exit", "clear", "sleep", "help", "registers", "mem", "Tests",
     "kill", "ps", "nice", "block", "unblock", "loop", "wc", "cat", "filter", "mvar", "msg"};
-static char* info[COMMANDS-TESTS] = {"-", "-", "-por ahora", "-", "-", "-", "-", "-", "(el pid a matar)", "-", "(pid a afectar) (nueva prioridad)", 
+static char* info[COMMANDS-TESTS] = {"-", "-", "(tiempo a dormir)", "-", "-", "-", "-", "(el pid a matar)", "-", "(pid a afectar) (nueva prioridad)", 
     "(pid a bloquear)", "(pid a desbloquear)", "(segundos entre aparaciones del loop)", "-", "-", "-", "-", "<-- eliminar"};
 
 char char_buffer[1];
@@ -71,6 +70,11 @@ char* regsNames[18] = {"rax:", "rbx:", "rcx:", "rdx:", "rsi:", "rdi:", "rbp:", "
                        "r10:", "r11:", "r12:", "r13:", "r14:", "r15:", "rip:", "rflags:"};
 char* bye[MAX_ARGS];
 void exit_shell();
+void comando_help();
+void comando_clean();
+void comando_tests();
+void comando_regs();
+void comando_sleep(int argc, char** argv);
 
 //Helpers
 static void remove_extra_spaces(char *str);
@@ -192,68 +196,18 @@ void process_command(char* buffer){
         void* rip = find_command_rip(command_name);
         
         if (rip == NULL) {
-            // Caso comandos built in
-            if (strcmp(command_name, "exit") == 0) {
-                exit_shell();
-            
-            } else if (strcmp(command_name, "clear") == 0) {
-                clearScreen(); 
-                cursor_y = 0;
-                cursor_x = 0;
-                limit_index = VERT_SIZE/font_size - 1;
-            
-            } else if (strcmp(command_name, "sleep") == 0) {
-                 write_out("Vamos a esperar 4 segundos... ");
-                 sleep(4, 0);
-                 write_out("Listo!\n");
-            
-            } else if (strcmp(command_name, "infoSleep") == 0) {
-                 write_out("El comando sleep efectuara una espera de 4 segundos...\n");
-            
-            } else if (strcmp(command_name, "help") == 0) {
-                write_out("Los comandos existentes son:\n");
-                for(int i=0; i<(COMMANDS-TESTS); i++){
-                    write_out(help[i]);
-                    write_out(" ");
-                    write_out(info[i]);
-                    write_out("\n");
-                }
-            
-            } else if (strcmp(command_name, "registers") == 0) {
-                if(getRegs(regs)==0){
-                    write_out("Antes de pedir los registros debe apretar la tecla alt izquierda...\n");
-                } else {
-                    for(int i=0; i<cantRegs; i++){
-                        if (i != cantRegs - 1) write_out("-");
-                        write_out(regsNames[i]);
-                        uintToBase(regs[i], aux, 10);
-                        write_out(aux);
-                        write_out("\n");
-                    }
-                }
-            } else if (strcmp(command_name, "Tests") == 0){
-                write_out("Los test existentes son:\n");
-                for(int i=0; i<(TESTS); i++){
-                    write_out(tests[i]);
-                    write_out("\n");
-                }
-            } 
-            else {
-
-                if (strlen(buffer) == BUFFER_SIZE){
-                    write_out("Buenas... una poesia?\n");
-                    foreground = 1;
-                    return;
-                }
-
-                cursor_x = 0;
-                write_out(ERROR_PROMPT);
-                write_out(command_name);
-                write_out("\n");
+            if (strlen(buffer) == BUFFER_SIZE){
+                write_out("Buenas... una poesia?\n");
+                foreground = 1;
+                return;
             }
+
+            cursor_x = 0;
+            write_out(ERROR_PROMPT);
+            write_out(command_name);
+            foreground = 1;
+            write_out("\n");
         } else {
-            // Caso proceso normal
-            //write_out("Iniciando proceso...\n");
             
             int pid = create_process(rip, command_name, argc, argv);
 
@@ -422,18 +376,17 @@ static void* find_command_rip(char* name) {
     // Array de punteros a funciones (o sea los RIPs)
     // MISMO ORDEN QUE COMMANDS
     static void* command_rips[COMMANDS] = {
-        NULL,                   // "exit"
-        NULL,                   // "clear"
-        NULL,                   // "sleep"
-        NULL,                   // "infoSleep"
-        NULL,                   // "help"
-        NULL,                   // "registers"
+        &exit_shell,            // "exit"
+        &comando_clean,         // "clear"
+        &comando_sleep,         // "sleep"
+        &comando_help,          // "help"
+        &comando_regs,          // "registers"
         &test_mm_dummy,         // "test-mm"
         &test_prio_new,         // "test-prio"
         &test_processes_dummy,  // "test-pcs"
         &test_sync_dummy,       // "test-sync"
         &status_count_dummy,    // "mem"
-        NULL,                   // "Tests"
+        &comando_tests,         // "Tests"
         &kill_dummy,            // "kill"
         &get_proc_list_dummy,   // "ps"
         &be_nice_dummy,         // "nice"
@@ -491,13 +444,6 @@ static void remove_extra_spaces(char *str) {
     str[j] = '\0';
 }
 
-void exit_shell(){
-    write_out("Nos vemos, esperamos que la hayas pasado bien! \n");
-    bye[0]= "0";
-    bye[1]= NULL;
-    exit_pcs(EXIT);
-}
-
 int read_input(char *buffer, int max_len) {
     int count = 0;
     int fake_c_c = command_cursor;
@@ -511,4 +457,88 @@ int read_input(char *buffer, int max_len) {
     }
 
     return count;
+}
+
+//
+//Ex comando arqui
+//
+
+void exit_shell(){
+    write_out("Nos vemos, esperamos que la hayas pasado bien! \n");
+    bye[0]= "0";
+    bye[1]= NULL;
+    exit_pcs(EXIT);
+}
+
+void comando_clean(){
+    clearScreen(); 
+    cursor_y = 0;
+    cursor_x = 0;
+    limit_index = VERT_SIZE/font_size - 1;
+    exit_pcs(EXIT);
+}
+
+void comando_help(){
+    write_out("Los comandos existentes son:\n");
+    for(int i=0; i<(COMMANDS-TESTS); i++){
+        write_out(help[i]);
+        write_out(" ");
+        write_out(info[i]);
+        write_out("\n");
+    }
+    exit_pcs(EXIT);
+}
+
+void comando_tests(){
+    write_out("Los test existentes son:\n");
+    for(int i=0; i<(TESTS); i++){
+        write_out(tests[i]);
+        write_out("\n");
+    }
+    exit_pcs(EXIT);
+}
+
+void comando_regs(){
+    if(getRegs(regs)==0){
+        write_out("Antes de pedir los registros debe apretar la tecla alt izquierda...\n");
+    } else {
+        for(int i=0; i<cantRegs; i++){
+            if (i != cantRegs - 1) write_out("-");
+            write_out(regsNames[i]);
+            uintToBase(regs[i], aux, 10);
+            write_out(aux);
+            write_out("\n");
+        }
+    }
+    exit_pcs(EXIT);
+}
+
+int isdigit(char *str) {
+    if (str == 0 || *str == '\0')
+        return 0; 
+
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (str[i] < '0' || str[i] > '9')
+            return 0; 
+    }
+
+    return 1; 
+}
+
+void comando_sleep(int argc, char** argv){
+
+    argc_1(argc);
+
+    if(!isdigit(argv[0])){
+        write_out("Para este comando tenes que mandar un numero positivo porfavor\n");
+        exit_pcs(ERROR);
+    }
+    
+    write_out("Vamos a esperar "); 
+    write_out(argv[0]);
+    write_out(" segundos...");
+    int time = char_to_int(argv[0]);
+    sleep(time, 0);
+    write_out("Listo!\n");
+    exit_pcs(EXIT);
 }

@@ -17,6 +17,8 @@ extern int idle_pid;
 // SISTEMAS OPERATIVOS
 //================================================================================================================================
 
+void argc_1(int argc);
+
 void create_mm();
 int alloc(int argc, char ** argv);
 int free(int argc, char ** argv);

@@ -54,12 +54,6 @@ void* alloc(const uint64_t size){
     bool found = false;
     for (uint32_t found_index = first_free_index; found_index <= TOTAL_BLOCK_COUNT - blocks_to_alloc; found_index++) {
 
-        // TODO: no deberia tener que explicarlo, pero me parece un poco confuso este algoritmo. Idealmente debería ser más simple, para no precisar explicación
-        // TODO: en OSDev se recomienda consultar, para una implementacion similar, if(addr_next_block - (addr_current_block - size_of_header) > size). No estamos usandolo.
-        // En el primer ciclo, este if es true (porque se garantiza que first_free_index apunta a un bloque disponible)
-        // Si el bloque actual esta disponible, comienzo desde el mismo.
-        // Luego, verifico si los bloques posteriores a este están ocupados, según los bloques contiguos que necesite. Si alguno lo está corto la verificación y continúo desde el siguiente
-        // Si la cantidad de bloques contiguos que necesito está disponible, aloco todo este espacio.
         if(block_array[found_index].status == FREE) {
             found = true;
             for (uint32_t contiguous_index = 1; contiguous_index < blocks_to_alloc && found; contiguous_index++) {

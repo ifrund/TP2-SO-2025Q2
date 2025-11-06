@@ -154,7 +154,6 @@ void exit_pcs(int ret){
         write_out("El proceso de pid ");
         write_out(pid_str);
         write_out(" cerro con error\n");
-        write_out(PROMPT_START);
     }
     /* 
     else if(ret == EXIT){
