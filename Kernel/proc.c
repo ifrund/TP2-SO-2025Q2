@@ -338,11 +338,6 @@ int wait(uint64_t target_pid, uint64_t my_pid, char* target_name){
     }
 
     block_process(my_pid);
-   
-    if (is_pid_valid(target_pid) && processTable[target_pid]->state == ZOMBIE) {
-        //cleanup_process(target_pid); TODO: Cleanup si es necesario
-    }
-
     return 0;
 }
 

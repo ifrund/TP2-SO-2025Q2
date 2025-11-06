@@ -318,7 +318,6 @@ void init_shell(){
     font_size = getFontSize();
     rows_to_show = VERT_SIZE/font_size;
     line_size = LINE_SIZE/font_size;\
-    //clearScreen(); TODO: VER SI SACARLO
     shell_pid = _shell_pid();
     idle_pid = _idle_pid();
     current_foreground_pid = shell_pid;

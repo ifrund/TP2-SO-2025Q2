@@ -435,10 +435,6 @@ void wc_dummy(int argc, char ** argv){
                 break;
             }
             
-            if (c == '\x03') { // Ctrl+C TODO
-                break;
-            }  
-
             write_out(buffer);
         } 
         else {
