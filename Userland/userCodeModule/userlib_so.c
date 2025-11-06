@@ -478,11 +478,6 @@ void cat_dummy(int argc, char ** argv){
                 break;
             }
             
-            if (c == '\x03') { // Ctrl+C
-                write_out("\n");  //TODO
-                break;
-            }
-            
             if (c == '\b') { // Backspace
                 if (line_index > 0) {
                     line_index--;
@@ -553,11 +548,6 @@ void filter_dummy(int argc, char ** argv){
                 }
                 write_out("\n");
                 break; 
-            }
-            
-            if (c == '\x03') { // Ctrl+C 
-                write_out("\n"); 
-                break;
             }
 
             if (c == '\b') { // Backspace

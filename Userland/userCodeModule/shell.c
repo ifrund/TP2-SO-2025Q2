@@ -34,7 +34,7 @@ extern void msg_dummy(int argc, char **argv);
 #define ERROR_PROMPT "Unknown command: "
 char PROMPT_START[] = {127, 0};
 int kill_from_shell = 0, foreground = 1;
-int current_foreground_pid = -1;
+int current_foreground_pid;
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
@@ -135,12 +135,6 @@ void process_key(char key){
 
     if (key == '\x04') { //Ctrl+D
         write_out("Esto es ctrl+d, tdv no esta desarrollado.\n"); //TODO
-        write_out(PROMPT_START);
-        return;
-    }
-
-    if (key == '\x03') { // Ctrl+C    
-        write_out("Esto es ctrl+c, tdv no esta desarrollado.\n"); //TODO
         write_out(PROMPT_START);
         return;
     }
@@ -264,10 +258,11 @@ void process_command(char* buffer){
             int pid = create_process(rip, command_name, argc, argv);
 
             if (foreground && pid > 0) {
-                current_foreground_pid = pid; 
+                current_foreground_pid = pid;
+                _update_foreground(current_foreground_pid);
                 int myPid = _get_pid();
                 _wait(pid, myPid, command_name);
-                current_foreground_pid = -1; 
+                current_foreground_pid = shell_pid;
             }
         }
     }
@@ -326,6 +321,8 @@ void init_shell(){
     //clearScreen(); TODO: VER SI SACARLO
     shell_pid = _shell_pid();
     idle_pid = _idle_pid();
+    current_foreground_pid = shell_pid;
+    _update_foreground(current_foreground_pid);
 }
 
 //Helpers

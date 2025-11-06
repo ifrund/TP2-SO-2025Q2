@@ -3,6 +3,8 @@
 #include "sem.h"
 #include <pipes.h>
 
+extern int foreground_pid;
+
 void syscall_handler();
 void sys_write(uint64_t fd, uint64_t message, uint64_t length);
 int sys_read(uint64_t fd, uint64_t buffer, uint64_t length);
@@ -52,3 +54,5 @@ int sys_pipe_read(uint64_t pipe_id, uint64_t buffer, uint64_t count);
 
 int sys_get_shell();
 int sys_get_idle();
+void sys_foreground(int pid);
+

@@ -47,8 +47,8 @@ int saved = 0;
 int ascii_insert_index = 0;
 int ascii_read_index = 0;
 int ascii_to_read = 0;
-int d_flag=0;
-int c_flag=0;
+
+int foreground_pid;
 
 void key_handler() { insert_key(_getKey()); }
 
@@ -62,11 +62,12 @@ void insert_key(int key) {
     if (key == 0x2E) { // 0x2E es el scancode de C
       ascii_buf[ascii_insert_index++] = '\x03'; // Bufferea ctrl+C
       added_ascii = 1;
-      d_flag=0;
-    } else if (key == 0x20) { // 0x20 es el scancode de D
+      kill_process(foreground_pid);
+      return;
+    } 
+    else if (key == 0x20) { // 0x20 es el scancode de D
       ascii_buf[ascii_insert_index++] = '\x04'; // bufferea ctrl+D
       added_ascii = 1;
-      d_flag=1;
     }
   } 
   else if (key <= 0x52 && scan_chars[key] != 0) { 
@@ -84,7 +85,6 @@ void insert_key(int key) {
   }
 
   sem_post("sem_stdin");
-  
   // Esta parte es para STDKEYS (scancodes crudos), siempre se debe ejecutar
   // incluso si la tecla fue solo "Ctrl" (que no genera ASCII)
   to_read = 1;

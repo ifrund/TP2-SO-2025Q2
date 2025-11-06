@@ -60,6 +60,7 @@ int _sem_post(char * name);
 int _sem_close(char * name);
 int _shell_pid();
 int _idle_pid();
+void _update_foreground(int pid);
 
 //PIPES
 int _pipe_create_anonymous(int pipe_ids[2]);

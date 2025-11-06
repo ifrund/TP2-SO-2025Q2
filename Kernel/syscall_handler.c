@@ -154,6 +154,10 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     sys_get_idle();
     break;
     
+  case (0xB2):
+    sys_foreground(rdi);
+    break;
+
   }
 }
 
@@ -225,19 +229,6 @@ int read_chars(int fd, char *buffer, int length) {
       char c = read_key(fd);
 
       if (c == 0) continue;
-
-      // (Ctrl+D)
-      if (d_flag == 1) {
-          d_flag=0;
-          buffer[chars_read++] = '\x04';
-          return chars_read;
-      }
-      
-      if (c_flag == 1) { // Ctrl+C
-          c_flag=0;
-          buffer[chars_read++] = '\x03';
-          return chars_read; 
-      }
       
       buffer[chars_read++] = c;
 
@@ -395,4 +386,8 @@ int sys_get_shell(){
 
 int sys_get_idle(){
   return get_idle_pid();
+}
+
+void sys_foreground(int pid){
+    foreground_pid = pid;
 }
