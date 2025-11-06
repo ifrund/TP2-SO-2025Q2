@@ -6,6 +6,13 @@
 
 #define TOTAL_BLOCK_COUNT ((uint32_t)(MEMORY_END - MEMORY_START) / BLOCK_SIZE)
 
+#define _MEMORY_START 0x0000000000500000ULL
+#define _MEMORY_END   0x0000000040000000ULL
+#define _BLOCK_SIZE   0x1000
+
+#define _TOTAL_BLOCK_COUNT ((_MEMORY_END - _MEMORY_START) / _BLOCK_SIZE)
+
+
 #define FREE 0
 #define USED 1
 
@@ -15,7 +22,7 @@ typedef struct block_info
     uint32_t contiguous_blocks; // Cantidad de bloques contiguos, si se pide más memoria que BLOCK_SIZE. Luego deben liberarse todos juntos.
 } block_info;
 
-block_info block_array[TOTAL_BLOCK_COUNT];  // TODO: tira warning porque void* es system-dependent.
+block_info block_array[_TOTAL_BLOCK_COUNT];  // TODO: tira warning porque void* es system-dependent.
 static bool is_initialized = false;
 
 uint32_t first_free_index = 0;
