@@ -1,4 +1,4 @@
-#include "include/userlib.h"
+#include "include/userlib_so.h"
 #include "include/shell.h"
 #include "include/userlibasm.h"
 #include "include/file_descriptors.h"

@@ -2,6 +2,7 @@
 #include "../include/shell.h"   //write_out lib, for testing
 #include "../include/userlibasm.h"
 #include "../include/userlib.h"
+#include "../include/userlib_so.h"
 
 uint32_t GetUint();
 uint32_t GetUniform(uint32_t max);
