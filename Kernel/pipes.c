@@ -264,8 +264,8 @@ int pipe_read(int pipe_id, char* buffer, int count) {
 
         // Leer un byte del buffer del pipe
         buffer[bytes_read] = pipe->buffer[pipe->read_index];
-        print("Leyendo del pipe: "); // DEBUG
-        printChar(buffer[bytes_read]); // DEBUG
+        // print("Leyendo del pipe: "); // DEBUG
+        // printChar(buffer[bytes_read]); // DEBUG
         pipe->read_index = (pipe->read_index + 1) % PIPE_BUFFER_SIZE;
         bytes_read++;
 

@@ -207,10 +207,22 @@ int kill_process(uint64_t pid){
     PCB* proc = processTable[pid];    
     processTable[pid]->state = ZOMBIE;
 
-for (int i = 0; i < MAX_FD; i++) {
-        if (proc->fileDescriptors[i] > 2) { 
-            pipe_close(proc->fileDescriptors[i], PIPE_READ_END);
-            pipe_close(proc->fileDescriptors[i], PIPE_WRITE_END);
+    for (int i = 0; i < MAX_FD; i++) {
+        int fd_real = proc->fileDescriptors[i];
+        if (fd_real > 2) {
+            // FD 0 (STDIN) (extremo de lectura de un pipe)
+            if (i == 0) {
+                pipe_close(fd_real, PIPE_READ_END);
+            }
+            // FD 1 (STDOUT) (extremo de escritura de un pipe)
+            else if (i == 1) {
+                pipe_close(fd_real, PIPE_WRITE_END);
+            }
+            // Otros FD: tratamos de cerrar ambos extremos
+            else {
+                pipe_close(fd_real, PIPE_READ_END);
+                pipe_close(fd_real, PIPE_WRITE_END);
+            }
         }
     }
 
