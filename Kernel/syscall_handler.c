@@ -213,11 +213,18 @@ int read_chars(int fd, char *buffer, int length) {
   if (fd != STDIN) {
       int chars_read = 0;
       for (int i = 0; i < length; i++) {
-          buffer[i] = read_key(fd);
-          if (buffer[i] == 0) {
-              return chars_read; 
-          }
-          chars_read++;
+      char c = read_key(fd);
+      // Treat Ctrl+D as EOF: if nothing read yet return 0, else return what we have
+      if (c == '\x04') {
+        if (chars_read == 0)
+          return 0;
+        return chars_read;
+      }
+      buffer[i] = c;
+      if (buffer[i] == 0) {
+        return chars_read;
+      }
+      chars_read++;
       }
       return chars_read;
   }
@@ -226,15 +233,23 @@ int read_chars(int fd, char *buffer, int length) {
       
       sem_wait("sem_stdin");
 
-      char c = read_key(fd);
+    char c = read_key(fd);
 
-      if (c == 0) continue;
-      
-      buffer[chars_read++] = c;
+    // Ignoramos los null reads
+    if (c == 0) continue;
 
-      if (c == '\n') {
-          return chars_read;
-      }
+    // Ctrl+D es EOF
+    if (c == '\x04') {
+      if (chars_read == 0)
+        return 0;
+      return chars_read;
+    }
+
+    buffer[chars_read++] = c;
+
+    if (c == '\n') {
+      return chars_read;
+    }
   }
   return chars_read;
 }

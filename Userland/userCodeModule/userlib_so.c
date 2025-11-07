@@ -420,20 +420,9 @@ void wc_dummy(int argc, char ** argv){
         char c = buffer[0];
 
         if (bytes_read > 0) {
-            
             if (c == '\n') {             // Conteo de lineas
                 line_count++;
-            } 
-
-            if (c == '\x04') { // Ctrl+D
-                char number_str[12];
-                uintToBase(line_count, number_str, 10);
-                write_out("\nCantidad de lineas: ");
-                write_out(number_str);
-                write_out("\n");
-                break;
             }
-            
             write_out(buffer);
         } 
         else {
@@ -471,16 +460,6 @@ void cat_dummy(int argc, char ** argv){
         if (bytes_read > 0) {
             char c = read_buffer[0];
 
-            if (c == '\x04') { // Ctrl+D
-                if (line_index > 0) {
-                    line_buffer[line_index] = '\0';
-                    write_out("\n"); 
-                    write_out(line_buffer);
-                }
-                write_out("\n"); 
-                break;
-            }
-            
             if (c == '\b') { // Backspace
                 if (line_index > 0) {
                     line_index--;
@@ -506,8 +485,13 @@ void cat_dummy(int argc, char ** argv){
             }
 
         } else {
-            // TODO: CORREGIR 
-            // Si read devolvio 0, cede el CPU y vuelve a intentar (espera activa).
+            // EOF o error: si hubo datos parciales, imprimirlos antes de terminar
+            if (line_index > 0) {
+                line_buffer[line_index] = '\0';
+                write_out("\n");
+                write_out(line_buffer);
+                write_out("\n");
+            }
             break;
         }
     }
@@ -534,24 +518,6 @@ void filter_dummy(int argc, char ** argv){
 
         if (bytes_read > 0) {
             char c = read_buffer[0];
-
-            if (c == '\x04') { // Ctrl+D
-                if (line_index > 0) {
-                    int filtered_index = 0;
-                    for (int i = 0; i < line_index; i++) {
-                        char ch = line_buffer[i];
-                        if(ch == 'a' || ch == 'e' || ch == 'i' || ch == 'o' || ch == 'u' ||
-                           ch == 'A' || ch == 'E' || ch == 'I' || ch == 'O' || ch == 'U')
-                        {
-                            filtered_buffer[filtered_index++] = ch;
-                        }
-                    }
-                    filtered_buffer[filtered_index] = '\0';
-                    write_out(filtered_buffer);
-                }
-                write_out("\n");
-                break; 
-            }
 
             if (c == '\b') { // Backspace
                 if (line_index > 0) {
@@ -593,8 +559,21 @@ void filter_dummy(int argc, char ** argv){
             }
 
         } else {
-            // TODO: CORREGIR 
-            // Si read devolvio 0, cede el CPU y vuelve a intentar (espera activa).
+            // EOF o error: si hubo datos parciales, procesarlos e imprimir
+            if (line_index > 0) {
+                int filtered_index = 0;
+                for (int i = 0; i < line_index; i++) {
+                    char ch = line_buffer[i];
+                    if(ch == 'a' || ch == 'e' || ch == 'i' || ch == 'o' || ch == 'u' ||
+                       ch == 'A' || ch == 'E' || ch == 'I' || ch == 'O' || ch == 'U')
+                    {
+                        filtered_buffer[filtered_index++] = ch;
+                    }
+                }
+                filtered_buffer[filtered_index] = '\0';
+                write_out(filtered_buffer);
+                write_out("\n");
+            }
             break;
         }
     }
