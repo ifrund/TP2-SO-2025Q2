@@ -331,16 +331,16 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
     int pid_A = create_process_piped(rip_A, command_A, argc_A, argv_A, fds_A);
     int pid_B = create_process_piped(rip_B, command_B, argc_B, argv_B, fds_B);
 
+    // Close the shell's references to the pipe endpoints immediately so EOF works
+    _pipe_close(pipe_ids[0], PIPE_READ_END);
+    _pipe_close(pipe_ids[1], PIPE_WRITE_END);
+
     // Esperar si es foreground
     if (foreground) {
         int myPid = _get_pid();
         _wait(pid_A, myPid, command_A);
         _wait(pid_B, myPid, command_B);
     }
-
-    // Cerrar ambos extremos del pipe en la shell
-    _pipe_close(pipe_ids[0], PIPE_READ_END); //Cierra el pipe 3
-    _pipe_close(pipe_ids[1], PIPE_WRITE_END); //Cierra el pipe 3
 
     
 }

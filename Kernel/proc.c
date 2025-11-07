@@ -263,7 +263,11 @@ int kill_process(uint64_t pid){
                 break;
             }
         }
+        // remove child from this proc's list
+        proc->childProc[j] = -1;
     }
+    // we've moved all children to idle
+    proc->childrenAmount = 0;
 
     active_processes--;
     last_wish(pid);
