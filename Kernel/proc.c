@@ -247,13 +247,22 @@ int kill_process(uint64_t pid){
         }
     }
 
-    //a todos mis hijos se los dejo a idle, no improta q este bloqueado
+    // Reparent all my children to the idle process safely.
     PCB * idle = processTable[IDLE_PID];
-    for(int i=0; i < proc->childrenAmount; i++){
-        int childPid = proc->childProc[i];
+    for (int j = 0; j < MAX_PCS; j++) {
+        int childPid = proc->childProc[j];
+        if (childPid == -1) continue;
+        if (!is_pid_valid(childPid)) continue;
         PCB* child = processTable[childPid];
         child->ParentPID = IDLE_PID;
-        idle->childProc[idle->childrenAmount++] = childPid;
+        // add childPid to first free slot in idle->childProc
+        for (int k = 0; k < MAX_PCS; k++) {
+            if (idle->childProc[k] == -1) {
+                idle->childProc[k] = childPid;
+                idle->childrenAmount++;
+                break;
+            }
+        }
     }
 
     active_processes--;
@@ -339,7 +348,9 @@ int get_pid(){
 }
 
 int is_pid_valid(int pid){
-    return (pid > MAX_PCS || processTable[pid] == NULL) ? 0 : 1;
+    if (pid < 0 || pid >= MAX_PCS) return 0;
+    if (processTable[pid] == NULL) return 0;
+    return 1;
 }
 
 int wait(uint64_t target_pid, uint64_t my_pid, char* target_name){

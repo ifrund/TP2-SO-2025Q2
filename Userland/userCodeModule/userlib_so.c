@@ -599,36 +599,39 @@ void writer_dummy(int argc, char ** argv) {
     // argv[0] = string con la letra que deberian imprimir
     srand(_get_pid());
 
-    // argv[1] = cantidad de escrituras
-    int writes = 1;
-    if (argc > 1 && argv[1] != NULL) {
-        writes = char_to_int(argv[1]);
-    }
-
-    for (int i = 0; i < writes; i++) {
+    while (1) {
         // espera activa
         int delay = rand() % 2 + 1;
         sleep(delay, 0);
 
         // se espera a que este vacio
-        _sem_wait("MVAR_SPACE");
+        _sem_wait("MVAR_EMPTY");
 
-        // Escritura: si recibimos pipe_id en argv[1], escribimos directo al pipe con la syscall
-        if (argc > 1 && argv[1] != NULL) {
-            int pid_pipe = char_to_int(argv[1]);
-            // write single char
-            char buf[1]; buf[0] = argv[0][0];
-            _pipe_write(pid_pipe, buf, 1);
-        } else if (argc > 0 && argv[0] != NULL) {
-            // fallback: imprimir por STDOUT (mapeado al pipe si create_process_piped fue usado)
-            print(argv[0]);
-        }
+        // Escritura: escribimos directo al pipe con la syscall
+        int pid_pipe = char_to_int(argv[1]);
+        char buf[1]; buf[0] = argv[0][0];
+        _pipe_write(pid_pipe, buf, 1);
 
-        // item disponible
-        _sem_post("MVAR_ITEMS");
+        _sem_post("MVAR_FULL");
     }
 
     exit_pcs(EXIT);
+}
+
+static const uint32_t colors[5] = {
+        0xFFFFFF, // blanco
+        0x000000, // negro
+        0xFF0000, // rojo
+        0x00FF00, // verde
+        0xFFFF00  // amarillo
+};
+
+uint32_t get_color_from_int(int n) {
+
+    int index = n % 5;
+    if (index < 0) index += 5; // por si n es negativo
+
+    return colors[index];
 }
 
 void reader_dummy(int argc, char ** argv) {
@@ -639,29 +642,21 @@ void reader_dummy(int argc, char ** argv) {
         int delay = rand() % 2 + 1; // 1..3
         sleep(delay, 0);
 
-        // wait for an item
-        _sem_wait("MVAR_ITEMS");
+        _sem_wait("MVAR_FULL");
 
         char buf[2];
         buf[1] = '\0';
-        int bytes = read(buf, 1);
+        int bytes = _pipe_read(char_to_int(argv[1]), buf, 1);
 
         if (bytes > 0) {
-            // debug: show what we read
-            write_out("[dbg] reader read: ");
-            write_out(buf);
-            write_out("\n");
-
-            // print the character to normal output so the sequence is visible
-            write_out(buf);
-
-            // signal slot free
-            _sem_post("MVAR_SPACE");
-        } else {
-            // EOF -> no more writers; exit
+            _print_color(buf, 1, get_color_from_int(char_to_int(argv[0])), 0x01233E);
+        } 
+        else {
             write_out("[dbg] reader EOF\n");
             break;
         }
+
+        _sem_post("MVAR_EMPTY");
     }
 
     exit_pcs(EXIT);
@@ -670,7 +665,7 @@ void reader_dummy(int argc, char ** argv) {
 void mvar_dummy(int argc, char ** argv){
     // args: <n_writers> <n_readers>
     if (argc != 2) {
-        write_out("Uso: mvar <n_writers> <n_readers>\n");
+        write_out("Cantidad de argumentos incorrecta, el uso correcto es mvar <n_writers> <n_readers>\n");
         exit_pcs(ERROR);
     }
 
@@ -678,58 +673,65 @@ void mvar_dummy(int argc, char ** argv){
     int n_readers = char_to_int(argv[1]);
 
     if (n_writers <= 0 || n_readers <= 0) {
-        write_out("Parametros invalidos. Ambos deben ser > 0.\n");
+        write_out("Parametros invalidos. Ambos deben ser mayor a 0.\n");
         exit_pcs(ERROR);
     }
 
     // inicializa los semaforos: SPACE=1 (empty), ITEMS=0 (no item)
-    _sem_open_init("MVAR_SPACE", 1);
-    _sem_open_init("MVAR_ITEMS", 0);
+    _sem_open_init("MVAR_EMPTY", 1);
+    _sem_open_init("MVAR_FULL", 0);
 
     // crea el pipe
     int pipe_id = _pipe_create_named("MVAR_PIPE");
+    if(pipe_id < 0){
+        write_out("Hubo un error al crear el pipe.\n");
+        exit_pcs(ERROR);
+    }
+
 
     // spawnea los writers
     for (int i = 0; i < n_writers; i++) {
-        char val[2];
-        val[0] = 'A' + (i % 26);
-        val[1] = '\0';
-
-    char pipebuf[8];
+    char letter[2];
+    letter[0] = 'A' + (i % 26);
+    letter[1] = '\0';
+    char pipebuf[12];
     int_to_str(pipe_id, pipebuf);
     char *wargv[3];
-    wargv[0] = val;
-    wargv[1] = pipebuf; // pass pipe id so writer can call _pipe_write directly
+    wargv[0] = letter;
+    wargv[1] = pipebuf;
     wargv[2] = NULL;
 
         uint64_t fds_w[2];
         fds_w[0] = 0;        // STDIN
         fds_w[1] = pipe_id;  // STDOUT -> pipe (write)
 
-    create_process_piped(&writer_dummy, "mvar_writer", 2, wargv, fds_w);
+        create_process_piped(&writer_dummy, "mvar_writer", 2, wargv, fds_w);
     }
 
     // spawnea los readers
     for (int j = 0; j < n_readers; j++) {
-        char id_str[8];
-        int_to_str(j+1, id_str);
+    char id_str[8];
+    int_to_str(j+1, id_str);
 
-        char *rargv[2];
-        rargv[0] = id_str;
-        rargv[1] = NULL;
+    char pipebuf_r[12];
+    int_to_str(pipe_id, pipebuf_r);
+
+    char *rargv[3];
+    rargv[0] = id_str;
+    rargv[1] = pipebuf_r;
+    rargv[2] = NULL;
 
         uint64_t fds_r[2];
         fds_r[0] = pipe_id;  // STDIN -> pipe (read)
         fds_r[1] = 1;        // STDOUT
 
-        create_process_piped(&reader_dummy, "mvar_reader", 1, rargv, fds_r);
+        create_process_piped(&reader_dummy, "mvar_reader", 2, rargv, fds_r);
     }
 
     //El proceso principal debe terminar inmediatamente después de crear los lectores y escritores.​
     write_out("MVar processes created. Check output for activity.\n");
     exit_pcs(EXIT);
 }
-
 int mvar(int argc, char ** argv){
     return create_process(&mvar_dummy, "mvar", argc, argv);
 }
