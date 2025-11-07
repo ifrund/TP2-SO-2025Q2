@@ -56,3 +56,4 @@ int sys_get_shell();
 int sys_get_idle();
 void sys_foreground(int pid);
 
+void sys_print_color(uint64_t message, uint64_t length, uint64_t fontColor, uint64_t bgColor);

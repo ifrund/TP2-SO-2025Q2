@@ -27,4 +27,7 @@ int pipe_read(int pipe_id, char* buffer, int count);
 
 void pipe_init();
 
+// Register that a process has opened one end of the pipe. mode is PIPE_READ_END or PIPE_WRITE_END.
+int pipe_register(int pipe_id, int mode);
+
 #endif // _PIPES_H_

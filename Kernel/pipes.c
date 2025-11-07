@@ -281,6 +281,19 @@ int pipe_read(int pipe_id, char* buffer, int count) {
     return bytes_read;
 }
 
+int pipe_register(int pipe_id, int mode) {
+    if (pipe_id < 0 || pipe_id >= MAX_PIPES) return -1;
+    Pipe* pipe = &global_pipe_table[pipe_id];
+    if (!pipe->is_in_use) return -1;
+
+    sem_wait("GLOBAL_PIPE_TABLE_LOCK");
+    pipe->ref_count++;
+    if (mode == PIPE_READ_END) pipe->read_open_count++;
+    if (mode == PIPE_WRITE_END) pipe->write_open_count++;
+    sem_post("GLOBAL_PIPE_TABLE_LOCK");
+    return 0;
+}
+
 //Funciones auxiliares
 
 static void build_sem_names(const char* base_name, Pipe* pipe) {

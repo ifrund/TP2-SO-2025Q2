@@ -158,6 +158,10 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     sys_foreground(rdi);
     break;
 
+  case (0xB3):
+    sys_print_color(rdi, rsi, rdx, rcx);
+    break;
+
   }
 }
 
@@ -405,4 +409,8 @@ int sys_get_idle(){
 
 void sys_foreground(int pid){
     foreground_pid = pid;
+}
+
+void sys_print_color(uint64_t message, uint64_t length, uint64_t fontColor, uint64_t bgColor){
+  printColorCant((char *)message, length, (uint32_t)fontColor, (uint32_t)bgColor);
 }

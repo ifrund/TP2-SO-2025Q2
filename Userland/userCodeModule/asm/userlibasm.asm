@@ -37,6 +37,7 @@ GLOBAL _pipe_read
 GLOBAL _shell_pid
 GLOBAL _idle_pid
 GLOBAL _update_foreground
+GLOBAL _print_color
 
 section .text
 
@@ -107,6 +108,22 @@ _draw:
     int 80h     ;syscall 
 
 .end:
+    mov rsp, rbp
+    pop rbp
+    ret
+
+;================================================================================================================================
+;_print_color imprime un string con color
+;IN: rdi=puntero a str; rsi=strlen; rdx: fontColor; rcx: bgColor
+; syscall id 0xB3
+;================================================================================================================================
+_print_color:
+    push rbp
+    mov rbp, rsp
+
+    mov rax, 0xB3   ;sys_print_color ID
+    int 80h
+
     mov rsp, rbp
     pop rbp
     ret
