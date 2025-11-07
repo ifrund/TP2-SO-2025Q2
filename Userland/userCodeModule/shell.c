@@ -338,11 +338,6 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
         _wait(pid_B, myPid, command_B);
     }
 
-    write_out("Pipe to close: ESCRITURA:");
-    printDec(pipe_ids[1]);
-    write_out(" LECTURA:");
-    printDec(pipe_ids[0]);
-    write_out("\n");
     // Cerrar ambos extremos del pipe en la shell
     _pipe_close(pipe_ids[0], PIPE_READ_END); //Cierra el pipe 3
     _pipe_close(pipe_ids[1], PIPE_WRITE_END); //Cierra el pipe 3

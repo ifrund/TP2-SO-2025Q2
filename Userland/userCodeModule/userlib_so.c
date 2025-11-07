@@ -411,7 +411,7 @@ int loop(int argc, char ** argv){
 
 void wc_dummy(int argc, char ** argv){
     char buffer[2];
-    int line_count = 0;
+    int line_count = 1;
     buffer[1] = '\0';
 
     while (1) {
@@ -437,6 +437,14 @@ void wc_dummy(int argc, char ** argv){
             write_out(buffer);
         } 
         else {
+            // EOF (el pipe se cerro) o hubo un error
+            if (bytes_read == 0) {
+                char number_str[12];
+                uintToBase(line_count, number_str, 10);
+                write_out("\nCantidad de lineas: ");
+                write_out(number_str);
+                write_out("\n");
+            }
             break;
         }
     }
@@ -599,7 +607,7 @@ int filter(int argc, char ** argv){
 }
 
 void msg_dummy(int argc, char ** argv){
-    write_out("Arquitectura de Computadoras\n\n");
+    write_out("Arquitectura de Computadoras\n");
     exit_pcs(EXIT);
 }
 
