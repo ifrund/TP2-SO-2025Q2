@@ -22,9 +22,9 @@ void * memset2(void * destiation, int32_t c, uint64_t length) {
 }
 
 //Toma como parámetro la cantidad máxima de memoria a utilizar en bytes.
-void test_mm_dummy(int argc, char **argv) {
+void test_mm(int argc, char **argv) {
 
-  create_mm();
+  _create_mm();
 
   mm_rq mm_rqs[MAX_BLOCKS];
   uint8_t rq;

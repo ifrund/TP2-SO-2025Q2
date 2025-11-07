@@ -11,28 +11,10 @@
 #define BUFFER_SIZE 128
 #define MAX_ARGS 10
 
-// Funciones dummy de userlib.c que find_command_rip necesita
-extern void test_mm_dummy(int argc, char **argv);
-extern uint64_t test_prio_new(uint64_t argc, char **argv);
-extern void test_processes_dummy(int argc, char **argv);
-extern void test_sync_dummy(int argc, char **argv);
-extern void status_count_dummy(int argc, char **argv);
-extern void kill_dummy(int argc, char **argv);
-extern void get_proc_list_dummy(int argc, char **argv);
-extern void be_nice_dummy(int argc, char **argv);
-extern void block_process_dummy(int argc, char **argv);
-extern void unblock_process_dummy(int argc, char **argv);
-extern void loop_dummy(int argc, char **argv);
-extern void wc_dummy(int argc, char **argv);
-extern void cat_dummy(int argc, char **argv);
-extern void filter_dummy(int argc, char **argv);
-extern void mvar_dummy(int argc, char **argv);
-extern void msg_dummy(int argc, char **argv);
-
 // Esto es un "string" manual para poder imprimir el caracter 128 de nuestro font de kernel usando lsa funciones estandar
 #define ERROR_PROMPT "Unknown command: "
 char PROMPT_START[] = {127, 0};
-int kill_from_shell = 0, foreground = 1;
+int foreground = 1;
 int current_foreground_pid;
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
@@ -44,7 +26,8 @@ static char* help[COMMANDS-TESTS] = {"exit", "clear", "sleep", "help", "register
     "kill", "ps", "nice", "block", "unblock", "loop", "wc", "cat", "filter", "mvar", "msg"};
 static char* info[COMMANDS-TESTS] = {"-", "-", "(tiempo a dormir)", "-", "-", "-", "-", "(el pid a matar)", "-", "(pid a afectar) (nueva prioridad)", 
     "(pid a bloquear)", "(pid a desbloquear)", "(segundos entre aparaciones del loop)", "-", "-", "-", "-", "<-- eliminar"};
-
+static char * info_tests[TESTS] = {"(Toma como parametro la cantidad maxima de memoria a utilizar en bytes)", "(el tiempo a hacer busy-waiting, medido en ...)", 
+    "(cantidad de procesos)", "(cantidad de veces que se debe hacer la cuenta) (1 o 0, para usar o no los semaforos)"};
 char char_buffer[1];
 
 // Cursors & flags
@@ -118,9 +101,9 @@ void process_key(char key){
         }
 
         command_cursor = 0;
-        if(foreground){
+        //if(foreground){
             write_out(PROMPT_START);
-        }
+        //}
 
         return;
     }
@@ -161,10 +144,18 @@ void process_command(char* buffer){
     char* args_string = NULL; // String que contiene solo los argumentos
 
     // Se busca background o pipe
-    char* bg_pos = strchr(buffer, '&');
+    char* bg_pos = strchr(buffer, '&'); 
     if (bg_pos != NULL) {
-        foreground = 0;
-        *bg_pos = '\0'; // Elimina el '&'
+        if (bg_pos != NULL) {
+            // Chequear si después del '&' solo hay espacios o el fin del string
+            char *p = bg_pos + 1;
+            while (*p == ' ') p++; 
+
+            if (*p == '\0') {
+                foreground = 0;
+                *bg_pos = '\0'; 
+            }
+        }
     }
 
     char* pipe_pos = strchr(buffer, '|');
@@ -381,23 +372,23 @@ static void* find_command_rip(char* name) {
         &comando_sleep,         // "sleep"
         &comando_help,          // "help"
         &comando_regs,          // "registers"
-        &test_mm_dummy,         // "test-mm"
+        &test_mm,         // "test-mm"
         &test_prio_new,         // "test-prio"
-        &test_processes_dummy,  // "test-pcs"
-        &test_sync_dummy,       // "test-sync"
-        &status_count_dummy,    // "mem"
+        &test_processes,  // "test-pcs"
+        &test_sync,       // "test-sync"
+        &status_count,    // "mem"
         &comando_tests,         // "Tests"
-        &kill_dummy,            // "kill"
-        &get_proc_list_dummy,   // "ps"
-        &be_nice_dummy,         // "nice"
-        &block_process_dummy,   // "block"
-        &unblock_process_dummy, // "unblock"
-        &loop_dummy,            // "loop"
-        &wc_dummy,              // "wc"
-        &cat_dummy,             // "cat"
-        &filter_dummy,          // "filter"
-        &mvar_dummy,             // "mvar"
-        &msg_dummy               // "msg"
+        &kill,            // "kill"
+        &get_proc_list,   // "ps"
+        &be_nice,         // "nice"
+        &block_process,   // "block"
+        &unblock_process, // "unblock"
+        &loop,            // "loop"
+        &wc,              // "wc"
+        &cat,             // "cat"
+        &filter,          // "filter"
+        &mvar,             // "mvar"
+        &msg               // "msg"
     };
 
     for (int i = 0; i < COMMANDS; i++) {
@@ -493,6 +484,8 @@ void comando_tests(){
     write_out("Los test existentes son:\n");
     for(int i=0; i<(TESTS); i++){
         write_out(tests[i]);
+        write_out(" ");
+        write_out(info_tests[i]);
         write_out("\n");
     }
     exit_pcs(EXIT);
@@ -533,7 +526,7 @@ void comando_sleep(int argc, char** argv){
         write_out("Para este comando tenes que mandar un numero positivo porfavor\n");
         exit_pcs(ERROR);
     }
-    
+
     write_out("Vamos a esperar "); 
     write_out(argv[0]);
     write_out(" segundos...");
