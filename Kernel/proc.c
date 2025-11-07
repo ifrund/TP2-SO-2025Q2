@@ -249,24 +249,29 @@ int kill_process(uint64_t pid){
 
     // Reparent all my children to the idle process safely.
     PCB * idle = processTable[IDLE_PID];
-    for (int j = 0; j < MAX_PCS; j++) {
-        int childPid = proc->childProc[j];
-        if (childPid == -1) continue;
-        if (!is_pid_valid(childPid)) continue;
-        PCB* child = processTable[childPid];
-        child->ParentPID = IDLE_PID;
-        // add childPid to first free slot in idle->childProc
-        for (int k = 0; k < MAX_PCS; k++) {
-            if (idle->childProc[k] == -1) {
-                idle->childProc[k] = childPid;
-                idle->childrenAmount++;
-                break;
+
+    // Walk the global process table and reparent any child whose ParentPID == pid
+    for (int c = 0; c < MAX_PCS; c++) {
+        if (processTable[c] == NULL) continue;
+        if (processTable[c]->ParentPID == pid) {
+            // set new parent
+            processTable[c]->ParentPID = IDLE_PID;
+
+            // add child to idle's childProc in first free slot
+            for (int k = 0; k < MAX_PCS; k++) {
+                if (idle->childProc[k] == -1) {
+                    idle->childProc[k] = c;
+                    idle->childrenAmount++;
+                    break;
+                }
             }
         }
-        // remove child from this proc's list
+    }
+
+    // Clear parent's childProc slots and reset childrenAmount
+    for (int j = 0; j < MAX_PCS; j++) {
         proc->childProc[j] = -1;
     }
-    // we've moved all children to idle
     proc->childrenAmount = 0;
 
     active_processes--;
