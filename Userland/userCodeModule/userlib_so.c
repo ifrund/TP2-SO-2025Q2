@@ -168,13 +168,6 @@ void exit_pcs(int ret){
         write_out(pid_str);
         write_out(" cerro con error\n");
     }
-    /* 
-    else if(ret == EXIT){
-        write_out("Proceso de pid ");
-        write_out(pid_str);
-        write_out(" cerro bien:)\n");
-    }
-    */
 
     int ret_del_kill = _kill_process(pid);
     if(ret_del_kill == ERROR){
@@ -192,7 +185,7 @@ void block_process_dummy(int argc, char ** argv){
 
     int pid = char_to_int(argv[0]);
     if(pid == shell_pid){
-        write_out("Por ahora la shell no es bloqueante, asiq... adios\n");
+        write_out("Por ahora la shell no es bloqueante, asi que... adios\n");
     }
     if(pid == idle_pid){
         write_out("Bloquear el idle... no sos muy inteligente\n");
@@ -230,7 +223,7 @@ void unblock_process_dummy(int argc, char ** argv){
     int pid = char_to_int(argv[0]);
 
     if(pid == idle_pid){
-        write_out("Que estas haciendo?? esto no sirve de nada, va a volver estar blocked cuando hagas ps.\n");
+        write_out("Que estas haciendo? esto no sirve de nada, va a volver estar blocked cuando hagas ps.\n");
     }
     int ret = _unblock_process(pid);
 
@@ -327,7 +320,7 @@ int get_proc_list(int argc, char ** argv){
     return create_process(&get_proc_list_dummy, "ps", argc, argv);
 }
 
-//ésta no es proceso, es built-in porq sino devolveria su propio pid xd
+//ésta no es proceso, es built-in porq sino devolveria su propio pid
 int get_pid(){
     return _get_pid();
 }
@@ -657,7 +650,7 @@ void reader_dummy(int argc, char ** argv) {
     srand(_get_pid());
 
     while (1) {
-        int delay = rand() % 2 + 1; // 1..3
+        int delay = rand() % 2 + 1;
         sleep(delay, 0);
 
         _sem_wait("MVAR_FULL");
@@ -695,7 +688,7 @@ void mvar_dummy(int argc, char ** argv){
         exit_pcs(ERROR);
     }
 
-    // inicializa los semaforos: SPACE=1 (empty), ITEMS=0 (no item)
+    // inicializa los semaforos: SPACE=1 (vacio), ITEMS=0 (no hay items)
     _sem_open_init("MVAR_EMPTY", 1);
     _sem_open_init("MVAR_FULL", 0);
 

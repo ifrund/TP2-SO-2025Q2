@@ -34,6 +34,7 @@ extern void msg_dummy(int argc, char **argv);
 char PROMPT_START[] = {127, 0};
 int kill_from_shell = 0, foreground = 1, bye_shell=0;
 int current_foreground_pid;
+
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
@@ -47,13 +48,13 @@ static char* info[COMMANDS-TESTS] = {"-", "-", "(tiempo a dormir)", "-", "-", "-
 
 char char_buffer[1];
 
-// Cursors & flags
+// Cursor & flags
 int command_cursor = 0;
 int cursor_y;
 int cursor_x;
 int exit_command;
 
-// Important values
+// Variables Importantes
 uint8_t font_size;
 int rows_to_show;
 int limit_index = VERT_SIZE - 1;
@@ -333,7 +334,6 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
     int pid_A = create_process_piped(rip_A, command_A, argc_A, argv_A, fds_A);
     int pid_B = create_process_piped(rip_B, command_B, argc_B, argv_B, fds_B);
 
-    // Close the shell's references to the pipe endpoints immediately so EOF works
     _pipe_close(pipe_ids[0], PIPE_READ_END);
     _pipe_close(pipe_ids[1], PIPE_WRITE_END);
 
@@ -459,9 +459,7 @@ int read_input(char *buffer, int max_len) {
     return count;
 }
 
-//
-//Ex comando arqui
-//
+//Ex comandos de arqui
 
 void exit_shell(){
     write_out("Nos vemos, esperamos que la hayas pasado bien! \n");
