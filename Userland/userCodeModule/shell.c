@@ -137,12 +137,6 @@ void process_key(char key){
         return;
     }
 
-    if (key == '\x04') { //Ctrl+D
-        write_out("Esto es ctrl+d, tdv no esta desarrollado.\n"); //TODO
-        write_out(PROMPT_START);
-        return;
-    }
-
     // a partir de aca si esta lleno el buffer nos vamos
     if (command_cursor == BUFFER_SIZE - 1) 
         return;

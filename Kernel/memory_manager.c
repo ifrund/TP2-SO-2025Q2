@@ -22,7 +22,7 @@ typedef struct block_info
     uint32_t contiguous_blocks; // Cantidad de bloques contiguos, si se pide más memoria que BLOCK_SIZE. Luego deben liberarse todos juntos.
 } block_info;
 
-block_info block_array[_TOTAL_BLOCK_COUNT];  // TODO: tira warning porque void* es system-dependent.
+block_info block_array[_TOTAL_BLOCK_COUNT];
 static bool is_initialized = false;
 
 uint32_t first_free_index = 0;

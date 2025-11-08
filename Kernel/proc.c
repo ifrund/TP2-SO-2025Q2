@@ -302,24 +302,6 @@ int kill_process(uint64_t pid){
         idle->childProc[idle->childrenAmount++] = childPid;
     }
 
-    /* TODO versión más lenta y supone q te mandaste cagadas en childProc
-    for (int c = 0; c < MAX_PCS; c++) {
-        if (processTable[c] == NULL) continue;
-        if (processTable[c]->ParentPID == pid) {
-            // set new parent
-            processTable[c]->ParentPID = IDLE_PID;
-
-            // add child to idle's childProc in first free slot
-            for (int k = 0; k < MAX_PCS; k++) {
-                if (idle->childProc[k] == -1) {
-                    idle->childProc[k] = c;
-                    idle->childrenAmount++;
-                    break;
-                }
-            }
-        }
-    }*/
-
     //dejo esto en 0 por si sigo apareciendo en el ps y q se vea lindo :)
     proc->childrenAmount = 0;
 
