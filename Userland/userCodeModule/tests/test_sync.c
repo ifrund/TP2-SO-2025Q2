@@ -38,7 +38,7 @@ void my_process_inc(uint64_t argc, char *argv[]) {
   }
 
   if (use_sem){
-    write_out("test_sync: Opening semaphore...\n");
+    write_out("test_sync: Abriendo el semaforo...\n");
     if (_sem_open_init(SEM_ID, 1) == -2) {//si devuelve -1 es porq ya si hizo un open, lo cual es verdad y no un error para este test
       write_out("test_sync: ERROR opening sem\n");
       exit_pcs(ERROR);    
@@ -49,14 +49,14 @@ void my_process_inc(uint64_t argc, char *argv[]) {
   for (i = 0; i < n; i++) {
     if (use_sem){
       if(_sem_wait(SEM_ID)!=0){
-        write_out("test_sync: ERROR waiting sem\n");
+        write_out("test_sync: ERROR en el sem wait\n");
         exit_pcs(ERROR); 
       }
     }
     slowInc(&global, inc);
     if (use_sem){
       if(_sem_post(SEM_ID)!=0){
-        write_out("test_sync: ERROR posting sem\n");
+        write_out("test_sync: ERROR en el sem post\n");
         exit_pcs(ERROR); 
       }
     }
@@ -64,7 +64,7 @@ void my_process_inc(uint64_t argc, char *argv[]) {
 
   if (use_sem){
     if(_sem_close(SEM_ID)){
-      write_out("test_sync: ERROR closing sem\n");
+      write_out("test_sync: ERROR en el sem close\n");
       exit_pcs(ERROR); 
     }
   }
@@ -113,7 +113,7 @@ void test_sync_dummy(int argc, char **argv) { //{n, use_sem}
     _wait(pids[i + TOTAL_PAIR_PROCESSES], pid, "my_process_inc");
   }
 
-  write_out("Final value (deberia ser 0 si usaste sem): ");
+  write_out("Valor final (deberia ser 0 si usaste sem): ");
   printDec(global);
   write_out("\n");
 
