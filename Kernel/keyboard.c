@@ -60,8 +60,7 @@ void insert_key(int key) {
 
   if (control == 1) {
     if (key == 0x2E) { // 0x2E es el scancode de C
-      ascii_buf[ascii_insert_index++] = '\x03'; // Bufferea ctrl+C
-      added_ascii = 1;
+      //no hacemos added_ascii porq ctrl+c no tiene q joder con el buffer
       if(foreground_pid!=SHELL_PID){
         kill_process(foreground_pid);
       }
