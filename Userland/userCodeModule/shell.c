@@ -93,8 +93,12 @@ int shell(){
     write_out(PROMPT_START);
 
     while(!exit_command){
-        if (read(char_buffer, 1) == 1){ 
+        int r = read(char_buffer, 1);
+        if (r == 1){ 
             process_key(char_buffer[0]);
+        }
+        else if(r == 0){ //error o EOF
+            exit_shell();
         }
     }
 
