@@ -260,7 +260,10 @@ int kill_process(uint64_t pid){
     if (!is_pid_valid(pid))
         return -1;
 
-    PCB* proc = processTable[pid];    
+    PCB* proc = processTable[pid];   
+    if(proc->state == ZOMBIE){
+        return -2;
+    } 
     processTable[pid]->state = ZOMBIE;
 
     if(strcmp("mvar_writer", proc->name)==0 || strcmp("mvar_reader", proc->name)==0 ){
@@ -289,10 +292,17 @@ int kill_process(uint64_t pid){
         }
     }
 
-    // Reparent all my children to the idle process safely.
-    PCB * idle = processTable[IDLE_PID];
 
-    // Walk the global process table and reparent any child whose ParentPID == pid
+    //a todos mis hijos se los dejo a idle, no improta q este bloqueado
+    PCB * idle = processTable[IDLE_PID];
+    for(int i=0; i < proc->childrenAmount; i++){
+        int childPid = proc->childProc[i];
+        PCB* child = processTable[childPid];
+        child->ParentPID = IDLE_PID;
+        idle->childProc[idle->childrenAmount++] = childPid;
+    }
+
+    /* TODO versión más lenta y supone q te mandaste cagadas en childProc
     for (int c = 0; c < MAX_PCS; c++) {
         if (processTable[c] == NULL) continue;
         if (processTable[c]->ParentPID == pid) {
@@ -308,12 +318,9 @@ int kill_process(uint64_t pid){
                 }
             }
         }
-    }
+    }*/
 
-    // Clear parent's childProc slots and reset childrenAmount
-    for (int j = 0; j < MAX_PCS; j++) {
-        proc->childProc[j] = -1;
-    }
+    //dejo esto en 0 por si sigo apareciendo en el ps y q se vea lindo :)
     proc->childrenAmount = 0;
 
     active_processes--;

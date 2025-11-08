@@ -107,14 +107,20 @@ void kill(int argc, char ** argv){
     write_out("\n");
 
     int ret = _kill_process(toKill); 
+    char k_str[21];
+    int_to_str(toKill, k_str);
     if(ret == ERROR){
         write_out("... O no\nEl pid ");
-        char k_str[21];
-        int_to_str(toKill, k_str);
         write_out(k_str);
         write_out(" no es valido, asique no podemos matar a ningun proceso de ese pid... bobo.\n");
         estrellita_bg();
-        exit_pcs(EXIT);
+        exit_pcs(ERROR);
+    }
+    if(ret==SECOND_ERROR){
+        write_out("El proceso de pid ");
+        write_out(k_str);
+        write_out(" ya esta muerto.\n");
+        exit_pcs(ERROR);
     }
 
     estrellita_bg();
@@ -124,7 +130,13 @@ void kill(int argc, char ** argv){
 //cada proceso cuando termina se debe "matar" a si mismo, osea dejar marcado con KILLED
 void exit_pcs(int ret){
     
-    int pid = _get_pid(); 
+    int pid;
+    if(bye_shell){
+        pid = shell_pid;
+    }
+    else{
+        pid = _get_pid(); 
+    }
     char pid_str[21];
     int_to_str(pid, pid_str);
 

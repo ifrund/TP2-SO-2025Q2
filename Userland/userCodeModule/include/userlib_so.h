@@ -11,6 +11,7 @@
 extern int foreground;
 extern int shell_pid;
 extern int idle_pid;
+extern int bye_shell;
 
 //================================================================================================================================
 // SISTEMAS OPERATIVOS
