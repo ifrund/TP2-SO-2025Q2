@@ -1,5 +1,4 @@
 #include "userlib_so.h"
-#include "include/rand.h"
 
 int shell_pid;
 int idle_pid;
@@ -349,7 +348,7 @@ void loop(int argc, char ** argv){
 
 void wc(int argc, char ** argv){
     char buffer[2];
-    int line_count = 1;
+    int line_count = 0;
     buffer[1] = '\0';
 
     while (1) {
@@ -358,20 +357,23 @@ void wc(int argc, char ** argv){
         char c = buffer[0];
 
         if (bytes_read > 0) {
+            
             if (c == '\n') {             // Conteo de lineas
                 line_count++;
-            }
-            write_out(buffer);
-        } 
-        else {
-            // EOF (el pipe se cerro) o hubo un error
-            if (bytes_read == 0) {
+            } 
+
+            if (c == '\x04') { // Ctrl+D
                 char number_str[12];
                 uintToBase(line_count, number_str, 10);
                 write_out("\nCantidad de lineas: ");
                 write_out(number_str);
                 write_out("\n");
+                break;
             }
+            
+            write_out(buffer);
+        } 
+        else {
             break;
         }
     }
@@ -394,6 +396,16 @@ void cat(int argc, char ** argv){
         if (bytes_read > 0) {
             char c = read_buffer[0];
 
+            if (c == '\x04') { // Ctrl+D
+                if (line_index > 0) {
+                    line_buffer[line_index] = '\0';
+                    write_out("\n"); 
+                    write_out(line_buffer);
+                }
+                write_out("\n"); 
+                break;
+            }
+            
             if (c == '\b') { // Backspace
                 if (line_index > 0) {
                     line_index--;
@@ -419,13 +431,8 @@ void cat(int argc, char ** argv){
             }
 
         } else {
-            // EOF o error: si hubo datos parciales, imprimirlos antes de terminar
-            if (line_index > 0) {
-                line_buffer[line_index] = '\0';
-                write_out("\n");
-                write_out(line_buffer);
-                write_out("\n");
-            }
+            // TODO: CORREGIR 
+            // Si read devolvio 0, cede el CPU y vuelve a intentar (espera activa).
             break;
         }
     }
@@ -448,6 +455,24 @@ void filter(int argc, char ** argv){
 
         if (bytes_read > 0) {
             char c = read_buffer[0];
+
+            if (c == '\x04') { // Ctrl+D
+                if (line_index > 0) {
+                    int filtered_index = 0;
+                    for (int i = 0; i < line_index; i++) {
+                        char ch = line_buffer[i];
+                        if(ch == 'a' || ch == 'e' || ch == 'i' || ch == 'o' || ch == 'u' ||
+                           ch == 'A' || ch == 'E' || ch == 'I' || ch == 'O' || ch == 'U')
+                        {
+                            filtered_buffer[filtered_index++] = ch;
+                        }
+                    }
+                    filtered_buffer[filtered_index] = '\0';
+                    write_out(filtered_buffer);
+                }
+                write_out("\n");
+                break; 
+            }
 
             if (c == '\b') { // Backspace
                 if (line_index > 0) {
@@ -489,21 +514,8 @@ void filter(int argc, char ** argv){
             }
 
         } else {
-            // EOF o error: si hubo datos parciales, procesarlos e imprimir
-            if (line_index > 0) {
-                int filtered_index = 0;
-                for (int i = 0; i < line_index; i++) {
-                    char ch = line_buffer[i];
-                    if(ch == 'a' || ch == 'e' || ch == 'i' || ch == 'o' || ch == 'u' ||
-                       ch == 'A' || ch == 'E' || ch == 'I' || ch == 'O' || ch == 'U')
-                    {
-                        filtered_buffer[filtered_index++] = ch;
-                    }
-                }
-                filtered_buffer[filtered_index] = '\0';
-                write_out(filtered_buffer);
-                write_out("\n");
-            }
+            // TODO: CORREGIR 
+            // Si read devolvio 0, cede el CPU y vuelve a intentar (espera activa).
             break;
         }
     }
@@ -511,161 +523,17 @@ void filter(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
-int filter(int argc, char ** argv){
-    return create_process(&filter_dummy, "filter", argc, argv);
-}
-
-void msg_dummy(int argc, char ** argv){
-    write_out("Arquitectura de Computadoras\n");
+void msg(int argc, char ** argv){
+    write_out("Sistemas Operativos\n");
     exit_pcs(EXIT);
 }
 
-int msg(int argc, char ** argv){
-    return create_process(&msg_dummy, "msg", argc, argv);
-}
-
-void writer_dummy(int argc, char ** argv) {
-    // argv[0] = string con la letra que deberian imprimir
-    srand(_get_pid());
-
-    while (1) {
-        // espera activa
-        int delay = rand() % 2 + 1;
-        sleep(delay, 0);
-
-        // se espera a que este vacio
-        _sem_wait("MVAR_EMPTY");
-
-        // Escritura: escribimos directo al pipe con la syscall
-        int pid_pipe = char_to_int(argv[1]);
-        char buf[1]; buf[0] = argv[0][0];
-        _pipe_write(pid_pipe, buf, 1);
-
-        _sem_post("MVAR_FULL");
-    }
-
+void mvar(int argc, char ** argv){
+    write_out("Tdv no hay nada aca.\n");
     exit_pcs(EXIT);
 }
 
-static const uint32_t colors[5] = {
-        0xFFFFFF, // blanco
-        0x000000, // negro
-        0xFF0000, // rojo
-        0x00FF00, // verde
-        0xFFFF00  // amarillo
-};
-
-uint32_t get_color_from_int(int n) {
-
-    int index = n % 5;
-    if (index < 0) index += 5; // por si n es negativo
-
-    return colors[index];
-}
-
-void reader_dummy(int argc, char ** argv) {
-    // argv[0] = reader id string (optional)
-    srand(_get_pid());
-
-    while (1) {
-        int delay = rand() % 2 + 1; // 1..3
-        sleep(delay, 0);
-
-        _sem_wait("MVAR_FULL");
-
-        char buf[2];
-        buf[1] = '\0';
-        int bytes = _pipe_read(char_to_int(argv[1]), buf, 1);
-
-        if (bytes > 0) {
-            _print_color(buf, 1, get_color_from_int(char_to_int(argv[0])), 0x01233E);
-        } 
-        else {
-            write_out("[dbg] reader EOF\n");
-            break;
-        }
-
-        _sem_post("MVAR_EMPTY");
-    }
-
-    exit_pcs(EXIT);
-}
-
-void mvar_dummy(int argc, char ** argv){
-    // args: <n_writers> <n_readers>
-    if (argc != 2) {
-        write_out("Cantidad de argumentos incorrecta, el uso correcto es mvar <n_writers> <n_readers>\n");
-        exit_pcs(ERROR);
-    }
-
-    int n_writers = char_to_int(argv[0]);
-    int n_readers = char_to_int(argv[1]);
-
-    if (n_writers <= 0 || n_readers <= 0) {
-        write_out("Parametros invalidos. Ambos deben ser mayor a 0.\n");
-        exit_pcs(ERROR);
-    }
-
-    // inicializa los semaforos: SPACE=1 (empty), ITEMS=0 (no item)
-    _sem_open_init("MVAR_EMPTY", 1);
-    _sem_open_init("MVAR_FULL", 0);
-
-    // crea el pipe
-    int pipe_id = _pipe_create_named("MVAR_PIPE");
-    if(pipe_id < 0){
-        write_out("Hubo un error al crear el pipe.\n");
-        exit_pcs(ERROR);
-    }
-
-
-    // spawnea los writers
-    for (int i = 0; i < n_writers; i++) {
-    char letter[2];
-    letter[0] = 'A' + (i % 26);
-    letter[1] = '\0';
-    char pipebuf[12];
-    int_to_str(pipe_id, pipebuf);
-    char *wargv[3];
-    wargv[0] = letter;
-    wargv[1] = pipebuf;
-    wargv[2] = NULL;
-
-        uint64_t fds_w[2];
-        fds_w[0] = 0;        // STDIN
-        fds_w[1] = pipe_id;  // STDOUT -> pipe (write)
-
-        create_process_piped(&writer_dummy, "mvar_writer", 2, wargv, fds_w);
-    }
-
-    // spawnea los readers
-    for (int j = 0; j < n_readers; j++) {
-    char id_str[8];
-    int_to_str(j+1, id_str);
-
-    char pipebuf_r[12];
-    int_to_str(pipe_id, pipebuf_r);
-
-    char *rargv[3];
-    rargv[0] = id_str;
-    rargv[1] = pipebuf_r;
-    rargv[2] = NULL;
-
-        uint64_t fds_r[2];
-        fds_r[0] = pipe_id;  // STDIN -> pipe (read)
-        fds_r[1] = 1;        // STDOUT
-
-        create_process_piped(&reader_dummy, "mvar_reader", 2, rargv, fds_r);
-    }
-
-    //El proceso principal debe terminar inmediatamente después de crear los lectores y escritores.​
-    write_out("MVar processes created. Check output for activity.\n");
-    exit_pcs(EXIT);
-}
-int mvar(int argc, char ** argv){
-    return create_process(&mvar_dummy, "mvar", argc, argv);
-}
-
-void sem_open_init_dummy(int argc, char ** argv){
+void sem_open_init(int argc, char ** argv){
     
     if(argc!=2){
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 2 argumentos.\n");

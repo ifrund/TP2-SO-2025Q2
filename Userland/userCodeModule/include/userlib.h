@@ -26,9 +26,6 @@ void print(char * string);
 //================================================================================================================================
 void printChar(char charToPrint);
 
-// Imprime en pantalla un string con color (font, bg)
-void print_color(char * string, int length, uint32_t fontColor, uint32_t bgColor);
-
 //================================================================================================================================
 // Imprime en pantalla una determinada cantidad de chars de un string
 //================================================================================================================================

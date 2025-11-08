@@ -17,10 +17,6 @@ void print(char * string){
     _print(STDOUT, string, strlen(string));
 }
 
-void print_color(char * string, int length, uint32_t fontColor, uint32_t bgColor){
-    _print_color(string, length, fontColor, bgColor);
-}
-
 void printCant(char* string, int cant){
     _print(STDOUT, string, cant);
 }

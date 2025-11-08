@@ -135,7 +135,7 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     break;
 
   case (0xAD):
-    sys_pipe_close(rdi, rsi);
+    sys_pipe_close(rdi);
     break;
 
   case (0xAE): 
@@ -156,10 +156,6 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     
   case (0xB2):
     sys_foreground(rdi);
-    break;
-
-  case (0xB3):
-    sys_print_color(rdi, rsi, rdx, rcx);
     break;
 
   }
@@ -217,18 +213,11 @@ int read_chars(int fd, char *buffer, int length) {
   if (fd != STDIN) {
       int chars_read = 0;
       for (int i = 0; i < length; i++) {
-      char c = read_key(fd);
-      // Treat Ctrl+D as EOF: if nothing read yet return 0, else return what we have
-      if (c == '\x04') {
-        if (chars_read == 0)
-          return 0;
-        return chars_read;
-      }
-      buffer[i] = c;
-      if (buffer[i] == 0) {
-        return chars_read;
-      }
-      chars_read++;
+          buffer[i] = read_key(fd);
+          if (buffer[i] == 0) {
+              return chars_read; 
+          }
+          chars_read++;
       }
       return chars_read;
   }
@@ -237,23 +226,15 @@ int read_chars(int fd, char *buffer, int length) {
       
       sem_wait("sem_stdin");
 
-    char c = read_key(fd);
+      char c = read_key(fd);
 
-    // Ignoramos los null reads
-    if (c == 0) continue;
+      if (c == 0) continue;
+      
+      buffer[chars_read++] = c;
 
-    // Ctrl+D es EOF
-    if (c == '\x04') {
-      if (chars_read == 0)
-        return 0;
-      return chars_read;
-    }
-
-    buffer[chars_read++] = c;
-
-    if (c == '\n') {
-      return chars_read;
-    }
+      if (c == '\n') {
+          return chars_read;
+      }
   }
   return chars_read;
 }
@@ -386,8 +367,8 @@ int sys_pipe_create_named(uint64_t name){
   return pipe_create_named((const char*) name);
 }
 
-int sys_pipe_close(uint64_t pipe_id, uint64_t mode){
-  return pipe_close((int) pipe_id, (int) mode);
+int sys_pipe_close(uint64_t pipe_id){
+  return pipe_close((int) pipe_id);
 }
 
 int sys_pipe_write(uint64_t pipe_id, uint64_t buffer, uint64_t count){
@@ -409,8 +390,4 @@ int sys_get_idle(){
 
 void sys_foreground(int pid){
     foreground_pid = pid;
-}
-
-void sys_print_color(uint64_t message, uint64_t length, uint64_t fontColor, uint64_t bgColor){
-  printColorCant((char *)message, length, (uint32_t)fontColor, (uint32_t)bgColor);
 }

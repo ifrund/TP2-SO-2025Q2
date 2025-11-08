@@ -11,7 +11,6 @@ int int_test();
 void _sleep(int cant, int unidad);
 void _getClock(int *hrs, int *min, int *seg);
 void _draw(uint16_t * bitmap, uint32_t color, uint16_t height, uint64_t x, uint64_t y);
-void _print_color(char * string, int length, uint32_t fontColor, uint32_t bgColor);
 void _screenData(uint16_t * screenHeight, uint16_t * screenWidth, uint8_t * fontSize, uint8_t * drawSize);
 void _changeSize(uint8_t newSize, uint8_t fd);
 int _getRegs(uint64_t regs[]);
@@ -66,7 +65,7 @@ void _update_foreground(int pid);
 //PIPES
 int _pipe_create_anonymous(int pipe_ids[2]);
 int _pipe_create_named(const char* name);
-int _pipe_close(int pipe_id, int mode);
+int _pipe_close(int pipe_id);
 int _pipe_write(int pipe_id, const char* buffer, int count);
 int _pipe_read(int pipe_id, char* buffer, int count);
 
