@@ -62,7 +62,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
     write_out("\n");
 
     // Expect to see them finish at the same time
-    write_out("Primer wait\n");
+    //write_out("Primer wait\n");
     for (i = 0; i < TOTAL_PROCESSES; i++){
         _wait(pids[i], my_pid, pcs_name);
     }
@@ -81,7 +81,7 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
     write_out("\n");
     // Expect the priorities to take effect
 
-    write_out("Segundo wait\n");
+    //write_out("Segundo wait\n");
     for (i = 0; i < TOTAL_PROCESSES; i++){
         _wait(pids[i], my_pid, pcs_name);
     }
@@ -105,14 +105,13 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
 
     // Expect the priorities to take effect
 
-    write_out("Tercer wait\n");
+    //write_out("Tercer wait\n");
     for (i = 0; i < TOTAL_PROCESSES; i++){
         _wait(pids[i], my_pid, pcs_name);
     }
 
 
     write_out("\nTermino el test prio ;) \n");
-    write_out(PROMPT_START);
     exit_pcs(EXIT);
     return 0;
 }

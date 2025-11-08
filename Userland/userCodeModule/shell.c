@@ -118,7 +118,11 @@ void process_key(char key){
         }
 
         command_cursor = 0;
-        if(foreground){
+        if(!foreground){
+            _yield();
+            write_out(PROMPT_START);
+        }
+        else{
             write_out(PROMPT_START);
         }
 

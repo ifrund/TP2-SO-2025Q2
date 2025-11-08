@@ -399,12 +399,19 @@ int test_pcs(int argc, char ** argv){
 void loop_dummy(int argc, char ** argv){
   
     argc_1(argc);
+    int loop_fg=0;
+    if(foreground){
+        loop_fg=1;
+    }
     int pid = get_pid(); //agarro mi priopio pid
     int cloop=0;
     int tiempo = char_to_int(argv[0]);   
     char pid_str[21];
     int_to_str(pid, pid_str);
     while (1){
+        if(loop_fg){
+            write_out(PROMPT_START);
+        }
         write_out("Hola soy el loop, y mi pid es: ");
         write_out(pid_str);
         write_out(".\t Esta es mi vuelta ");
@@ -413,7 +420,6 @@ void loop_dummy(int argc, char ** argv){
         write_out(c_str);
         cloop++;
         write_out(".\n");
-        write_out(PROMPT_START);
         sleep(tiempo, 0);
     }
 }
