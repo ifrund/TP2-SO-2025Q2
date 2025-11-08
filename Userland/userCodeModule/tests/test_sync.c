@@ -73,7 +73,7 @@ void my_process_inc(uint64_t argc, char *argv[]) {
 }
 
 
-void test_sync(int argc, char **argv) { //{n, use_sem}
+void test_sync_dummy(int argc, char **argv) { //{n, use_sem}
   //n debe ser cuantas veces va a sumar/restar a global, osea un numero mayor a 0
   //use_sem debe ser 0 o 1
   

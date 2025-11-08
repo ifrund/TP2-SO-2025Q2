@@ -19,8 +19,13 @@ void argc_1(int argc){
     return;
 }
 
+// Crear la memoria
+void create_mm(){
+    _create_mm();
+}
+
 // Ocupa espacio en la memoria
-void alloc(int argc, char ** argv){
+void alloc_dummy(int argc, char ** argv){
 
     argc_1(argc);
 
@@ -31,8 +36,12 @@ void alloc(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
+int alloc(int argc, char ** argv){
+    return create_process(&alloc_dummy, "alloc", argc, argv);
+}
+
 // Libera espacio de la memoria
-void free(int argc, char ** argv){
+void free_dummy(int argc, char ** argv){
 
     argc_1(argc);
 
@@ -41,8 +50,12 @@ void free(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
+int free(int argc, char ** argv){
+    return create_process(&free_dummy, "free", argc, argv);
+}
+
 // Llena el array con los datos block_count, free_space, y used_space 
-void status_count(int argc, char ** argv){
+void status_count_dummy(int argc, char ** argv){
 
     if (argc != 0) {
         write_out("No tenias que mandar argumentos para este comando.\n");
@@ -72,6 +85,9 @@ void status_count(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
+int status_count(int argc, char ** argv){
+    return create_process(&status_count_dummy, "status count", argc, argv);
+}
 
 int create_process(void * rip , const char *name, int argc, char *argv[]){
     return _create_process(rip, name, argc, argv, NULL);
@@ -81,7 +97,7 @@ int create_process_piped(void * rip , const char *name, int argc, char *argv[], 
     return _create_process(rip, name, argc, argv, fds);
 }
 
-void kill(int argc, char ** argv){
+void kill_dummy(int argc, char ** argv){
 
     argc_1(argc);
 
@@ -101,10 +117,12 @@ void kill(int argc, char ** argv){
         estrellita_bg();
         exit_pcs(EXIT);
     }
-    
-    write_out("Chau chau al proceso de pid: ");
-    write_out(argv[0]);
-    write_out("\n");
+    if(kill_from_shell == 1){
+        kill_from_shell = 0;
+        write_out("Chau chau al proceso de pid: ");
+        write_out(argv[0]);
+        write_out("\n");
+    }
 
     int ret = _kill_process(toKill); 
     char k_str[21];
@@ -125,6 +143,11 @@ void kill(int argc, char ** argv){
 
     estrellita_bg();
     exit_pcs(EXIT);
+}
+
+//recibe el pid de a quien matar por argv
+int kill_process(int argc, char ** argv){
+    return create_process(&kill_dummy, "kill", argc, argv);
 }
 
 //cada proceso cuando termina se debe "matar" a si mismo, osea dejar marcado con KILLED
@@ -163,14 +186,13 @@ void exit_pcs(int ret){
     }
 }
 
-void block_process(int argc, char ** argv){
+void block_process_dummy(int argc, char ** argv){
 
     argc_1(argc);
 
     int pid = char_to_int(argv[0]);
     if(pid == shell_pid){
-        write_out("Bloquear la shell... mejor no\n");
-        exit_pcs(ERROR);
+        write_out("Por ahora la shell no es bloqueante, asiq... adios\n");
     }
     if(pid == idle_pid){
         write_out("Bloquear el idle... no sos muy inteligente\n");
@@ -198,7 +220,11 @@ void block_process(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
-void unblock_process(int argc, char ** argv){
+int block_process(int argc, char ** argv){
+    return create_process(&block_process_dummy, "block", argc, argv);
+}
+
+void unblock_process_dummy(int argc, char ** argv){
    
     argc_1(argc);
     int pid = char_to_int(argv[0]);
@@ -223,7 +249,11 @@ void unblock_process(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
-void get_proc_list(int argc, char ** argv){
+int unblock_process(int argc, char ** argv){
+    return create_process(&unblock_process_dummy, "unblock", argc, argv);
+}
+
+void get_proc_list_dummy(int argc, char ** argv){
 
     ProcessInfo* list = _get_proc_list();
     if (list == NULL) {
@@ -293,18 +323,26 @@ void get_proc_list(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
+int get_proc_list(int argc, char ** argv){
+    return create_process(&get_proc_list_dummy, "ps", argc, argv);
+}
+
 //ésta no es proceso, es built-in porq sino devolveria su propio pid xd
 int get_pid(){
     return _get_pid();
 }
 
-void yield(int argc, char ** argv){
+void yield_dummy(int argc, char ** argv){
     _yield();
     
     exit_pcs(EXIT);
 }
 
-void be_nice(int argc, char ** argv){
+int yield(int argc, char ** argv){
+    return create_process(&yield_dummy, "yield", argc, argv);
+}
+
+void be_nice_dummy(int argc, char ** argv){
 
     if (argc != 2){
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 2 argumentos.\n");
@@ -337,7 +375,28 @@ void be_nice(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
-void loop(int argc, char ** argv){
+int be_nice(int argc, char ** argv){
+    return create_process(&be_nice_dummy, "nice", argc, argv);
+}
+
+int test_mm(int argc, char ** argv){
+    return create_process(&test_mm_dummy, "test mm", argc, argv);
+}
+
+int test_prio(int argc, char ** argv){
+    return create_process(&test_prio_new, "test prio", argc, argv);
+}
+
+int test_sync(int argc, char ** argv){
+    return create_process(&test_sync_dummy, "test sync", argc, argv);
+}
+
+int test_pcs(int argc, char ** argv){
+    return create_process(&test_processes_dummy, "test processes", argc, argv);
+}
+
+
+void loop_dummy(int argc, char ** argv){
   
     argc_1(argc);
     int pid = get_pid(); //agarro mi priopio pid
@@ -359,7 +418,11 @@ void loop(int argc, char ** argv){
     }
 }
 
-void wc(int argc, char ** argv){
+int loop(int argc, char ** argv){
+    return create_process(&loop_dummy,"loop", argc, argv);
+}
+
+void wc_dummy(int argc, char ** argv){
     char buffer[2];
     int line_count = 1;
     buffer[1] = '\0';
@@ -391,7 +454,11 @@ void wc(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
-void cat(int argc, char ** argv){
+int wc(int argc, char ** argv){
+    return create_process(&wc_dummy, "WC", argc, argv);
+}
+
+void cat_dummy(int argc, char ** argv){
     
     char line_buffer[BUFFER_SIZE]; 
     int line_index = 0; 
@@ -445,7 +512,11 @@ void cat(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
-void filter(int argc, char ** argv){
+int cat(int argc, char ** argv){
+    return create_process(&cat_dummy, "cat", argc, argv);
+}
+
+void filter_dummy(int argc, char ** argv){
     
     char line_buffer[BUFFER_SIZE];
     char filtered_buffer[BUFFER_SIZE];
@@ -700,7 +771,11 @@ void sem_open_init_dummy(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
-void sem_wait(int argc, char ** argv){
+int sem_open_init(int argc, char ** argv){
+    return create_process(&sem_open_init_dummy, "sem open/init", argc, argv);
+}
+
+void sem_wait_dummy(int argc, char ** argv){
 
     argc_1(argc);
     int ret = _sem_wait(argv[0]);
@@ -714,7 +789,11 @@ void sem_wait(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
-void sem_post(int argc, char ** argv){
+int sem_wait(int argc, char ** argv){
+    return create_process(&sem_wait_dummy, "sem wait", argc, argv);
+}
+
+void sem_post_dummy(int argc, char ** argv){
 
     argc_1(argc);
 
@@ -729,7 +808,11 @@ void sem_post(int argc, char ** argv){
     exit_pcs(EXIT);
 }
 
-void sem_close(int argc, char ** argv){
+int sem_post(int argc, char ** argv){
+    return create_process(&sem_post_dummy, "sem wait", argc, argv);
+}
+
+void sem_close_dummy(int argc, char ** argv){
 
     argc_1(argc);
     int ret = _sem_close(argv[0]);
@@ -742,4 +825,8 @@ void sem_close(int argc, char ** argv){
 
     exit_pcs(EXIT);
 
+}
+
+int sem_close(int argc, char ** argv){
+    return create_process(&sem_close_dummy, "sem wait", argc, argv);
 }

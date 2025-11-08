@@ -8,6 +8,7 @@
 #define PROCESS_NAME_MAX_LENGTH 32
 #define BUFFER_SIZE 128
 
+extern int kill_from_shell;
 extern int foreground;
 extern int shell_pid;
 extern int idle_pid;
@@ -19,28 +20,36 @@ extern int bye_shell;
 
 void argc_1(int argc);
 
+void create_mm();
+int alloc(int argc, char ** argv);
+int free(int argc, char ** argv);
+int status_count(int argc, char ** argv);
+
 int create_process(void * rip, const char *name, int argc, char *argv[]);
 int create_process_piped(void * rip, const char *name, int argc, char *argv[], uint64_t* fds);
-void kill(int argc, char ** argv);
+int kill_process(int argc, char ** argv);
 void exit_pcs(int ret);
-void block_process(int argc, char ** argv);
-void unblock_process(int argc, char ** argv);
-void get_proc_list(int argc, char ** argv);
+int block_process(int argc, char ** argv);
+int unblock_process(int argc, char ** argv);
+int get_proc_list(int argc, char ** argv);
 int get_pid();
-void yield(int argc, char ** argv);
-void be_nice(int argc, char ** argv);
-void status_count(int argc, char** argv);
+int yield(int argc, char ** argv);
+int be_nice(int argc, char ** argv);
 
-void loop(int argc, char **argv);
-void wc(int argc, char **argv);
-void cat(int argc, char **argv);
-void filter(int argc, char **argv);
-void mvar(int argc, char ** argv);
-void msg(int argc, char ** argv);
+int test_mm(int argc, char **argv);
+int test_prio(int argc, char **argv);
+int test_pcs(int argc, char **argv);
+int test_sync(int argc, char **argv);
 
-void sem_open_init(int argc, char ** argv);
-void sem_wait(int argc, char ** argv);
-void sem_post(int argc, char ** argv);
-void sem_close(int argc, char ** argv);
+int loop(int argc, char **argv);
+int wc(int argc, char **argv);
+int cat(int argc, char **argv);
+int filter(int argc, char **argv);
+int mvar(int argc, char ** argv);
+
+int sem_open_init(int argc, char ** argv);
+int sem_wait(int argc, char ** argv);
+int sem_post(int argc, char ** argv);
+int sem_close(int argc, char ** argv);
 
 #endif

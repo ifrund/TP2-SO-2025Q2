@@ -20,7 +20,7 @@ void strcat(char *dest, const char *src) {
 }
 
 //recibe un int, que es la cantidad max de pcs
-void test_processes(int argc, char **argv) {
+void test_processes_dummy(int argc, char **argv) {
 
   uint8_t i;
   uint8_t alive = 0;
