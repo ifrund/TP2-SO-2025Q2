@@ -125,14 +125,20 @@ void kill_dummy(int argc, char ** argv){
     }
 
     int ret = _kill_process(toKill); 
+    char k_str[21];
+    int_to_str(toKill, k_str);
     if(ret == ERROR){
         write_out("... O no\nEl pid ");
-        char k_str[21];
-        int_to_str(toKill, k_str);
         write_out(k_str);
         write_out(" no es valido, asique no podemos matar a ningun proceso de ese pid... bobo.\n");
         estrellita_bg();
-        exit_pcs(EXIT);
+        exit_pcs(ERROR);
+    }
+    if(ret==SECOND_ERROR){
+        write_out("El proceso de pid ");
+        write_out(k_str);
+        write_out(" ya esta muerto.\n");
+        exit_pcs(ERROR);
     }
 
     estrellita_bg();
