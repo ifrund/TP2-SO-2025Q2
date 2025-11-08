@@ -747,7 +747,7 @@ void mvar_dummy(int argc, char ** argv){
     }
 
     //El proceso principal debe terminar inmediatamente después de crear los lectores y escritores.​
-    write_out("MVar processes created. Check output for activity.\n");
+    write_out("Se crearon exitosamente los procesos para el mvar. Espera a que se impriman los caracteres.\n");
     exit_pcs(EXIT);
 }
 int mvar(int argc, char ** argv){
