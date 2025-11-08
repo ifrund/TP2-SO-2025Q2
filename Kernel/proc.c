@@ -203,16 +203,10 @@ int unblock_process(uint64_t pid){
     return 0;
 }
 
-int kill_process(uint64_t pid){
-    if (!is_pid_valid(pid))
-        return -1;
-
-    PCB* proc = processTable[pid];    
-    processTable[pid]->state = ZOMBIE;
-
+void kill_pipes(PCB * proc){
     for (int i = 0; i < MAX_FD; i++) {
         int fd_real = proc->fileDescriptors[i];
-        if (fd_real > 2) {
+        if (fd_real > 2) {                   
             // FD 0 (STDIN) (extremo de lectura de un pipe)
             if (i == 0) {
                 pipe_close(fd_real, PIPE_READ_END);
@@ -228,6 +222,54 @@ int kill_process(uint64_t pid){
             }
         }
     }
+}
+
+void kill_all_of_type(const char *target_name) {
+    for (int i = 0; i < MAX_PCS; i++) {
+        if (processTable[i] && strcmp(processTable[i]->name, target_name) == 0 && processTable[i]->state != ZOMBIE) {
+            kill_process(processTable[i]->PID);
+        }
+    }
+}
+
+void kill_mvar(PCB * proc){
+    //ciclamos en processTable[] para ver si quedan readers/writers
+    int amount=0;
+    for(int i=0; i<MAX_PCS && amount == 0; i++){
+        if(processTable[i] && strcmp(proc->name, processTable[i]->name) == 0 && processTable[i]->state != ZOMBIE){
+            amount++;
+        }
+    }
+
+    if (amount > 0)
+        return;
+    
+    //soy el último reader/writer tengo q cerrar los pipes
+    kill_pipes(proc);
+
+    //y matar a los q queden del otro grupo
+    if(strcmp(proc->name, "mvar_writer") == 0){
+        kill_all_of_type("mvar_reader");
+    } else 
+    if(strcmp(proc->name, "mvar_reader") == 0){
+        kill_all_of_type("mvar_writer");
+    }
+}
+
+int kill_process(uint64_t pid){
+    if (!is_pid_valid(pid))
+        return -1;
+
+    PCB* proc = processTable[pid];    
+    processTable[pid]->state = ZOMBIE;
+
+    if(strcmp("mvar_writer", proc->name)==0 || strcmp("mvar_reader", proc->name)==0 ){
+        kill_mvar(proc);
+    }
+    else{ 
+        kill_pipes(proc);
+    } 
+
 
     uint64_t parentPID = proc->ParentPID;
 
