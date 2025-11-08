@@ -18,12 +18,12 @@ uint64_t max_value = 0;
 void zero_to_max() {
   uint64_t value = 0;
 
-  while (value++ != max_value); //si el while tarda menos q 5 ticks no sirve de nada este test xd
+  while (value++ != max_value); //si el while tarda menos q 5 ticks no sirve de nada este test
   //con 15.000.000 tarda más de 5 ticks asegurado
 
-  write_out("PROCESS ");
+  write_out("PROCESO ");
   printDec(_get_pid());
-  write_out(" DONE! -- ");
+  write_out(" LISTO! -- ");
   exit_pcs(EXIT);
 }
 
@@ -51,50 +51,46 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
         exit_pcs(ERROR);
     }
 
-    write_out("SAME PRIORITY...\n");
+    write_out("MISMA PRIORIDAD...\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++){
         pids[i] = create_process(&zero_to_max, pcs_name, 0, ztm_argv);
-        write_out("CREATED: ");
+        write_out("CREADO: ");
         printDec(pids[i]);
         write_out("  ");
     }
     write_out("\n");
 
-    // Expect to see them finish at the same time
-    //write_out("Primer wait\n");
     for (i = 0; i < TOTAL_PROCESSES; i++){
         _wait(pids[i], my_pid, pcs_name);
     }
 
-    write_out("\nSAME PRIORITY, THEN CHANGE IT...\n");
+    write_out("\nMISMA PRIORIDAD, LUEGO CAMBIA...\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++) {
         pids[i] = create_process(&zero_to_max, pcs_name, 0, ztm_argv);
         _be_nice(pids[i], prio[i]);
-        write_out("PROCESS ");
+        write_out("PROCESO ");
         printDec(pids[i]);
-        write_out(" NEW PRIORITY:");
+        write_out(" NUEVA PRIORIDAD:");
         printDec(prio[i]);
         write_out("  ");
     }
     write_out("\n");
-    // Expect the priorities to take effect
 
-    //write_out("Segundo wait\n");
     for (i = 0; i < TOTAL_PROCESSES; i++){
         _wait(pids[i], my_pid, pcs_name);
     }
 
-    write_out("\nSAME PRIORITY, THEN CHANGE IT WHILE BLOCKED...\n");
+    write_out("\nMISMA PRIORIDAD, LUEGO CAMBIA MIENTRAS ESTA BLOQUEADO...\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++) {
         pids[i] = create_process(&zero_to_max, pcs_name, 0, ztm_argv);
         _block_process(pids[i]);
         _be_nice(pids[i], prio[i]);
-        write_out("PROCESS ");
+        write_out("PROCESO ");
         printDec(pids[i]);
-        write_out(" NEW PRIORITY:");
+        write_out(" NUEVA PRIORIDAD:");
         printDec(prio[i]);
         write_out("  ");
     }
@@ -103,13 +99,9 @@ uint64_t test_prio_new(uint64_t argc, char *argv[]) {
         _unblock_process(pids[i]);
     }
 
-    // Expect the priorities to take effect
-
-    //write_out("Tercer wait\n");
     for (i = 0; i < TOTAL_PROCESSES; i++){
         _wait(pids[i], my_pid, pcs_name);
     }
-
 
     write_out("\nTermino el test prio ;) \n");
     exit_pcs(EXIT);

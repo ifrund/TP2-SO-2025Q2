@@ -68,12 +68,10 @@ void endless_loop() {
 
 void endless_loop_print(uint64_t wait) {
   int64_t pid = _get_pid();
-  //int wait1 = WAIT;
 
   write_out("\n");
   while (1) {
     printDec(pid);
-   // bussy_wait(wait1);
   }
 }
 

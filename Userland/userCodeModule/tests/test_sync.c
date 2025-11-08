@@ -104,11 +104,6 @@ void test_sync_dummy(int argc, char **argv) { //{n, use_sem}
   char name[128];
   strcpy(name, "my_process_inc");
   for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-    // write_out("Waiting for processes ");
-    // printDec(pids[i]);
-    // write_out(" and ");
-    // printDec(pids[i + TOTAL_PAIR_PROCESSES]);
-    // write_out("\n");
     _wait(pids[i], pid, "my_process_inc");
     _wait(pids[i + TOTAL_PAIR_PROCESSES], pid, "my_process_inc");
   }

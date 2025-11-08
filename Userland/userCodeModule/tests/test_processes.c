@@ -43,9 +43,9 @@ void test_processes_dummy(int argc, char **argv) {
   char *name = "endless_loop";
   while (1) {
 
-    // Createmax_processes processes
+    // Creamos max procesos
     for (i = 0; i <max_processes; i++) {
-      p_rqs[i].pid = create_process(&endless_loop, name, 0, argvAux); //aca usamos syscall porq no hay create_pcs dummy 
+      p_rqs[i].pid = create_process(&endless_loop, name, 0, argvAux); //usamos syscall porque no hay create_pcs dummy 
 
       if (p_rqs[i].pid == -1) {
         write_out("test_processes: ERROR creando proceso, no hay mas espacio para procesos\n");
@@ -61,7 +61,7 @@ void test_processes_dummy(int argc, char **argv) {
       }
     }
 
-    // Randomly kills, blocks or unblocks processes until every one has been killed
+    // Aleatoriamente mata, bloquea y desbloquea procesos hasta que todos esten muertos
     while (alive > 0) {
 
       for (i = 0; i <max_processes; i++) {
@@ -99,7 +99,7 @@ void test_processes_dummy(int argc, char **argv) {
           }
       }
 
-      // Randomly unblocks processes
+      // Desbloquea procesos aleatoriamente
       for (i = 0; i <max_processes; i++)
         if (p_rqs[i].state == BLOCKED && GetUniform(100) % 2) {
           int ublock = _unblock_process(p_rqs[i].pid);
