@@ -153,7 +153,13 @@ int kill_process(int argc, char ** argv){
 //cada proceso cuando termina se debe "matar" a si mismo, osea dejar marcado con KILLED
 void exit_pcs(int ret){
     
-    int pid = _get_pid(); 
+    int pid;
+    if(bye_shell){
+        pid = shell_pid;
+    }
+    else{
+        pid = _get_pid(); 
+    }
     char pid_str[21];
     int_to_str(pid, pid_str);
 
