@@ -54,6 +54,7 @@ void my_process_inc(uint64_t argc, char *argv[]) {
       }
     }
     slowInc(&global, inc);
+    _block_process(_get_pid());//TODO esto es para testear
     if (use_sem){
       if(_sem_post(SEM_ID)!=0){
         write_out("test_sync: ERROR posting sem\n");

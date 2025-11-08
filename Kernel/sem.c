@@ -66,11 +66,13 @@ int sem_wait(const char* name) {
         sem->blocked_processes[sem->amount_bprocesses++] = pid;
         
         _post(&(sem->lock));
-        block_process(pid); 
+        block_process(pid);
+        is_using(pid, name); 
 
     } else {
         // No se bloquea, solo se suelta el spinlock
         _post(&(sem->lock));
+        is_using(pid, name);
     }
 
     return 0;
@@ -84,9 +86,9 @@ int sem_post(const char* name) {
 
     _wait(&(sem->lock));
     sem->value++;
+    int pid = sem->blocked_processes[0];
 
     if(sem->value <= 0 && sem->amount_bprocesses > 0) {
-            int pid = sem->blocked_processes[0];
             for(int i=1; i<sem->amount_bprocesses; i++) { 
                 sem->blocked_processes[i-1] = sem->blocked_processes[i];
             }
@@ -95,6 +97,7 @@ int sem_post(const char* name) {
     }
 
     _post(&(sem->lock));
+    is_clean(pid);
 
     return 0;
 }

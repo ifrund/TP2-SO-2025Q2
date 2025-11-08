@@ -7,6 +7,7 @@
 #include "memory_manager.h"
 #include "naiveConsole.h"
 #include "scheduler.h"
+#include "sem.h"
 
 //Constants
 #define MAX_FD 128
@@ -66,6 +67,8 @@ typedef struct {
     int childProc[MAX_PCS];
     int blocksAmount;
 
+    int usingSem; //1 true, 0 false
+    char semName[PROCESS_NAME_MAX_LENGTH];
     int isYielding; //1 true, 0 false
 } PCB;
 
@@ -99,5 +102,7 @@ int is_pid_valid(int pid);
 int wait(uint64_t target_pid, uint64_t my_pid, char* target_name);
 int get_shell_pid();
 int get_idle_pid();
+void is_using(int pid, const char *);
+void is_clean(int pid);
 
 #endif

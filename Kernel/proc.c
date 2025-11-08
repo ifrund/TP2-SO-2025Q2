@@ -153,6 +153,7 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
     pcb->total_ticks = 0;
     pcb->changes = 0;
     pcb->yield_changes = 0;
+    pcb->usingSem = 0;
 
     if(strcmp(name, "wait") == 0){
         active_processes++;
@@ -272,6 +273,10 @@ int kill_process(uint64_t pid){
     else{ 
         kill_pipes(proc);
     } 
+
+    if(proc->usingSem){ //es un proceso q estaba usando un semaforo mientras murio
+        sem_post(proc->semName);
+    }
 
 
     uint64_t parentPID = proc->ParentPID;
@@ -439,4 +444,16 @@ int get_shell_pid(){
 
 int get_idle_pid(){
     return IDLE_PID;
+}
+
+void is_using(int pid, const char* name){
+    PCB* proc = processTable[pid];
+    proc->usingSem = 1;
+    memset(proc->semName, 0, PROCESS_NAME_MAX_LENGTH);
+    memcpy(proc->semName, name, PROCESS_NAME_MAX_LENGTH - 1);
+    proc->semName[PROCESS_NAME_MAX_LENGTH-1] = '\0';
+}
+
+void is_clean(int pid){
+    processTable[pid]->usingSem = 0;
 }
