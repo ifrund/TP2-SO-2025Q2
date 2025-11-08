@@ -40,7 +40,7 @@ void my_process_inc(uint64_t argc, char *argv[]) {
   if (use_sem){
     write_out("test_sync: Abriendo el semaforo...\n");
     if (_sem_open_init(SEM_ID, 1) == -2) {//si devuelve -1 es porq ya si hizo un open, lo cual es verdad y no un error para este test
-      write_out("test_sync: ERROR opening sem\n");
+      write_out("test_sync: ERROR en el sem open init\n");
       exit_pcs(ERROR);    
     }
   }

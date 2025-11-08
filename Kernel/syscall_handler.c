@@ -376,8 +376,6 @@ int sys_sem_close(uint64_t name){
   return sem_close((char *)name);
 }
 
-//PIPES
-
 int sys_pipe_create_anonymous(uint64_t pipe_ids){
   return pipe_create_anonymous((int *) pipe_ids);
 }
@@ -397,7 +395,6 @@ int sys_pipe_write(uint64_t pipe_id, uint64_t buffer, uint64_t count){
 int sys_pipe_read(uint64_t pipe_id, uint64_t buffer, uint64_t count){
   return pipe_read((int) pipe_id, (char*) buffer, (int) count);
 }
-
 
 int sys_get_shell(){
   return get_shell_pid();

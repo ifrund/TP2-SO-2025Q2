@@ -110,7 +110,7 @@ int be_nice(int pid, int new_prio){
         }
     }  
 
-    if(strcmp(curr->name, "idle") == 0){ //el idle no lo podes cambiar xd
+    if(strcmp(curr->name, "idle") == 0){ //el idle no lo podes cambiar
         return -2;
     }
 
@@ -121,7 +121,7 @@ int be_nice(int pid, int new_prio){
     Priorities new = int_to_priority(new_prio);
 
     curr->my_prio = new;
-    //actualizamso su max_time
+    //actualizamos su max_time
     curr->my_max_time = get_max_time_for_priority(curr->my_prio);
 
     return 0;

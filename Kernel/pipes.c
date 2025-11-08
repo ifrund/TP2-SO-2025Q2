@@ -23,7 +23,6 @@ typedef struct {
     char buffer[PIPE_BUFFER_SIZE];
     int read_index;                 //Indice de lectura
     int write_index;                //Indice de escritura
-    //int data_size; //Por ahora no lo usamos
     
     //Semaforos del pipe
     char sem_pipe_lock_name[MAX_NAME_LENGTH];
@@ -215,8 +214,6 @@ int pipe_write(int pipe_id, const char* buffer, int count) {
 
         // Escribir el byte
         pipe->buffer[pipe->write_index] = buffer[i];
-        // print("Escribiendo en el pipe: "); // DEBUG
-        // printChar(pipe->buffer[pipe->write_index]); // DEBUG
         pipe->write_index = (pipe->write_index + 1) % PIPE_BUFFER_SIZE;
 
         // Salimos de la region critica
@@ -242,7 +239,7 @@ int pipe_read(int pipe_id, char* buffer, int count) {
     // Lectura byte por byte
     for (int i = 0; i < count; i++) {
         if (pipe->read_index == pipe->write_index && pipe->eof_signaled) {
-            return bytes_read;  // EOF → devolvemos lo leído
+            return bytes_read;  // EOF
         }
 
         // Se espera a que haya datos disponibles
@@ -253,7 +250,7 @@ int pipe_read(int pipe_id, char* buffer, int count) {
 
         if (pipe->read_index == pipe->write_index && pipe->eof_signaled) {
             sem_post(pipe->sem_pipe_lock_name);
-            return bytes_read; // EOF → devuelve 0 si no se leyó nada
+            return bytes_read; // devuelve 0 si no se leyó nada
         }
 
         // Si no hay datos pero no EOF (puede pasar si varios readers fueron despertados)
@@ -264,8 +261,6 @@ int pipe_read(int pipe_id, char* buffer, int count) {
 
         // Leer un byte del buffer del pipe
         buffer[bytes_read] = pipe->buffer[pipe->read_index];
-        // print("Leyendo del pipe: "); // DEBUG
-        // printChar(buffer[bytes_read]); // DEBUG
         pipe->read_index = (pipe->read_index + 1) % PIPE_BUFFER_SIZE;
         bytes_read++;
 
@@ -305,7 +300,7 @@ static void build_sem_names(const char* base_name, Pipe* pipe) {
     strncpy(pipe->sem_items_available_name, "p_items_", MAX_NAME_LENGTH - 1);
     strncat(pipe->sem_items_available_name, base_name, MAX_NAME_LENGTH - strlen_custom(pipe->sem_items_available_name) - 1);
 
-    // Space
+    // Espacio
     strncpy(pipe->sem_empty_space_available_name, "p_space_", MAX_NAME_LENGTH - 1);
     strncat(pipe->sem_empty_space_available_name, base_name, MAX_NAME_LENGTH - strlen_custom(pipe->sem_empty_space_available_name) - 1);
 }

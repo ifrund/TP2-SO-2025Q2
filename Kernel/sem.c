@@ -107,7 +107,7 @@ int sem_close(const char* name) {
 
     sem->amount_sem_openings = sem->amount_sem_openings - 1;
     if(sem->amount_sem_openings > 0){
-        return 0; //tdb hay otros usando este semaforo
+        return 0; //hay otros usando este semaforo
     }
 
     sem->initialized = 0;

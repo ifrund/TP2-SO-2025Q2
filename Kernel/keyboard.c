@@ -60,7 +60,7 @@ void insert_key(int key) {
 
   if (control == 1) {
     if (key == 0x2E) { // 0x2E es el scancode de C
-      //no hacemos added_ascii porq ctrl+c no tiene q joder con el buffer
+      //no hacemos added_ascii porq ctrl+c no tiene q interferir con el buffer
       if(foreground_pid!=SHELL_PID){
         kill_process(foreground_pid);
       }

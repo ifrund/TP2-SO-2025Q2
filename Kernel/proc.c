@@ -136,17 +136,17 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
     pcb->blocksAmount = 0;
         
     if (fds == NULL) {
-        // Comportamiento por defecto: STDIN=0, STDOUT=1, STDERR=2
+        // Comportamiento por default: STDIN=0, STDOUT=1, STDERR=2
         pcb->fileDescriptors[0] = 0; // STDIN
         pcb->fileDescriptors[1] = 1; // STDOUT
         pcb->fileDescriptors[2] = 2; // STDERR
     } else {
         // Comportamiento con pipe: Copia los FDs del array
-    pcb->fileDescriptors[0] = fds[0]; // STDIN 
-    pcb->fileDescriptors[1] = fds[1]; // STDOUT
-    // If these FDs point to pipes (ids > STDERR), register the open on the pipe
-    if (fds[0] > 2) pipe_register((int)fds[0], PIPE_READ_END);
-    if (fds[1] > 2) pipe_register((int)fds[1], PIPE_WRITE_END);
+        pcb->fileDescriptors[0] = fds[0]; // STDIN 
+        pcb->fileDescriptors[1] = fds[1]; // STDOUT
+        // si los FDs apuntan a pipes , registrar la apertura
+        if (fds[0] > 2) pipe_register((int)fds[0], PIPE_READ_END);
+        if (fds[1] > 2) pipe_register((int)fds[1], PIPE_WRITE_END);
         pcb->fileDescriptors[2] = 2;      // STDERR
     }
     pcb->isYielding = 0;

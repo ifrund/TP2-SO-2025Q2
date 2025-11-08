@@ -45,15 +45,13 @@ void create_mm(){
     free_blocks = TOTAL_BLOCK_COUNT;
 }
 
-/**
- * @param size amount of bytes to allocate
- */
+//size: cantidad de bytes para reservar
 void* alloc(const uint64_t size){
 
     if(size <= 0)
         return NULL;
     
-    uint32_t blocks_to_alloc = (uint32_t)((size + BLOCK_SIZE - 1) / BLOCK_SIZE);  // La información de los bloques se guarda en el espacio de kernel. Si se decidiera implementar headers que estén en los mismos bloques, deberia restarse su tamaño a BLOCK_SIZE (es decir, BLOCK_SIZE - sizeof(header))
+    uint32_t blocks_to_alloc = (uint32_t)((size + BLOCK_SIZE - 1) / BLOCK_SIZE);  // La informacion de los bloques se guarda en el espacio de kernel. Si se decidiera implementar headers que estén en los mismos bloques, deberia restarse su tamaño a BLOCK_SIZE (es decir, BLOCK_SIZE - sizeof(header))
 
     if (!is_initialized || blocks_to_alloc > free_blocks)
         return NULL;
