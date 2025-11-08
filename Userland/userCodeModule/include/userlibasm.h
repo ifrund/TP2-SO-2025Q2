@@ -19,16 +19,18 @@ void _opError();
 void _beep(uint32_t frequency, int duration);
 
 /*---Sistemas Operativos---*/
+
 //Memory Manager
 void _create_mm();
 void * _alloc(int size);
 void _free(void *address);
 void _status_count(int *status_count);
 
-//Processes
+//Procesos
 #define MAX_FD 128
 #define MAX_PCS 64
 #define PROCESS_NAME_MAX_LENGTH 32
+
 //Para el get_proc_list
 typedef struct {
     char name[PROCESS_NAME_MAX_LENGTH];
@@ -51,7 +53,8 @@ int _block_process(uint64_t pid);
 int _unblock_process(uint64_t pid);
 ProcessInfo* _get_proc_list();
 int _get_pid();
-//Schedulers
+
+//Scheduler
 void _yield();
 int _be_nice(int pid, int newPrio);
 int _wait(uint64_t target_pid, uint64_t my_pid, char * name);
@@ -63,7 +66,7 @@ int _shell_pid();
 int _idle_pid();
 void _update_foreground(int pid);
 
-//PIPES
+//Pipes
 int _pipe_create_anonymous(int pipe_ids[2]);
 int _pipe_create_named(const char* name);
 int _pipe_close(int pipe_id, int mode);
