@@ -8,10 +8,9 @@
 
 #define _MEMORY_START 0x0000000000500000ULL
 #define _MEMORY_END   0x0000000040000000ULL
-#define _BLOCK_SIZE   0x1000
 
-#define _TOTAL_BLOCK_COUNT ((_MEMORY_END - _MEMORY_START) / _BLOCK_SIZE)
-
+#define _TOTAL_MEMORY (_MEMORY_END - _MEMORY_START)
+#define _TOTAL_BLOCK_COUNT (_TOTAL_MEMORY / BLOCK_SIZE)
 
 #define FREE 0
 #define USED 1
@@ -112,11 +111,12 @@ void free (void * address){
 }
 
 void status_count(uint32_t *status_out){
-    uint32_t block_count = TOTAL_BLOCK_COUNT;
-
-    status_out[0] = block_count;
-    status_out[1] = block_count - free_blocks;
-    status_out[2] = free_blocks;
+    status_out[0] = _TOTAL_MEMORY;
+    status_out[1] = _TOTAL_MEMORY - (free_blocks * BLOCK_SIZE);
+    status_out[2] = (free_blocks * BLOCK_SIZE);
+    status_out[3] = BLOCK_SIZE;
+    status_out[4] = TOTAL_BLOCK_COUNT;
+    status_out[5] = TOTAL_BLOCK_COUNT - free_blocks;
 }
 
 void reset_first_free_index() {

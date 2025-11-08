@@ -63,22 +63,17 @@ void status_count_dummy(int argc, char ** argv){
         exit_pcs(ERROR);
     }
 
-    int status[3];
+    int status[6];
+    char *aux_strings[6]= { "\nMemoria total en bytes: ", "\nMemoria en uso: ", 
+        "\nMemoria libre: ", "\nBytes de un bloque minimo: ", "\nBloques minimos totales: ", 
+        "\nBloques minimos en uso: " };
     _status_count(status);
 
-    write_out("\n=== Estado del sistema de memoria ===\n");
-    write_out("Bloques totales: ");
-    char s0_str[21];
-    int_to_str(status[0], s0_str);
-    write_out(s0_str);
-    write_out("\nBloques usados: ");
-    char s1_str[21];
-    int_to_str(status[1], s1_str);
-    write_out(s1_str);
-    write_out("\nBloques libres: ");
-    char s2_str[21];
-    int_to_str(status[2], s2_str);
-    write_out(s2_str);
+    write_out("=== Estado del sistema de memoria ===");
+    for(int i = 0; i < 6; i++) {
+        write_out(aux_strings[i]);
+        printDec(status[i]);
+    }
     write_out("\n");
     
     estrellita_bg();
@@ -257,7 +252,7 @@ void get_proc_list_dummy(int argc, char ** argv){
     }
 
     //encabezado
-    write_out("\n=== Lista de procesos ===\n");
+    write_out("=== Lista de procesos ===\n");
     write_out("PID\tNombre\tEstado\tPPID\tRSP\tPrio\tChilds\tFD\n");
     write_out("-------------------------------------------------------------\n");
 

@@ -74,7 +74,6 @@ void clear_bit(char* array, uint32_t index) {
   array[index / 8] = (b & ~m);
 }
 
-//#define LINEAR_ALLOCATOR_START (0x600000 + 1 * 1000 * 1000 * (uint64_t)1000 * 8)
 #define LINEAR_ALLOCATOR_START (void*)(0x0000000000500000)
 
 static uint64_t allocated;
@@ -83,7 +82,6 @@ void *linearMalloc(uint64_t size)
 {
     allocated += size;
     return (void *)(((uint64_t)LINEAR_ALLOCATOR_START) + allocated - size);
-    ;
 }
 
 // Allocate memory for the heap managed by the allocator, and allocate
@@ -247,6 +245,9 @@ void status_count(uint32_t *status_out) {
         if(is_bit_set(buddy_sizes[MAXSIZE].alloc, i))
             busy += LEAF_SIZE;
     status_out[0] = HEAP_SIZE;
-    status_out[1] = busy;
-    status_out[2] = HEAP_SIZE - busy;
+    status_out[1] = busy * LEAF_SIZE;
+    status_out[2] = HEAP_SIZE - (busy * LEAF_SIZE);
+    status_out[3] = LEAF_SIZE;
+    status_out[4] = HEAP_SIZE / LEAF_SIZE;
+    status_out[5] = busy;
 }
