@@ -1,4 +1,5 @@
 #include "proc.h"
+#include "pipes.h"
 
 PCB* processTable[MAX_PCS]= {NULL}; 
 int IDLE_PID;
@@ -141,8 +142,11 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
         pcb->fileDescriptors[2] = 2; // STDERR
     } else {
         // Comportamiento con pipe: Copia los FDs del array
-        pcb->fileDescriptors[0] = fds[0]; // STDIN 
-        pcb->fileDescriptors[1] = fds[1]; // STDOUT
+    pcb->fileDescriptors[0] = fds[0]; // STDIN 
+    pcb->fileDescriptors[1] = fds[1]; // STDOUT
+    // If these FDs point to pipes (ids > STDERR), register the open on the pipe
+    if (fds[0] > 2) pipe_register((int)fds[0], PIPE_READ_END);
+    if (fds[1] > 2) pipe_register((int)fds[1], PIPE_WRITE_END);
         pcb->fileDescriptors[2] = 2;      // STDERR
     }
     pcb->isYielding = 0;
@@ -199,12 +203,73 @@ int unblock_process(uint64_t pid){
     return 0;
 }
 
+void kill_pipes(PCB * proc){
+    for (int i = 0; i < MAX_FD; i++) {
+        int fd_real = proc->fileDescriptors[i];
+        if (fd_real > 2) {                   
+            // FD 0 (STDIN) (extremo de lectura de un pipe)
+            if (i == 0) {
+                pipe_close(fd_real, PIPE_READ_END);
+            }
+            // FD 1 (STDOUT) (extremo de escritura de un pipe)
+            else if (i == 1) {
+                pipe_close(fd_real, PIPE_WRITE_END);
+            }
+            // Otros FD: tratamos de cerrar ambos extremos
+            else {
+                pipe_close(fd_real, PIPE_READ_END);
+                pipe_close(fd_real, PIPE_WRITE_END);
+            }
+        }
+    }
+}
+
+void kill_all_of_type(const char *target_name) {
+    for (int i = 0; i < MAX_PCS; i++) {
+        if (processTable[i] && strcmp(processTable[i]->name, target_name) == 0 && processTable[i]->state != ZOMBIE) {
+            kill_process(processTable[i]->PID);
+        }
+    }
+}
+
+void kill_mvar(PCB * proc){
+    //ciclamos en processTable[] para ver si quedan readers/writers
+    int amount=0;
+    for(int i=0; i<MAX_PCS && amount == 0; i++){
+        if(processTable[i] && strcmp(proc->name, processTable[i]->name) == 0 && processTable[i]->state != ZOMBIE){
+            amount++;
+        }
+    }
+
+    if (amount > 0)
+        return;
+    
+    //soy el último reader/writer tengo q cerrar los pipes
+    kill_pipes(proc);
+
+    //y matar a los q queden del otro grupo
+    if(strcmp(proc->name, "mvar_writer") == 0){
+        kill_all_of_type("mvar_reader");
+    } else 
+    if(strcmp(proc->name, "mvar_reader") == 0){
+        kill_all_of_type("mvar_writer");
+    }
+}
+
 int kill_process(uint64_t pid){
     if (!is_pid_valid(pid))
         return -1;
 
     PCB* proc = processTable[pid];    
     processTable[pid]->state = ZOMBIE;
+
+    if(strcmp("mvar_writer", proc->name)==0 || strcmp("mvar_reader", proc->name)==0 ){
+        kill_mvar(proc);
+    }
+    else{ 
+        kill_pipes(proc);
+    } 
+
 
     uint64_t parentPID = proc->ParentPID;
 
@@ -224,14 +289,32 @@ int kill_process(uint64_t pid){
         }
     }
 
-    //a todos mis hijos se los dejo a idle, no improta q este bloqueado
+    // Reparent all my children to the idle process safely.
     PCB * idle = processTable[IDLE_PID];
-    for(int i=0; i < proc->childrenAmount; i++){
-        int childPid = proc->childProc[i];
-        PCB* child = processTable[childPid];
-        child->ParentPID = IDLE_PID;
-        idle->childProc[idle->childrenAmount++] = childPid;
+
+    // Walk the global process table and reparent any child whose ParentPID == pid
+    for (int c = 0; c < MAX_PCS; c++) {
+        if (processTable[c] == NULL) continue;
+        if (processTable[c]->ParentPID == pid) {
+            // set new parent
+            processTable[c]->ParentPID = IDLE_PID;
+
+            // add child to idle's childProc in first free slot
+            for (int k = 0; k < MAX_PCS; k++) {
+                if (idle->childProc[k] == -1) {
+                    idle->childProc[k] = c;
+                    idle->childrenAmount++;
+                    break;
+                }
+            }
+        }
     }
+
+    // Clear parent's childProc slots and reset childrenAmount
+    for (int j = 0; j < MAX_PCS; j++) {
+        proc->childProc[j] = -1;
+    }
+    proc->childrenAmount = 0;
 
     active_processes--;
     last_wish(pid);
@@ -316,7 +399,9 @@ int get_pid(){
 }
 
 int is_pid_valid(int pid){
-    return (pid > MAX_PCS || processTable[pid] == NULL) ? 0 : 1;
+    if (pid < 0 || pid >= MAX_PCS) return 0;
+    if (processTable[pid] == NULL) return 0;
+    return 1;
 }
 
 int wait(uint64_t target_pid, uint64_t my_pid, char* target_name){
