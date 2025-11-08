@@ -601,7 +601,7 @@ void writer_dummy(int argc, char ** argv) {
 
     while (1) {
         // espera activa
-        int delay = 1; //rand() % 2 + 1;
+        int delay = rand() % 2 + 1;
         sleep(delay, 0);
 
         // se espera a que este vacio
@@ -639,7 +639,7 @@ void reader_dummy(int argc, char ** argv) {
     srand(_get_pid());
 
     while (1) {
-        int delay = 1; //rand() % 2 + 1;
+        int delay = rand() % 2 + 1; // 1..3
         sleep(delay, 0);
 
         _sem_wait("MVAR_FULL");
