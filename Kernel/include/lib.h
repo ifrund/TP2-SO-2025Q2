@@ -12,8 +12,8 @@ int rtcInfo(int value);
 int _getKey();
 long* _regsInterrupt();
 void _saveRegs();
-void _outb();
-uint8_t _inb();
+void _outb(uint8_t port, uint8_t freq);
+uint8_t _inb(uint8_t port);
 
 // asm time functions
 int _getSeconds();
