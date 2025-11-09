@@ -92,6 +92,14 @@ int create_process_piped(void * rip , const char *name, int argc, char *argv[], 
     return _create_process(rip, name, argc, argv, fds);
 }
 
+void pid_no_valid(int ret){
+    if(ret == ERROR){
+        write_out("Este pid no es valido.\n");
+        estrellita_bg();
+        exit_pcs(ERROR);
+    }
+}
+
 void kill_dummy(int argc, char ** argv){
 
     argc_1(argc);
@@ -108,7 +116,7 @@ void kill_dummy(int argc, char ** argv){
         exit_pcs(EXIT);
     }
     if(toKill == _get_pid()){
-        write_out("Kill al kill ?? ... okay\n");
+        write_out("Kill al kill ?? ... okay.\n");
         estrellita_bg();
         exit_pcs(EXIT);
     }
@@ -116,19 +124,13 @@ void kill_dummy(int argc, char ** argv){
         kill_from_shell = 0;
         write_out("Chau chau al proceso de pid: ");
         write_out(argv[0]);
-        write_out("\n");
+        write_out(".\n");
     }
 
     int ret = _kill_process(toKill); 
     char k_str[21];
     int_to_str(toKill, k_str);
-    if(ret == ERROR){
-        write_out("... O no\nEl pid ");
-        write_out(k_str);
-        write_out(" no es valido, asique no podemos matar a ningun proceso de ese pid... bobo.\n");
-        estrellita_bg();
-        exit_pcs(ERROR);
-    }
+    pid_no_valid(ret);
     if(ret==SECOND_ERROR){
         write_out("El proceso de pid ");
         write_out(k_str);
@@ -161,14 +163,14 @@ void exit_pcs(int ret){
     if(ret == ERROR){
         write_out("El proceso de pid ");
         write_out(pid_str);
-        write_out(" cerro con error\n");
+        write_out(" cerro con error.\n");
     }
 
     int ret_del_kill = _kill_process(pid);
     if(ret_del_kill == ERROR){
         write_out("Hubo un error en el exit ya que el pid ");
         write_out(pid_str);
-        write_out(" no es valido... big problem, no deberias llegar a aca nunca\n");
+        write_out(" no es valido... problem, no deberias llegar a aca nunca.\n");
         estrellita_bg();
         exit_pcs(EXIT);
     }
@@ -180,10 +182,10 @@ void block_process_dummy(int argc, char ** argv){
 
     int pid = char_to_int(argv[0]);
     if(pid == shell_pid){
-        write_out("Por ahora la shell no es bloqueante, asi que... adios\n");
+        write_out("Bueno... fue un gusto.\n");
     }
     if(pid == idle_pid){
-        write_out("Bloquear el idle... no sos muy inteligente\n");
+        write_out("Bloquear el idle... no sos muy inteligente.\n");
     }
     if(pid == get_pid()){
         write_out("Que haces loco, nos vas a meter en problemas raja de aca.\n");
@@ -193,13 +195,9 @@ void block_process_dummy(int argc, char ** argv){
 
     int ret = _block_process(pid);
 
-    if(ret == ERROR){
-        write_out("Este pid no es valido\n");
-        estrellita_bg();
-        exit_pcs(ERROR);
-    }
+    pid_no_valid(ret);
     if(ret == SECOND_ERROR){
-        write_out("Este pid ya estaba muerto\n");
+        write_out("Este pid ya estaba muerto.\n");
         estrellita_bg();
         exit_pcs(ERROR);
     }
@@ -222,13 +220,9 @@ void unblock_process_dummy(int argc, char ** argv){
     }
     int ret = _unblock_process(pid);
 
-    if(ret == ERROR){ 
-        write_out("Este pid no es valido\n");
-        estrellita_bg();
-        exit_pcs(ERROR);
-    }
+    pid_no_valid(ret);
     if(ret == SECOND_ERROR){ 
-        write_out("Este proceso no esta bloqueado, asique no lo podemos desbloquear\n");
+        write_out("Este proceso no esta bloqueado, asique no lo podemos desbloquear.\n");
         estrellita_bg();
         exit_pcs(ERROR);
     }
@@ -343,18 +337,14 @@ void be_nice_dummy(int argc, char ** argv){
 
     int ret = _be_nice(pid, new_prio);
 
-    if(ret == ERROR){ 
-        write_out("Este pid no es valido\n");
-        estrellita_bg();
-        exit_pcs(ERROR);
-    }
+    pid_no_valid(ret);
     if(ret == SECOND_ERROR){
-        write_out("Epa, intentaste cambiar la prioridad del idle, nonono\n");
+        write_out("Epa, intentaste cambiar la prioridad del idle, nonono.\n");
         estrellita_bg();
         exit_pcs(EXIT);
     }
     if(ret == -3){
-        write_out("Mandaste una prioridad inexistente, porfavor acordate que las prioridades son de 0 a 4, siendo 0 la mayor\n");
+        write_out("Mandaste una prioridad inexistente, porfavor acordate que las prioridades son de 0 a 4, siendo 0 la mayor.\n");
         estrellita_bg();
         exit_pcs(ERROR);
     }
@@ -439,7 +429,7 @@ void wc_dummy(int argc, char ** argv){
                 uintToBase(line_count, number_str, 10);
                 write_out("\nCantidad de lineas: ");
                 write_out(number_str);
-                write_out("\n");
+                write_out(".\n");
             }
             break;
         }
@@ -671,7 +661,7 @@ void reader_dummy(int argc, char ** argv) {
 void mvar_dummy(int argc, char ** argv){
     // args: <n_writers> <n_readers>
     if (argc != 2) {
-        write_out("Cantidad de argumentos incorrecta, el uso correcto es mvar <n_writers> <n_readers>\n");
+        write_out("Cantidad de argumentos incorrecta, el uso correcto es mvar <n_writers> <n_readers>.\n");
         exit_pcs(ERROR);
     }
 
@@ -754,7 +744,7 @@ void sem_open_init_dummy(int argc, char ** argv){
     if(ret==ERROR){
         write_out("El semaforo ");
         write_out(argv[0]);
-        write_out(" ya existe\n");
+        write_out(" ya existe.\n");
         exit_pcs(ERROR);
     }
     if(ret==SECOND_ERROR){
@@ -769,17 +759,20 @@ int sem_open_init(int argc, char ** argv){
     return create_process(&sem_open_init_dummy, "sem open/init", argc, argv);
 }
 
+void ret_1_sem(char* argv, int ret){
+    if(ret == ERROR){
+        write_out("El semaforo ");
+        write_out(argv);
+        write_out(" no existe.\n");
+        exit_pcs(ERROR);
+    }
+}
+
 void sem_wait_dummy(int argc, char ** argv){
 
     argc_1(argc);
     int ret = _sem_wait(argv[0]);
-    if(ret == ERROR){
-        write_out("El semaforo ");
-        write_out(argv[0]);
-        write_out(" no existe\n");
-        exit_pcs(ERROR);
-    }
-
+    ret_1_sem(argv[0], ret);
     exit_pcs(EXIT);
 }
 
@@ -790,15 +783,8 @@ int sem_wait(int argc, char ** argv){
 void sem_post_dummy(int argc, char ** argv){
 
     argc_1(argc);
-
     int ret = _sem_post(argv[0]);
-    if(ret == ERROR){
-        write_out("El semaforo ");
-        write_out(argv[0]);
-        write_out(" no existe\n");
-        exit_pcs(ERROR);
-    }
-
+    ret_1_sem(argv[0], ret);
     exit_pcs(EXIT);
 }
 
@@ -810,15 +796,8 @@ void sem_close_dummy(int argc, char ** argv){
 
     argc_1(argc);
     int ret = _sem_close(argv[0]);
-    if(ret == ERROR){
-        write_out("El semaforo ");
-        write_out(argv[0]);
-        write_out(" no existe\n");
-        exit_pcs(ERROR);
-    }
-
+    ret_1_sem(argv[0], ret);
     exit_pcs(EXIT);
-
 }
 
 int sem_close(int argc, char ** argv){
