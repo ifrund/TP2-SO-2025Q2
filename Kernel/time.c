@@ -10,8 +10,10 @@
 #define MILLENIUM 2000 // cambiarlo si llega a ser necesario
 #define CENTURY 0      // lo usamos para calcular la fecha completa
 
+#define CLOCK_ADDRESS (void *)0xB808E
+
 static unsigned long ticks = 0;
-uint8_t *clockLocation = (uint8_t *)0xB808E;
+uint8_t *clockLocation = (uint8_t *)CLOCK_ADDRESS;
 
 char *dayNames[] = {"Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"};
 
