@@ -32,19 +32,19 @@ extern void msg_dummy(int argc, char **argv);
 // Esto es un "string" manual para poder imprimir el caracter 128 de nuestro font de kernel usando lsa funciones estandar
 #define ERROR_PROMPT "Comando desconocido: "
 char PROMPT_START[] = {127, 0};
-int kill_from_shell = 0, foreground = 1, bye_shell=0;
+int kill_from_shell = 0, foreground = 1, bye_shell = 0;
 int current_foreground_pid;
 
 // Buffers
 char screen_buffer[VERT_SIZE][LINE_SIZE];
 char command_buffer[BUFFER_SIZE];
-static char* commands[COMMANDS] = {"exit", "clear","sleep", "help", "registers", "test-mm", "test-prio", 
-    "test-pcs", "test-sync", "mem", "Tests", "kill", "ps", "nice", "block", "unblock", "loop", "wc", "cat", "filter", "mvar", "msg"};
-static char* tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
-static char* help[COMMANDS-TESTS] = {"exit", "clear", "sleep", "help", "registers", "mem", "Tests",
-    "kill", "ps", "nice", "block", "unblock", "loop", "wc", "cat", "filter", "mvar", "msg"};
-static char* info[COMMANDS-TESTS] = {"-", "-", "(tiempo a dormir)", "-", "-", "-", "-", "(el pid a matar)", "-", "(pid a afectar) (nueva prioridad)", 
-    "(pid a bloquear)", "(pid a desbloquear)", "(segundos entre aparaciones del loop)", "-", "-", "-", "-", "<-- eliminar"};
+static char *commands[COMMANDS] = {"exit", "clear", "sleep", "help", "registers", "test-mm", "test-prio",
+                                   "test-pcs", "test-sync", "mem", "tests", "kill", "ps", "nice", "block", "unblock", "loop", "wc", "cat", "filter", "mvar", "msg"};
+static char *tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
+static char *help[COMMANDS - TESTS] = {"exit", "clear", "sleep", "help", "registers", "mem", "tests",
+                                       "kill", "ps", "nice", "block", "unblock", "loop", "wc", "cat", "filter", "mvar", "msg"};
+static char *info[COMMANDS - TESTS] = {"-", "-", "(tiempo a dormir)", "-", "-", "-", "-", "(el pid a matar)", "-", "(pid a afectar) (nueva prioridad)",
+                                       "(pid a bloquear)", "(pid a desbloquear)", "(segundos entre aparaciones del loop)", "-", "-", "-", "-", "-"};
 
 char char_buffer[1];
 
@@ -61,30 +61,31 @@ int limit_index = VERT_SIZE - 1;
 int line_size = LINE_SIZE;
 
 int hrs = 0;
-int min = 0; 
+int min = 0;
 int sec = 0;
 
 char aux[128];
 int cantRegs = 18;
 uint64_t regs[18];
-char* regsNames[18] = {"rax:", "rbx:", "rcx:", "rdx:", "rsi:", "rdi:", "rbp:", "rsp:", "r8:", "r9:",
+char *regsNames[18] = {"rax:", "rbx:", "rcx:", "rdx:", "rsi:", "rdi:", "rbp:", "rsp:", "r8:", "r9:",
                        "r10:", "r11:", "r12:", "r13:", "r14:", "r15:", "rip:", "rflags:"};
-char* bye[MAX_ARGS];
+char *bye[MAX_ARGS];
 void exit_shell();
 void comando_help();
 void comando_clean();
 void comando_tests();
 void comando_regs();
-void comando_sleep(int argc, char** argv);
+void comando_sleep(int argc, char **argv);
 
-//Helpers
+// Helpers
 static void remove_extra_spaces(char *str);
-static char* strchr(const char* str, int c);
-static int parse_arguments(char* buffer, char** argv);
-static void* find_command_rip(char* name);
-static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground);
+static char *strchr(const char *str, int c);
+static int parse_arguments(char *buffer, char **argv);
+static void *find_command_rip(char *name);
+static void handle_pipe_command(char *cmd_A, char *cmd_B, int foreground);
 
-int shell(){
+int shell()
+{
     cursor_x = 0;
     cursor_y = 0;
     exit_command = 0;
@@ -93,12 +94,15 @@ int shell(){
     init_shell();
     write_out(PROMPT_START);
 
-    while(!exit_command){
+    while (!exit_command)
+    {
         int r = read(char_buffer, 1);
-        if (r == 1){ 
+        if (r == 1)
+        {
             process_key(char_buffer[0]);
         }
-        else if(r == 0){ //error o EOF
+        else if (r == 0)
+        { // error o EOF
             exit_shell();
         }
     }
@@ -107,34 +111,39 @@ int shell(){
     return 0;
 }
 
+void process_key(char key)
+{
 
-void process_key(char key){
-    
-    if (key == '\n'){
+    if (key == '\n')
+    {
 
         command_buffer[command_cursor] = '\0';
 
         write_out("\n");
         process_command(command_buffer);
 
-        //Limpieza profunda del buffer
-        for (int i = 0; i <= BUFFER_SIZE; i++) {
+        // Limpieza profunda del buffer
+        for (int i = 0; i <= BUFFER_SIZE; i++)
+        {
             command_buffer[i] = 0;
         }
 
         command_cursor = 0;
-        if(!foreground){
-            _yield(); //para q imprima la estrella dsp de q el proceso bg se haya ejecutado
+        if (!foreground)
+        {
+            _yield(); // para q imprima la estrella dsp de q el proceso bg se haya ejecutado
             write_out(PROMPT_START);
         }
-        else{
+        else
+        {
             write_out(PROMPT_START);
         }
 
         return;
     }
 
-    if (key == '\b'){
+    if (key == '\b')
+    {
         if (!command_cursor)
             return;
 
@@ -147,59 +156,69 @@ void process_key(char key){
     }
 
     // a partir de aca si esta lleno el buffer nos vamos
-    if (command_cursor == BUFFER_SIZE - 1) 
+    if (command_cursor == BUFFER_SIZE - 1)
         return;
 
-    else {
+    else
+    {
         command_buffer[command_cursor++] = key;
         write_out(char_buffer);
     }
 }
 
-void process_command(char* buffer){
+void process_command(char *buffer)
+{
     char *argv[MAX_ARGS];
     int argc = 0;
     foreground = 1;
-    char* command_name;
-    char* args_string = NULL; // String que contiene solo los argumentos
+    char *command_name;
+    char *args_string = NULL; // String que contiene solo los argumentos
 
     // Se busca background o pipe
-    char* bg_pos = strchr(buffer, '&');
-    if (bg_pos != NULL) {
+    char *bg_pos = strchr(buffer, '&');
+    if (bg_pos != NULL)
+    {
         foreground = 0;
         *bg_pos = '\0'; // Elimina el '&'
     }
 
-    char* pipe_pos = strchr(buffer, '|');
-    if (pipe_pos != NULL) {
+    char *pipe_pos = strchr(buffer, '|');
+    if (pipe_pos != NULL)
+    {
         // Hay pipe
         *pipe_pos = '\0';
-        char* cmd_A = buffer;
-        char* cmd_B = pipe_pos + 1;
+        char *cmd_A = buffer;
+        char *cmd_B = pipe_pos + 1;
         handle_pipe_command(cmd_A, cmd_B, foreground);
-
-    } else {
+    }
+    else
+    {
         // Hay un unico comando sin pipe
         remove_extra_spaces(buffer);
 
         command_name = buffer;
-        char* first_space = strchr(buffer, ' ');
+        char *first_space = strchr(buffer, ' ');
 
-        if (first_space != NULL) {
+        if (first_space != NULL)
+        {
             // Si hay un espacio, separamos el comando de los argumentos
             *first_space = '\0';
             args_string = first_space + 1;
-            while (*args_string == ' ') args_string++;
+            while (*args_string == ' ')
+                args_string++;
         }
-        
+
         argc = parse_arguments(args_string, argv);
-        
-        //Checkear si esta vacio y si no, buscar el RIP del comando
-        if (command_name[0] == '\0') return; 
-        void* rip = find_command_rip(command_name);
-        
-        if (rip == NULL) {
-            if (strlen(buffer) == BUFFER_SIZE){
+
+        // Checkear si esta vacio y si no, buscar el RIP del comando
+        if (command_name[0] == '\0')
+            return;
+        void *rip = find_command_rip(command_name);
+
+        if (rip == NULL)
+        {
+            if (strlen(buffer) == BUFFER_SIZE)
+            {
                 write_out("Buenas... una poesia?\n");
                 foreground = 1;
                 return;
@@ -210,11 +229,14 @@ void process_command(char* buffer){
             write_out(command_name);
             foreground = 1;
             write_out("\n");
-        } else {
-            
+        }
+        else
+        {
+
             int pid = create_process(rip, command_name, argc, argv);
 
-            if (foreground && pid > 0) {
+            if (foreground && pid > 0)
+            {
                 current_foreground_pid = pid;
                 _update_foreground(current_foreground_pid);
                 int myPid = _get_pid();
@@ -225,11 +247,13 @@ void process_command(char* buffer){
     }
 }
 
-void shift(){
+void shift()
+{
     clearScreen();
 
-    for (int i = 1; i < rows_to_show; i++){
-        
+    for (int i = 1; i < rows_to_show; i++)
+    {
+
         int line_number = mod(i + (limit_index - rows_to_show + 1), VERT_SIZE);
         print(screen_buffer[line_number]);
         if (i != rows_to_show - 1)
@@ -237,9 +261,11 @@ void shift(){
     }
 }
 
-int check_shift(){
+int check_shift()
+{
     int shifted = 0;
-    if (cursor_y == limit_index){
+    if (cursor_y == limit_index)
+    {
         shift();
         shifted = 1;
         limit_index = (limit_index + 1) % VERT_SIZE;
@@ -249,20 +275,24 @@ int check_shift(){
     return shifted;
 }
 
+void write_out(char *string)
+{
 
-void write_out(char* string){
-    for (int c = 0; c < strlen(string)-1; c++){
+    for (int c = 0; c < strlen(string) - 1; c++)
+    {
         // el menos 1 es porq line_size es 1 mas que el maximo indice
-        if (cursor_x == line_size - 1|| string[c] == '\n'){
-            if (string[c] == '\n') 
+        if (cursor_x == line_size - 1 || string[c] == '\n')
+        {
+            if (string[c] == '\n')
                 screen_buffer[cursor_y][cursor_x] = '\0'; // null terminate en caso de print
             else
-                c--;    // se que parece raro pero esto esta para no escribir el \n en la tabla pero si los demas despues del shift
+                c--; // se que parece raro pero esto esta para no escribir el \n en la tabla pero si los demas despues del shift
             check_shift();
             cursor_x = 0;
         }
         // ese else c-- esta para que pueda entrar a este else con el ultimo caracter de cada linea
-        else {
+        else
+        {
             screen_buffer[cursor_y][cursor_x++] = string[c];
         }
     }
@@ -270,60 +300,67 @@ void write_out(char* string){
     print(string);
 }
 
-
-void init_shell(){
+void init_shell()
+{
     font_size = getFontSize();
-    rows_to_show = VERT_SIZE/font_size;
-    line_size = LINE_SIZE/font_size;\
+    rows_to_show = VERT_SIZE / font_size;
+    line_size = LINE_SIZE / font_size;
     shell_pid = _shell_pid();
     idle_pid = _idle_pid();
     current_foreground_pid = shell_pid;
     _update_foreground(current_foreground_pid);
 }
 
-//Helpers
+// Helpers
 
-static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
+static void handle_pipe_command(char *cmd_A, char *cmd_B, int foreground)
+{
     char *argv_A[MAX_ARGS], *argv_B[MAX_ARGS];
     int argc_A, argc_B;
-    char* command_A, *command_B;
-    char* args_A = NULL, *args_B = NULL;
-    char* first_space;
+    char *command_A, *command_B;
+    char *args_A = NULL, *args_B = NULL;
+    char *first_space;
 
     remove_extra_spaces(cmd_A);
     remove_extra_spaces(cmd_B);
-    
+
     // Se parsean ambos comandos, A y B
     command_A = cmd_A;
     first_space = strchr(cmd_A, ' ');
-    if (first_space != NULL) {
+    if (first_space != NULL)
+    {
         *first_space = '\0';
         args_A = first_space + 1;
-        while (*args_A == ' ') args_A++;
+        while (*args_A == ' ')
+            args_A++;
     }
-    argc_A = parse_arguments(args_A, argv_A); 
-    
+    argc_A = parse_arguments(args_A, argv_A);
+
     command_B = cmd_B;
     first_space = strchr(cmd_B, ' ');
-    if (first_space != NULL) {
+    if (first_space != NULL)
+    {
         *first_space = '\0';
         args_B = first_space + 1;
-        while (*args_B == ' ') args_B++;
+        while (*args_B == ' ')
+            args_B++;
     }
     argc_B = parse_arguments(args_B, argv_B);
 
-    //Se buscan ambos RIPs
-    void* rip_A = find_command_rip(command_A);
-    void* rip_B = find_command_rip(command_B);
+    // Se buscan ambos RIPs
+    void *rip_A = find_command_rip(command_A);
+    void *rip_B = find_command_rip(command_B);
 
-    if (rip_A == NULL || rip_B == NULL) {
+    if (rip_A == NULL || rip_B == NULL)
+    {
         write_out("Error: comando invalido en el pipe.\n");
         return;
     }
 
     // Manejo de pipes
     int pipe_ids[2];
-    if (_pipe_create_anonymous(pipe_ids) == -1) {
+    if (_pipe_create_anonymous(pipe_ids) == -1)
+    {
         write_out("Error: no se pudo crear el pipe.\n");
         return;
     }
@@ -338,32 +375,37 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
     _pipe_close(pipe_ids[1], PIPE_WRITE_END);
 
     // Esperar si es foreground
-    if (foreground) {
+    if (foreground)
+    {
         int myPid = _get_pid();
         _wait(pid_A, myPid);
         _wait(pid_B, myPid);
     }
-
-    
 }
 
-static int parse_arguments(char* buffer, char** argv) {
+static int parse_arguments(char *buffer, char **argv)
+{
     int argc = 0;
 
-    if (buffer == NULL || *buffer == '\0') {
+    if (buffer == NULL || *buffer == '\0')
+    {
         argv[0] = NULL;
         return 0;
     }
 
-    argv[argc++] = buffer; 
+    argv[argc++] = buffer;
 
-    for (int i = 0; buffer[i] != '\0' && argc < MAX_ARGS - 1; i++) {
-        if (buffer[i] == ' ') {
+    for (int i = 0; buffer[i] != '\0' && argc < MAX_ARGS - 1; i++)
+    {
+        if (buffer[i] == ' ')
+        {
             buffer[i] = '\0';
-            while (buffer[i+1] == ' ') {
+            while (buffer[i + 1] == ' ')
+            {
                 i++;
             }
-            if (buffer[i+1] != '\0') { 
+            if (buffer[i + 1] != '\0')
+            {
                 argv[argc++] = &buffer[i + 1];
             }
         }
@@ -372,10 +414,11 @@ static int parse_arguments(char* buffer, char** argv) {
     return argc;
 }
 
-static void* find_command_rip(char* name) {
+static void *find_command_rip(char *name)
+{
     // Array de punteros a funciones (o sea los RIPs)
     // MISMO ORDEN QUE COMMANDS
-    static void* command_rips[COMMANDS] = {
+    static void *command_rips[COMMANDS] = {
         &exit_shell,            // "exit"
         &comando_clean,         // "clear"
         &comando_sleep,         // "sleep"
@@ -386,7 +429,7 @@ static void* find_command_rip(char* name) {
         &test_processes_dummy,  // "test-pcs"
         &test_sync_dummy,       // "test-sync"
         &status_count_dummy,    // "mem"
-        &comando_tests,         // "Tests"
+        &comando_tests,         // "tests"
         &kill_dummy,            // "kill"
         &get_proc_list_dummy,   // "ps"
         &be_nice_dummy,         // "nice"
@@ -396,43 +439,55 @@ static void* find_command_rip(char* name) {
         &wc_dummy,              // "wc"
         &cat_dummy,             // "cat"
         &filter_dummy,          // "filter"
-        &mvar_dummy,             // "mvar"
-        &msg_dummy               // "msg"
+        &mvar_dummy,            // "mvar"
+        &msg_dummy              // "msg"
     };
 
-    for (int i = 0; i < COMMANDS; i++) {
-        if (strcmp(name, commands[i]) == 0) {
+    for (int i = 0; i < COMMANDS; i++)
+    {
+        if (strcmp(name, commands[i]) == 0)
+        {
             return command_rips[i];
         }
     }
     return NULL;
 }
 
-static char* strchr(const char* str, int c) {
-    while (*str != '\0') {
-        if (*str == (char)c) {
-            return (char*)str;
+static char *strchr(const char *str, int c)
+{
+    while (*str != '\0')
+    {
+        if (*str == (char)c)
+        {
+            return (char *)str;
         }
         str++;
     }
-    if (c == '\0') {
-        return (char*)str;
+    if (c == '\0')
+    {
+        return (char *)str;
     }
     return NULL;
 }
 
-static void remove_extra_spaces(char *str) {
+static void remove_extra_spaces(char *str)
+{
     int i = 0, j = 0;
-    int in_space = 1; 
+    int in_space = 1;
 
-    while (str[i]) {
+    while (str[i])
+    {
         char c = str[i++];
-        if (c == ' ' || c == '\t' || c == '\n') {
-            if (!in_space) {
+        if (c == ' ' || c == '\t' || c == '\n')
+        {
+            if (!in_space)
+            {
                 in_space = 1;
                 str[j++] = ' ';
             }
-        } else {
+        }
+        else
+        {
             in_space = 0;
             str[j++] = c;
         }
@@ -444,42 +499,48 @@ static void remove_extra_spaces(char *str) {
     str[j] = '\0';
 }
 
-int read_input(char *buffer, int max_len) {
+int read_input(char *buffer, int max_len)
+{
     int count = 0;
     int fake_c_c = command_cursor;
-    char* fake_c_b = command_buffer;
+    char *fake_c_b = command_buffer;
 
-    while (fake_c_c > 0 && count < max_len) {
+    while (fake_c_c > 0 && count < max_len)
+    {
         buffer[count++] = fake_c_b[0];
         for (int i = 1; i < fake_c_c; i++)
-            fake_c_b[i-1] = fake_c_b[i];
+            fake_c_b[i - 1] = fake_c_b[i];
         fake_c_c--;
     }
 
     return count;
 }
 
-//Ex comandos de arqui
+// Ex comandos de arqui
 
-void exit_shell(){
+void exit_shell()
+{
     write_out("Nos vemos, esperamos que la hayas pasado bien! \n");
-    bye[0]= "0";
-    bye[1]= NULL;
+    bye[0] = "0";
+    bye[1] = NULL;
     bye_shell = 1;
     exit_pcs(EXIT);
 }
 
-void comando_clean(){
-    clearScreen(); 
+void comando_clean()
+{
+    clearScreen();
     cursor_y = 0;
     cursor_x = 0;
-    limit_index = VERT_SIZE/font_size - 1;
+    limit_index = VERT_SIZE / font_size - 1;
     exit_pcs(EXIT);
 }
 
-void comando_help(){
+void comando_help()
+{
     write_out("Los comandos existentes son:\n");
-    for(int i=0; i<(COMMANDS-TESTS); i++){
+    for (int i = 0; i < (COMMANDS - TESTS); i++)
+    {
         write_out(help[i]);
         write_out(" ");
         write_out(info[i]);
@@ -488,21 +549,29 @@ void comando_help(){
     exit_pcs(EXIT);
 }
 
-void comando_tests(){
+void comando_tests()
+{
     write_out("Los test existentes son:\n");
-    for(int i=0; i<(TESTS); i++){
+    for (int i = 0; i < (TESTS); i++)
+    {
         write_out(tests[i]);
         write_out("\n");
     }
     exit_pcs(EXIT);
 }
 
-void comando_regs(){
-    if(getRegs(regs)==0){
+void comando_regs()
+{
+    if (getRegs(regs) == 0)
+    {
         write_out("Antes de pedir los registros debe apretar la tecla alt izquierda...\n");
-    } else {
-        for(int i=0; i<cantRegs; i++){
-            if (i != cantRegs - 1) write_out("-");
+    }
+    else
+    {
+        for (int i = 0; i < cantRegs; i++)
+        {
+            if (i != cantRegs - 1)
+                write_out("-");
             write_out(regsNames[i]);
             uintToBase(regs[i], aux, 10);
             write_out(aux);
@@ -512,28 +581,32 @@ void comando_regs(){
     exit_pcs(EXIT);
 }
 
-int is_digit_str(char *str) {
+int is_digit_str(char *str)
+{
     if (str == 0 || *str == '\0')
-        return 0; 
+        return 0;
 
-    for (int i = 0; str[i] != '\0'; i++) {
+    for (int i = 0; str[i] != '\0'; i++)
+    {
         if (str[i] < '0' || str[i] > '9')
-            return 0; 
+            return 0;
     }
 
-    return 1; 
+    return 1;
 }
 
-void comando_sleep(int argc, char** argv){
+void comando_sleep(int argc, char **argv)
+{
 
     argc_1(argc);
 
-    if(!is_digit_str(argv[0])){
+    if (!is_digit_str(argv[0]))
+    {
         write_out("Para este comando tenes que mandar un numero positivo porfavor\n");
         exit_pcs(ERROR);
     }
-    
-    write_out("Vamos a esperar "); 
+
+    write_out("Vamos a esperar ");
     write_out(argv[0]);
     write_out(" segundos...");
     int time = char_to_int(argv[0]);
