@@ -55,7 +55,7 @@ uint16_t pitch;
 uint16_t width;
 uint8_t bpp;
 
-static char buffer[64] = {'0'};
+static char buffer[64];
 
 static uint16_t cursorX = 0x0000;
 static uint16_t cursorY = 0x0000;
