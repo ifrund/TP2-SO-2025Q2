@@ -126,7 +126,7 @@ void process_key(char key)
         process_command(command_buffer);
 
         // Limpieza profunda del buffer
-        for (int i = 0; i <= BUFFER_SIZE; i++)
+        for (int i = 0; i < BUFFER_SIZE; i++)
         {
             command_buffer[i] = 0;
         }
