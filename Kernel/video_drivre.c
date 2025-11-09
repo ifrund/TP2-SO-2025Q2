@@ -56,8 +56,8 @@ uint8_t bpp;
 static char buffer[64] = {'0'};
 
 
-uint16_t cursor_location_x = 0x0000;
-uint16_t cursor_location_y = 0x0000;
+static uint16_t cursorX = 0x0000;
+static uint16_t cursorY = 0x0000;
 
 //================================================================================================================================
 // Getters for videoMode
@@ -126,6 +126,11 @@ uint8_t getFontSize(){
 	return SCALE;
 }
 
+#define SCALED_CHARACTER_WIDTH (charWidth * SCALE)
+#define SCALED_CHARACTER_HEIGHT (charHeight * SCALE)
+#define WIDTH_IN_CHARS (VBE_mode_info->width)
+#define HEIGHT_IN_CHARS (VBE_mode_info->height)
+
 void putChar(char character, uint32_t colorFont, uint32_t colorBg, uint64_t init_x, uint64_t init_y){
 	for(uint64_t i=0; i<(charHeight*SCALE); i++){
 		for(uint64_t j=0; j<(charWidth*SCALE); j++){
@@ -145,22 +150,25 @@ void printChar(char character){
 }
 
 void printCharColor(char character, uint32_t fontColor, uint32_t bgColor){
-    if (character == 0XA){
+    if(cursorX==WIDTH_IN_CHARS){
         newLine();
     }
 
-    else if (character == '\b'){
-        delChar();
-    }
-
-
-    else{
-        putChar(character, fontColor, bgColor, cursor_location_x, cursor_location_y);
-        cursor_location_x += (charWidth * SCALE);
-        if(cursor_location_x >= (VBE_mode_info->width)){
-            cursor_location_x = 0;
-            cursor_location_y += (charHeight * SCALE);
-        }
+    switch(character){
+        case '\n':
+            newLine();
+            break;
+        case '\b':
+            delChar();
+            break;
+        case '\t':
+            print("    ");
+            break;
+        default:
+            putChar(character, fontColor, bgColor, cursorX, cursorY);
+            cursorX += SCALED_CHARACTER_WIDTH;
+            if(cursorX >= WIDTH_IN_CHARS)
+                newLine();
     }
 }
 
@@ -213,38 +221,62 @@ void printHex(uint64_t value){
     printBase(value, 16);
 }
 
-
-
+/**
+ * Salta una linea y vuelve al principio de linea. Si se termina la pantalla, scrollea
+ */
 void newLine(){
-    cursor_location_y += charHeight * SCALE;
-    cursor_location_x = 0;
+    cursorX = 0;
+    if(cursorY/SCALED_CHARACTER_HEIGHT < HEIGHT_IN_CHARS-2) {
+        cursorY+=SCALED_CHARACTER_HEIGHT;          //avanzo normalmente, sigo teniendo pantalla
+    } else {                //si llegue a la anteultima linea
+        //como la pantalla esta en memoria, voy a copiar a partir de la segunda linea y pegarlo todo de vuelta
+        //en el framebuffer. luego limpio la ultima linea para volver a escribir
+        uintptr_t framebuffer = (uintptr_t)VBE_mode_info->framebuffer;
+        uint16_t height = VBE_mode_info->height;
+        uint16_t pitch = VBE_mode_info->pitch;
+        /*
+         * memcpy(destino, origen, bytes)
+         * destino: framebuffer (inicio de la pantalla)
+         * origen: segunda linea de la pantalla (pitch es bytes por linea de pixeles)
+         * bytes: toda la pantalla menos las ultimas dos lineas
+        */
+        memcpy((void*)framebuffer,
+               (void*)(framebuffer + pitch * SCALED_CHARACTER_HEIGHT),
+               pitch * (height - SCALED_CHARACTER_HEIGHT*2));
+        /*
+         * memset(destino, valor, bytes)
+         * destino: anteultima linea
+         * bytes: toda la linea
+         */
+        memset((void*)(framebuffer + pitch * (height - SCALED_CHARACTER_HEIGHT*2)), 0, pitch * SCALED_CHARACTER_HEIGHT);
+    }
 }
 
+/**
+ * Elimina el ultimo caracter ingresado, con soporte para saltos de linea
+ */
 void delChar(){
     repoCursor();
     printChar(' ');
     repoCursor();
 }
 
-
 void repoCursor(){
-    if (!cursor_location_x){
-        cursor_location_y -= charHeight * SCALE;
-        cursor_location_x = VBE_mode_info->width - charWidth * SCALE;
+    if(cursorX==0 && cursorY>0){
+        cursorY-=SCALED_CHARACTER_HEIGHT;
+        cursorX=WIDTH_IN_CHARS;
     }
-    else
-        cursor_location_x -= charWidth * SCALE;
+    cursorX-=SCALED_CHARACTER_WIDTH;
 }
 
 void clear(){
-    cursor_location_x = 0;
-    cursor_location_y = 0;
-
-    for (int y = 0; y < VBE_mode_info->height; y++){
-        for (int x = 0; x < VBE_mode_info->width; x++){
-            putPixel(DEFAULT_BACK, x, y);
+    for(int i=0; i<VBE_mode_info->width; i++){
+        for(int j=0; j<VBE_mode_info->height; j++){
+            putPixel(DEFAULT_BACK, i, j);
         }
     }
+    cursorX=0;
+    cursorY=0;
 }
 
 //================================================================================================================================
