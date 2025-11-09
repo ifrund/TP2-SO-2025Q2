@@ -13,7 +13,7 @@
 #define MAX_PCS 64
 #define MAX_STACK_SIZE 4096 //4KB
 #define PROCESS_NAME_MAX_LENGTH 32
-#define QUANTUM 5
+#define QUANTUM 2
 #define IDLE_Q 1
 #define MAX_ARGUMENTS 16
 #define MAX_ARG_LENGTH 64 
