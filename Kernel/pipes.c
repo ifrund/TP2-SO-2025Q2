@@ -264,10 +264,6 @@ int pipe_read(int pipe_id, char *buffer, int count)
     // Lectura byte por byte
     for (int i = 0; i < count; i++)
     {
-        if (pipe->read_index == pipe->write_index && pipe->eof_signaled)
-        {
-            return bytes_read; // EOF
-        }
 
         // Se espera a que haya datos disponibles
         sem_wait(pipe->sem_items_available_name);
@@ -275,17 +271,13 @@ int pipe_read(int pipe_id, char *buffer, int count)
         // Entramos a la region critica
         sem_wait(pipe->sem_pipe_lock_name);
 
-        if (pipe->read_index == pipe->write_index && pipe->eof_signaled)
-        {
-            sem_post(pipe->sem_pipe_lock_name);
-            return bytes_read; // devuelve 0 si no se leyó nada
-        }
-
-        // Si no hay datos pero no EOF (puede pasar si varios readers fueron despertados)
         if (pipe->read_index == pipe->write_index)
         {
+            // Si no hay datos pero no EOF (puede pasar si varios readers fueron despertados)
             sem_post(pipe->sem_pipe_lock_name);
-            continue;
+            
+            if(pipe->eof_signaled)
+                return bytes_read; // devuelve 0 si no se leyó nada
         }
 
         // Leer un byte del buffer del pipe
