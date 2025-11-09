@@ -1,26 +1,32 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include <stdint.h>
 #include <stdio.h>
 #include "test_util.h"
 
-#define WAIT 100000 //Change this value to make the wait long enough to see theese processes beeing run at least twice
+#define WAIT 100000 // Change this value to make the wait long enough to see theese processes beeing run at least twice
 
 // Random
 static uint32_t m_z = 362436069;
 static uint32_t m_w = 521288629;
 
-uint32_t GetUint() {
+uint32_t GetUint()
+{
   m_z = 36969 * (m_z & 65535) + (m_z >> 16);
   m_w = 18000 * (m_w & 65535) + (m_w >> 16);
   return (m_z << 16) + m_w;
 }
 
-uint32_t GetUniform(uint32_t max) {
+uint32_t GetUniform(uint32_t max)
+{
   uint32_t u = GetUint();
   return (u + 1.0) * 2.328306435454494e-10 * max;
 }
 
 // Memory
-uint8_t memcheck(void *start, uint8_t value, uint32_t size) {
+uint8_t memcheck(void *start, uint8_t value, uint32_t size)
+{
   uint8_t *p = (uint8_t *)start;
   uint32_t i;
 
@@ -32,7 +38,8 @@ uint8_t memcheck(void *start, uint8_t value, uint32_t size) {
 }
 
 // Parameters
-int64_t satoi(char *str) {
+int64_t satoi(char *str)
+{
   uint64_t i = 0;
   int64_t res = 0;
   int8_t sign = 1;
@@ -40,12 +47,14 @@ int64_t satoi(char *str) {
   if (!str)
     return 0;
 
-  if (str[i] == '-') {
+  if (str[i] == '-')
+  {
     i++;
     sign = -1;
   }
 
-  for (; str[i] != '\0'; ++i) {
+  for (; str[i] != '\0'; ++i)
+  {
     if (str[i] < '0' || str[i] > '9')
       return 0;
     res = res * 10 + str[i] - '0';
@@ -55,42 +64,49 @@ int64_t satoi(char *str) {
 }
 
 // Dummies
-void bussy_wait(uint64_t n) {
+void bussy_wait(uint64_t n)
+{
   uint64_t i;
   for (i = 0; i < n; i++)
     ;
 }
 
-void endless_loop() {
+void endless_loop()
+{
   while (1)
     ;
 }
 
-void endless_loop_print(uint64_t wait) {
+void endless_loop_print(uint64_t wait)
+{
   int64_t pid = _get_pid();
 
   write_out("\n");
-  while (1) {
+  while (1)
+  {
     printDec(pid);
   }
 }
 
-void uint_to_str(uint64_t num, char *out) {
-    char temp[20];
-    int i = 0;
+void uint_to_str(uint64_t num, char *out)
+{
+  char temp[20];
+  int i = 0;
 
-    if (num == 0) {
-        out[0] = '0';
-        out[1] = '\0';
-        return;
-    }
+  if (num == 0)
+  {
+    out[0] = '0';
+    out[1] = '\0';
+    return;
+  }
 
-    while (num > 0) {
-        temp[i++] = '0' + (num % 10);
-        num /= 10;
-    }
+  while (num > 0)
+  {
+    temp[i++] = '0' + (num % 10);
+    num /= 10;
+  }
 
-    for (int j = 0; j < i; j++)
-        out[j] = temp[i - j - 1];
-    out[i] = '\0';
+  for (int j = 0; j < i; j++)
+    out[j] = temp[i - j - 1];
+  out[i] = '\0';
 }

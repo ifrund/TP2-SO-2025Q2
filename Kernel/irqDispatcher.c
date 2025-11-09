@@ -1,3 +1,6 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include <time.h>
 #include <keyboard.h>
 #include <stdint.h>
@@ -10,37 +13,43 @@ static void int_21();
 static void int_48();
 static void int_80();
 
-void irqDispatcher(uint64_t irq) {
-	switch (irq) {
-		case 0:
-			int_20();
-			break;
-        case 1:
-            int_21();
-            break;
+void irqDispatcher(uint64_t irq)
+{
+    switch (irq)
+    {
+    case 0:
+        int_20();
+        break;
+    case 1:
+        int_21();
+        break;
 
-        case 0x48:
-            int_48();
-            break;
+    case 0x48:
+        int_48();
+        break;
 
-        case 0x80:
-            int_80();
-            break;
-	}
-	return;
+    case 0x80:
+        int_80();
+        break;
+    }
+    return;
 }
 
-void int_20() {
-	timer_handler();
+void int_20()
+{
+    timer_handler();
 }
 
-void int_21() {
+void int_21()
+{
     key_handler();
 }
 
-void int_48(){
+void int_48()
+{
 }
 
-void int_80() {
+void int_80()
+{
     syscall_handler();
 }

@@ -1,3 +1,6 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include <defs.h>
 #include <idtLoader.h>
 #include <interrupts.h>
@@ -9,9 +12,9 @@
 
 static void setup_IDT_entry(int index, uint64_t offset);
 
-
 /* Descriptor de interrupcion */
-typedef struct {
+typedef struct
+{
   uint16_t offset_l, selector;
   uint8_t cero, access;
   uint16_t offset_m;
@@ -22,18 +25,17 @@ typedef struct {
 
 DESCR_INT *idt = (DESCR_INT *)0; // IDT de 255 entradas
 
-void load_idt() {
+void load_idt()
+{
 
   _cli();
 
   setup_IDT_entry(0x20, (uint64_t)&_irq00Handler);
   setup_IDT_entry(0x21, (uint64_t)&_irq01Handler);
 
-
   setup_IDT_entry(0x00, (uint64_t)&_exception0Handler);
   setup_IDT_entry(0x06, (uint64_t)&_exception6Handler);
   setup_IDT_entry(0x80, (uint64_t)&_irq128Handler);
-
 
   sem_open_init("sem_stdin", 0);
   // Solo interrupcion timer tick habilitadas
@@ -43,7 +45,8 @@ void load_idt() {
   _sti();
 }
 
-static void setup_IDT_entry(int index, uint64_t offset) {
+static void setup_IDT_entry(int index, uint64_t offset)
+{
   idt[index].selector = 0x08;
   idt[index].offset_l = offset & 0xFFFF;
   idt[index].offset_m = (offset >> 16) & 0xFFFF;

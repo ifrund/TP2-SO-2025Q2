@@ -1,13 +1,16 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include <stdint.h>
 #include <stdio.h>
 #include "test_util.h"
 #include "../include/userlib.h"
 
 #define HIGHEST 0
-#define MEDIUM 1  
+#define MEDIUM 1
 #define MEDIUM_2 2
 #define MEDIUM_3 3
-#define LOWEST 4  
+#define LOWEST 4
 
 #define TOTAL_PROCESSES 5
 
@@ -15,19 +18,22 @@ int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM_3, MEDIUM_2, MEDIUM, HIGHEST};
 
 uint64_t max_value = 0;
 
-void zero_to_max() {
-  uint64_t value = 0;
+void zero_to_max()
+{
+    uint64_t value = 0;
 
-  while (value++ != max_value); //si el while tarda menos q 5 ticks no sirve de nada este test
-  //con 15.000.000 tarda más de 5 ticks asegurado
+    while (value++ != max_value)
+        ; // si el while tarda menos q 5 ticks no sirve de nada este test
+    // con 15.000.000 tarda más de 5 ticks asegurado
 
-  write_out("PROCESO ");
-  printDec(_get_pid());
-  write_out(" LISTO! -- ");
-  exit_pcs(EXIT);
+    write_out("PROCESO ");
+    printDec(_get_pid());
+    write_out(" LISTO! -- ");
+    exit_pcs(EXIT);
 }
 
-uint64_t test_prio_new(uint64_t argc, char **argv) {
+uint64_t test_prio_new(uint64_t argc, char **argv)
+{
 
     int64_t pids[TOTAL_PROCESSES];
     char *ztm_argv[] = {0};
@@ -35,14 +41,15 @@ uint64_t test_prio_new(uint64_t argc, char **argv) {
     static char *pcs_name = "zero_to_max";
     int my_pid = _get_pid();
 
-    if (argc != 1){
+    if (argc != 1)
+    {
         write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 argumento.\n");
         write_out(PROMPT_START);
         exit_pcs(ERROR);
     }
 
-
-    if ((max_value = satoi(argv[0])) <= 0){
+    if ((max_value = satoi(argv[0])) <= 0)
+    {
         write_out("argv:");
         write_out(argv[0]);
         write_out("\n");
@@ -53,7 +60,8 @@ uint64_t test_prio_new(uint64_t argc, char **argv) {
 
     write_out("MISMA PRIORIDAD...\n");
 
-    for (i = 0; i < TOTAL_PROCESSES; i++){
+    for (i = 0; i < TOTAL_PROCESSES; i++)
+    {
         pids[i] = create_process(&zero_to_max, pcs_name, 0, ztm_argv);
         write_out("CREADO: ");
         printDec(pids[i]);
@@ -61,13 +69,15 @@ uint64_t test_prio_new(uint64_t argc, char **argv) {
     }
     write_out("\n");
 
-    for (i = 0; i < TOTAL_PROCESSES; i++){
+    for (i = 0; i < TOTAL_PROCESSES; i++)
+    {
         _wait(pids[i], my_pid);
     }
 
     write_out("\nMISMA PRIORIDAD, LUEGO CAMBIA...\n");
 
-    for (i = 0; i < TOTAL_PROCESSES; i++) {
+    for (i = 0; i < TOTAL_PROCESSES; i++)
+    {
         pids[i] = create_process(&zero_to_max, pcs_name, 0, ztm_argv);
         _be_nice(pids[i], prio[i]);
         write_out("PROCESO ");
@@ -78,13 +88,15 @@ uint64_t test_prio_new(uint64_t argc, char **argv) {
     }
     write_out("\n");
 
-    for (i = 0; i < TOTAL_PROCESSES; i++){
+    for (i = 0; i < TOTAL_PROCESSES; i++)
+    {
         _wait(pids[i], my_pid);
     }
 
     write_out("\nMISMA PRIORIDAD, LUEGO CAMBIA MIENTRAS ESTA BLOQUEADO...\n");
 
-    for (i = 0; i < TOTAL_PROCESSES; i++) {
+    for (i = 0; i < TOTAL_PROCESSES; i++)
+    {
         pids[i] = create_process(&zero_to_max, pcs_name, 0, ztm_argv);
         _block_process(pids[i]);
         _be_nice(pids[i], prio[i]);
@@ -95,11 +107,13 @@ uint64_t test_prio_new(uint64_t argc, char **argv) {
         write_out("  ");
     }
 
-    for (i = 0; i < TOTAL_PROCESSES; i++){
+    for (i = 0; i < TOTAL_PROCESSES; i++)
+    {
         _unblock_process(pids[i]);
     }
 
-    for (i = 0; i < TOTAL_PROCESSES; i++){
+    for (i = 0; i < TOTAL_PROCESSES; i++)
+    {
         _wait(pids[i], my_pid);
     }
 

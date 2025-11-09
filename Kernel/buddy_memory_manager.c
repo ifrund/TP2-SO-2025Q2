@@ -54,27 +54,30 @@ void *list_pop(buddy_list *);
 int list_empty(buddy_list *);
 
 // Return 1 if bit at position index in array is set to 1
-bool is_bit_set(char* array, uint32_t index) {
-  char b = array[index / 8];
-  char m = (1 << (index % 8));
-  return (b & m) == m;
+bool is_bit_set(char *array, uint32_t index)
+{
+    char b = array[index / 8];
+    char m = (1 << (index % 8));
+    return (b & m) == m;
 }
 
 // Set bit at position index in array to 1
-void set_bit(char* array, uint32_t index) {
-  char b = array[index / 8];
-  char m = (1 << (index % 8));
-  array[index / 8] = (b | m);
+void set_bit(char *array, uint32_t index)
+{
+    char b = array[index / 8];
+    char m = (1 << (index % 8));
+    array[index / 8] = (b | m);
 }
 
 // Clear bit at position index in array
-void clear_bit(char* array, uint32_t index) {
-  char b = array[index / 8];
-  char m = (1 << (index % 8));
-  array[index / 8] = (b & ~m);
+void clear_bit(char *array, uint32_t index)
+{
+    char b = array[index / 8];
+    char m = (1 << (index % 8));
+    array[index / 8] = (b & ~m);
 }
 
-#define LINEAR_ALLOCATOR_START (void*)(0x0000000000500000)
+#define LINEAR_ALLOCATOR_START (void *)(0x0000000000500000)
 
 static uint64_t allocated;
 
@@ -173,7 +176,7 @@ uint32_t block_size(char *p)
 
 void free(void *p)
 {
-    
+
     void *q;
     uint16_t k;
 
@@ -197,7 +200,6 @@ void free(void *p)
     }
     // printf("free %p @ %d\n", p, k);
     list_push(&buddy_sizes[k].free, p);
-    
 }
 
 // Implementation of lists: double-linked and circular. Double-linked
@@ -239,10 +241,11 @@ int list_empty(buddy_list *list)
     return list->next == list;
 }
 
-void status_count(uint32_t *status_out) {
+void status_count(uint32_t *status_out)
+{
     uint8_t busy = 0;
-    for(uint32_t i = 0; i < MAXSIZE*NSIZES; i++)
-        if(is_bit_set(buddy_sizes[MAXSIZE].alloc, i))
+    for (uint32_t i = 0; i < MAXSIZE * NSIZES; i++)
+        if (is_bit_set(buddy_sizes[MAXSIZE].alloc, i))
             busy += LEAF_SIZE;
     status_out[0] = HEAP_SIZE;
     status_out[1] = busy * LEAF_SIZE;

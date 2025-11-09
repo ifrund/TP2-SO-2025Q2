@@ -8,3 +8,7 @@
 .vscode
 .bash_history
 .gdb_history
+salida.log
+strace_out
+.config
+informe_completo.html

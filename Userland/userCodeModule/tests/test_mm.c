@@ -1,25 +1,30 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include "test_util.h"
 
-#define MAX_BLOCKS 128  //~260858 como maximo con make all
+#define MAX_BLOCKS 128 //~260858 como maximo con make all
 
-typedef struct MM_rq {
+typedef struct MM_rq
+{
   void *address;
   uint32_t size;
 } mm_rq;
 
+void *memset2(void *destiation, int32_t c, uint64_t length)
+{
+  uint8_t chr = (uint8_t)c;
+  char *dst = (char *)destiation;
 
-void * memset2(void * destiation, int32_t c, uint64_t length) {
-	uint8_t chr = (uint8_t)c;
-	char * dst = (char*)destiation;
+  while (length--)
+    dst[length] = chr;
 
-	while(length--)
-		dst[length] = chr;
-
-	return destiation;
+  return destiation;
 }
 
-//Toma como parámetro la cantidad máxima de memoria a utilizar en bytes.
-void test_mm_dummy(int argc, char **argv) {
+// Toma como parámetro la cantidad máxima de memoria a utilizar en bytes.
+void test_mm_dummy(int argc, char **argv)
+{
 
   create_mm();
 
@@ -28,36 +33,44 @@ void test_mm_dummy(int argc, char **argv) {
   uint32_t total;
   uint64_t max_memory;
 
-  if (argc != 1){
+  if (argc != 1)
+  {
     write_out("No mandaste la cantidad de argumentos correcta. Intentalo otra vez, pero con 1 argumento.\n");
     exit_pcs(ERROR);
   }
 
-  if ((max_memory = satoi(argv[0])) <= 0){
+  if ((max_memory = satoi(argv[0])) <= 0)
+  {
     write_out("error en el satoi\n");
     exit_pcs(ERROR);
   }
   int c = 0;
 
-  while (1) {
+  while (1)
+  {
     rq = 0;
     total = 0;
     // Pedir la mayor cantidad de bloques posible
-    while (rq < MAX_BLOCKS && total < max_memory) {
+    while (rq < MAX_BLOCKS && total < max_memory)
+    {
       mm_rqs[rq].size = GetUniform(max_memory - total - 1) + 1;
       mm_rqs[rq].address = _alloc(mm_rqs[rq].size);
-      c++;      
+      c++;
 
-      if (mm_rqs[rq].address != NULL) {
+      if (mm_rqs[rq].address != NULL)
+      {
         total += mm_rqs[rq].size;
         rq++;
       }
-      else{
+      else
+      {
         write_out("error en el alloc, vuelta: ");
         printDec(c);
         write_out("\n");
-        for (int i = 0; i < rq; i++){
-          if (mm_rqs[i].address != NULL){
+        for (int i = 0; i < rq; i++)
+        {
+          if (mm_rqs[i].address != NULL)
+          {
             _free(mm_rqs[i].address);
           }
         }
@@ -68,21 +81,25 @@ void test_mm_dummy(int argc, char **argv) {
     // Set
     uint32_t i;
     for (i = 0; i < rq; i++)
-      if (mm_rqs[i].address != NULL){
+      if (mm_rqs[i].address != NULL)
+      {
         memset2(mm_rqs[i].address, i, mm_rqs[i].size);
-      } 
+      }
 
     // Check
     for (i = 0; i < rq; i++)
       if (mm_rqs[i].address != NULL)
-        if (!memcheck(mm_rqs[i].address, i, mm_rqs[i].size)) {
+        if (!memcheck(mm_rqs[i].address, i, mm_rqs[i].size))
+        {
           write_out("test_mm ERROR\n");
           exit_pcs(ERROR);
         }
-                    
+
     // Free
-    for (i = 0; i < rq; i++){
-      if (mm_rqs[i].address != NULL){
+    for (i = 0; i < rq; i++)
+    {
+      if (mm_rqs[i].address != NULL)
+      {
         _free(mm_rqs[i].address);
       }
     }

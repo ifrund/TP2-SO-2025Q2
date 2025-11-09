@@ -1,115 +1,130 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include "include/userlib.h"
 
 static char buffer[64] = {'0'};
-static char* char_buffer = " ";
+static char *char_buffer = " ";
 
 //================================================================================================================================
 // Writting
 //================================================================================================================================
 //================================================================================================================================
-void printChar(char charToPrint){
+void printChar(char charToPrint)
+{
     buffer[0] = charToPrint;
     buffer[1] = '\0';
     print(buffer);
 }
 
-void print(char * string){
+void print(char *string)
+{
     _print(STDOUT, string, strlen(string));
 }
 
-void print_color(char * string, int length, uint32_t fontColor, uint32_t bgColor){
+void print_color(char *string, int length, uint32_t fontColor, uint32_t bgColor)
+{
     _print_color(string, length, fontColor, bgColor);
 }
 
-void printCant(char* string, int cant){
+void printCant(char *string, int cant)
+{
     _print(STDOUT, string, cant);
 }
 
-void printError(char * string){
+void printError(char *string)
+{
     _print(STDERROR, string, strlen(string));
 }
 
-void clearScreen(){
+void clearScreen()
+{
     _print(STDOUT, "\033[J", 3);
 }
 
-void flushBuffer(){
+void flushBuffer()
+{
     _print(STDOUT, "\033[C", 3);
 }
 
-void change_font(int size){
-    char* msg = "\033[nF";
+void change_font(int size)
+{
+    char *msg = "\033[nF";
     msg[2] = size + '0';
     print(msg);
 }
 
-int read(char* buffer, int length){
+int read(char *buffer, int length)
+{
     return _read(STDIN, buffer, length);
 }
 
-int readRaw(char* buffer, int length){
+int readRaw(char *buffer, int length)
+{
     return _read(STDKEYS, buffer, length);
 }
 
-int readLast(char* buffer, int length){
+int readLast(char *buffer, int length)
+{
     return _read(STDLAST, buffer, length);
 }
 
-void printBase(uint64_t value, uint32_t base){
+void printBase(uint64_t value, uint32_t base)
+{
     uintToBase(value, buffer, base);
     print(buffer);
 }
 
-void printDec(uint64_t value){
+void printDec(uint64_t value)
+{
     printBase(value, 10);
 }
 
-void printHex(uint64_t value){
+void printHex(uint64_t value)
+{
     printBase(value, 16);
 }
-
-
-
 
 //================================================================================================================================
 // General use
 //================================================================================================================================
 //================================================================================================================================
-uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base)
+uint32_t uintToBase(uint64_t value, char *buffer, uint32_t base)
 {
-	char *p = buffer;
-	char *p1, *p2;
-	uint32_t digits = 0;
+    char *p = buffer;
+    char *p1, *p2;
+    uint32_t digits = 0;
 
-	//Calculate characters for each digit
-	do
-	{
-		uint32_t remainder = value % base;
-		*p++ = (remainder < 10) ? remainder + '0' : remainder + 'A' - 10;
-		digits++;
-	}
-	while (value /= base);
+    // Calculate characters for each digit
+    do
+    {
+        uint32_t remainder = value % base;
+        *p++ = (remainder < 10) ? remainder + '0' : remainder + 'A' - 10;
+        digits++;
+    } while (value /= base);
 
-	// Terminate string in buffer.
-	*p = 0;
+    // Terminate string in buffer.
+    *p = 0;
 
-	//Reverse string in buffer.
-	p1 = buffer;
-	p2 = p - 1;
-	while (p1 < p2)
-	{
-		char tmp = *p1;
-		*p1 = *p2;
-		*p2 = tmp;
-		p1++;
-		p2--;
-	}
+    // Reverse string in buffer.
+    p1 = buffer;
+    p2 = p - 1;
+    while (p1 < p2)
+    {
+        char tmp = *p1;
+        *p1 = *p2;
+        *p2 = tmp;
+        p1++;
+        p2--;
+    }
 
-	return digits;
+    return digits;
 }
 
-int strcmp(const char *str1, const char *str2){
-    while (*str1 && (*str1 == *str2)){
+int strcmp(const char *str1, const char *str2)
+{
+    while (*str1 && (*str1 == *str2))
+    {
         str1++;
         str2++;
     }
@@ -117,48 +132,59 @@ int strcmp(const char *str1, const char *str2){
     return *(unsigned char *)str1 - *(unsigned char *)str2;
 }
 
-int strlen(char * string){
-    int i=0;
-    while(string[i++]!=0);
+int strlen(char *string)
+{
+    int i = 0;
+    while (string[i++] != 0)
+        ;
     return i;
 }
 
-void strcpy(char *destination, const char *source) {
-    while (*source != '\0') {
+void strcpy(char *destination, const char *source)
+{
+    while (*source != '\0')
+    {
         *destination++ = *source++;
     }
     *destination = '\0';
 }
 
-
-int mod(int val, int base){
-    if (val < 0) return (val + base) % base;
+int mod(int val, int base)
+{
+    if (val < 0)
+        return (val + base) % base;
     return val % base;
 }
 
-int is_digit(char c) {
+int is_digit(char c)
+{
     return (c >= '0' && c <= '9') ? 1 : 0;
 }
 
-int char_to_int(const char* str) {
+int char_to_int(const char *str)
+{
     int result = 0;
 
-    if (str == NULL || *str == '\0') {
+    if (str == NULL || *str == '\0')
+    {
         write_out("Parametro invalido: la cadena esta vacia o es nula.\n");
-        
+
         exit_pcs(ERROR);
     }
 
-    while (*str != '\0') {
-        if (!is_digit(*str)) {
+    while (*str != '\0')
+    {
+        if (!is_digit(*str))
+        {
             write_out("Parametro invalido: se esperaba un numero entero positivo.\n");
-            
+
             exit_pcs(ERROR);
         }
         uint32_t digit = *str - '0';
-        if (result > (UINT32_MAX - digit) / 10) {
+        if (result > (UINT32_MAX - digit) / 10)
+        {
             write_out("Parametro invalido: el numero es demasiado grande.\n");
-            
+
             exit_pcs(ERROR);
         }
         result = result * 10 + digit;
@@ -168,17 +194,20 @@ int char_to_int(const char* str) {
     return result;
 }
 
-void int_to_char(int value, char *str) {
+void int_to_char(int value, char *str)
+{
     int i = 0, j;
     char temp[16];
     bool isNeg = false;
 
-    if (value < 0) {
+    if (value < 0)
+    {
         isNeg = true;
         value = -value;
     }
 
-    do {
+    do
+    {
         temp[i++] = '0' + (value % 10);
         value /= 10;
     } while (value > 0);
@@ -191,63 +220,70 @@ void int_to_char(int value, char *str) {
     str[i] = '\0';
 }
 
-
 //================================================================================================================================
 // Sleep
 //================================================================================================================================
 
-void sleep(uint32_t cant, uint32_t unidad){
-	_sleep(cant, unidad);
+void sleep(uint32_t cant, uint32_t unidad)
+{
+    _sleep(cant, unidad);
 }
 
-void sleep_once(){
+void sleep_once()
+{
     _sleep(0, 1);
 }
 
 //================================================================================================================================
 // Clock
 //================================================================================================================================
-void getClock(int *hrs, int *min, int *seg){
-	_getClock(hrs, min, seg);
+void getClock(int *hrs, int *min, int *seg)
+{
+    _getClock(hrs, min, seg);
 }
 
 //================================================================================================================================
 // Drawing
 //================================================================================================================================
 //================================================================================================================================
-void getScreenData(uint16_t * screenHeight, uint16_t * screenWidth, uint8_t * fontSize, uint8_t * drawSize){
-	_screenData(screenHeight,screenWidth,fontSize,drawSize);
+void getScreenData(uint16_t *screenHeight, uint16_t *screenWidth, uint8_t *fontSize, uint8_t *drawSize)
+{
+    _screenData(screenHeight, screenWidth, fontSize, drawSize);
 }
 
-int getFontSize(){
+int getFontSize()
+{
     // estos estan inicializados porq sino se rompe la funcion al querer escribir vacio
     uint16_t bufferHeight = 0;
     uint16_t bufferWeight = 0;
     uint8_t bufferDraw = 0;
-    _screenData(&bufferHeight, &bufferWeight, (uint8_t*) char_buffer,&bufferDraw);
-    return (int) char_buffer[0];
+    _screenData(&bufferHeight, &bufferWeight, (uint8_t *)char_buffer, &bufferDraw);
+    return (int)char_buffer[0];
 }
 
-
-void draw(uint16_t * bitmap, uint32_t color, uint16_t height, uint64_t x, uint64_t y){
-	_draw(bitmap, color, height, x, y);
+void draw(uint16_t *bitmap, uint32_t color, uint16_t height, uint64_t x, uint64_t y)
+{
+    _draw(bitmap, color, height, x, y);
 }
 
-void changeDrawSize(uint8_t newSize){
-	_changeSize(newSize, 2);
+void changeDrawSize(uint8_t newSize)
+{
+    _changeSize(newSize, 2);
 }
 
 //================================================================================================================================
 // Registers
 //================================================================================================================================
 
-int getRegs(uint64_t regs[]){
+int getRegs(uint64_t regs[])
+{
     return _getRegs(regs);
 }
 
 //================================================================================================================================
 // Beep!
 //================================================================================================================================
-void beep(uint32_t frequency, int duration){
+void beep(uint32_t frequency, int duration)
+{
     _beep(frequency, duration);
 }
