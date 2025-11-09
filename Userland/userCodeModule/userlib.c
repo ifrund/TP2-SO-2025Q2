@@ -3,7 +3,7 @@
 
 #include "include/userlib.h"
 
-static char buffer[64];
+static char buffer[2];
 static char *char_buffer = " ";
 
 //================================================================================================================================
