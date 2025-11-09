@@ -674,7 +674,7 @@ int filter(int argc, char **argv)
 
 void msg_dummy(int argc, char **argv)
 {
-    write_out("Arquitectura de Computadoras\n");
+    write_out("72.11 Sistemas Operativos\n");
     exit_pcs(EXIT);
 }
 
@@ -702,32 +702,20 @@ void writer_dummy(int argc, char **argv)
     exit_pcs(EXIT);
 }
 
-static const uint32_t colors[8] = {
-    0xFFFFFF,
-    0x000000,
-    0xFF0000,
-    0x00FF00,
-    0x0000FF,
-    0xFFFF00,
-    0xFF00FF,
-    0x00FFFF};
+static const uint32_t colors[64] = {
+        0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF8000, 0x80FF00,
+        0x0080FF, 0xFF0080, 0x8000FF, 0x00FF80, 0xFF4000, 0x40FF00, 0x0040FF, 0xFF0040,
+        0x4000FF, 0x00FF40, 0xFF2000, 0x20FF00, 0x0020FF, 0xFF0020, 0x2000FF, 0x00FF20,
+        0xFF6000, 0x60FF00, 0x0060FF, 0xFF0060, 0x6000FF, 0x00FF60, 0xFFA000, 0xA0FF00,
+        0x00A0FF, 0xFF00A0, 0xA000FF, 0x00FFA0, 0xFFC000, 0xC0FF00, 0x00C0FF, 0xFF00C0,
+        0xC000FF, 0x00FFC0, 0xFFE000, 0xE0FF00, 0x00E0FF, 0xFF00E0, 0xE000FF, 0x00FFE0,
+        0x804000, 0x408000, 0x004080, 0x800040, 0x400080, 0x008040, 0xC08000, 0x80C000,
+        0x0080C0, 0xC00080, 0x8000C0, 0x00C080, 0xE0C000, 0xC0E000, 0x00C0E0, 0xE000C0
+    };
 
 uint32_t get_color_from_int(int n)
 {
-    return colors[n - 4];
-}
-
-uint32_t get_color_from_pid(int pid)
-{
-    uint32_t r = (pid * 67) % 256;
-    uint32_t g = (pid * 131) % 256;
-    uint32_t b = (pid * 257) % 256;
-
-    r = (r + 128) % 256;
-    g = (g + 128) % 256;
-    b = (b + 128) % 256;
-
-    return (r << 16) | (g << 8) | b;
+    return colors[n % 64];
 }
 
 void reader_dummy(int argc, char **argv)
