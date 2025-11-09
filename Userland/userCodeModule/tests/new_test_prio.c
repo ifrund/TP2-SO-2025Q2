@@ -27,7 +27,7 @@ void zero_to_max() {
   exit_pcs(EXIT);
 }
 
-uint64_t test_prio_new(uint64_t argc, char *argv[]) {
+uint64_t test_prio_new(uint64_t argc, char **argv) {
 
     int64_t pids[TOTAL_PROCESSES];
     char *ztm_argv[] = {0};

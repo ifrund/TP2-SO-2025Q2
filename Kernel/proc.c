@@ -1,7 +1,7 @@
 #include "proc.h"
 #include "pipes.h"
 
-PCB* processTable[MAX_PCS]= {NULL}; 
+PCB* process_table[MAX_PCS]= {NULL}; 
 int IDLE_PID;
 int SHELL_PID;
 
@@ -13,15 +13,15 @@ static int strlen(char * string){
 
 //tabla de procesos
 int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds){
-    int i, myPid=-1;
+    int i, my_pid=-1;
 
     for (i = 0; i <MAX_PCS; i++){
-        if (processTable[i] == NULL){
-            myPid = i;
+        if (process_table[i] == NULL){
+            my_pid = i;
             break;
         }
-       if(processTable[i]->state == ZOMBIE){   
-            PCB *zombie = processTable[i];
+       if(process_table[i]->state == ZOMBIE){   
+            PCB *zombie = process_table[i];
 
             if (zombie->argv != NULL) {
                 for (int j = 0; zombie->argv[j] != NULL; j++) {
@@ -30,16 +30,16 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
                 free(zombie->argv);
             }
 
-            free(zombie->stackBase);
+            free(zombie->stack_base);
             free(zombie);
-            processTable[i] = NULL;
-            myPid = i;
+            process_table[i] = NULL;
+            my_pid = i;
             break;
         }
     }
     //de esta manera el pid simepre es el indice en la tabla
 
-    if (myPid == -1){
+    if (my_pid == -1){
         return -1;
     }
     
@@ -47,28 +47,28 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
     PCB * pcb = alloc(sizeof(PCB));
     if (pcb == NULL)
         return -2;
-    processTable[myPid] = pcb; 
+    process_table[my_pid] = pcb; 
 
     //Informacion general
     memset(pcb, 0, sizeof(PCB));
 
     //Reservamos espacio para el stack
-    void* stackBase = alloc(MAX_STACK_SIZE);
-    if (stackBase == NULL) {
+    void* stack_base = alloc(MAX_STACK_SIZE);
+    if (stack_base == NULL) {
         free(pcb);
-        processTable[i] = NULL;
+        process_table[i] = NULL;
         return -2; 
     }    
-    pcb->stackBase = stackBase;
+    pcb->stack_base = stack_base;
 
     //Preparamos argv
     char **argv_copy = NULL;
     if (argc > 0 && argv != NULL) {
         argv_copy = alloc(sizeof(char*) * (argc + 1)); // +1 para NULL final
         if (argv_copy == NULL) {
-            free(stackBase);
-            free(processTable[i]);
-            processTable[i] = NULL;
+            free(stack_base);
+            free(process_table[i]);
+            process_table[i] = NULL;
             return -2;
         }
 
@@ -80,27 +80,27 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
                 for (int m = 0; m < k; m++)
                     free(argv_copy[m]);
                 free(argv_copy);
-                free(stackBase);
+                free(stack_base);
                 free(pcb);
-                processTable[i] = NULL;
+                process_table[i] = NULL;
                 return -2;
             }
             memcpy(argv_copy[k], argv[k], len);
         }
         argv_copy[argc] = NULL;
     }
-    processTable[myPid]->argv = argv_copy;
+    process_table[my_pid]->argv = argv_copy;
 
     //Stack
-    pcb->rsp = stackBase + MAX_STACK_SIZE;
+    pcb->rsp = stack_base + MAX_STACK_SIZE;
     pcb->rsp = _create_stack(pcb->rsp, rip, argc, argv_copy);
 
     //Informacion
     memset(pcb->name, 0, PROCESS_NAME_MAX_LENGTH);
     memcpy(pcb->name, name, PROCESS_NAME_MAX_LENGTH - 1);
     pcb->name[PROCESS_NAME_MAX_LENGTH-1] = '\0';
-    pcb->PID = myPid;
-    pcb->ParentPID = get_pid();
+    pcb->PID = my_pid;
+    pcb->parent_pid = get_pid();
 
     pcb->time_used=0;
     if(strcmp(name, "idle") == 0){
@@ -116,40 +116,40 @@ int create_process(void * rip, char *name, int argc, char *argv[], uint64_t *fds
     }
         
     //Informacion de los hijos
-    pcb->childrenAmount = 0;
+    pcb->child_amount = 0;
     for(int i = 0; i < MAX_PCS; i++) {
-        pcb->childProc[i] = -1;
+        pcb->childs[i] = -1;
     } 
 
     //Registrar como hijo del padre
-    int parentPID = pcb->ParentPID;
-    if (parentPID >= 0 && parentPID < MAX_PCS && processTable[parentPID] != NULL) {
-        PCB *parent = processTable[parentPID];
+    int parent_pid = pcb->parent_pid;
+    if (parent_pid >= 0 && parent_pid < MAX_PCS && process_table[parent_pid] != NULL) {
+        PCB *parent = process_table[parent_pid];
         for (int i = 0; i < MAX_PCS; i++) {
-            if (parent->childProc[i] == -1) {
-                parent->childProc[i] = myPid;
-                parent->childrenAmount++;
+            if (parent->childs[i] == -1) {
+                parent->childs[i] = my_pid;
+                parent->child_amount++;
                 break;
             }
         }
     }
-    pcb->blocksAmount = 0;
+    pcb->blocks_amount = 0;
         
     if (fds == NULL) {
         // Comportamiento por default: STDIN=0, STDOUT=1, STDERR=2
-        pcb->fileDescriptors[0] = 0; // STDIN
-        pcb->fileDescriptors[1] = 1; // STDOUT
-        pcb->fileDescriptors[2] = 2; // STDERR
+        pcb->file_descriptors[0] = 0; // STDIN
+        pcb->file_descriptors[1] = 1; // STDOUT
+        pcb->file_descriptors[2] = 2; // STDERR
     } else {
         // Comportamiento con pipe: Copia los FDs del array
-        pcb->fileDescriptors[0] = fds[0]; // STDIN 
-        pcb->fileDescriptors[1] = fds[1]; // STDOUT
+        pcb->file_descriptors[0] = fds[0]; // STDIN 
+        pcb->file_descriptors[1] = fds[1]; // STDOUT
         // si los FDs apuntan a pipes , registrar la apertura
         if (fds[0] > 2) pipe_register((int)fds[0], PIPE_READ_END);
         if (fds[1] > 2) pipe_register((int)fds[1], PIPE_WRITE_END);
-        pcb->fileDescriptors[2] = 2;      // STDERR
+        pcb->file_descriptors[2] = 2;      // STDERR
     }
-    pcb->isYielding = 0;
+    pcb->yielding = 0;
     pcb->total_ticks = 0;
     pcb->changes = 0;
     pcb->yield_changes = 0;
@@ -168,15 +168,15 @@ int block_process(int pid){
     if(!is_pid_valid(pid))
         return -1;
 
-    ProcessState state = processTable[pid]->state;
+    process_state state = process_table[pid]->state;
     if(state == READY || state == RUNNING){
-        processTable[pid]->state = BLOCKED;
-        processTable[pid]->blocksAmount++;
+        process_table[pid]->state = BLOCKED;
+        process_table[pid]->blocks_amount++;
         yield();
         return 0;
     }
     if(state == BLOCKED){
-        processTable[pid]->blocksAmount++;
+        process_table[pid]->blocks_amount++;
         yield();
         return 0;
     }
@@ -189,23 +189,23 @@ int unblock_process(uint64_t pid){
     if(!is_pid_valid(pid))
         return -1;
     
-    if(processTable[pid]->state != BLOCKED )
+    if(process_table[pid]->state != BLOCKED )
         return -2;
 
-    if(processTable[pid]->blocksAmount > 1){ //si hubo varios blocks, los descontamos
-        processTable[pid]->blocksAmount--;
+    if(process_table[pid]->blocks_amount > 1){ //si hubo varios blocks, los descontamos
+        process_table[pid]->blocks_amount--;
         return 0;
     }
     //si estamos aca, significa q solo hubo un block, asiq lo descontamos y liberamos el pcs
-    processTable[pid]->blocksAmount--;
-    processTable[pid]->state = READY;
+    process_table[pid]->blocks_amount--;
+    process_table[pid]->state = READY;
 
     return 0;
 }
 
 void kill_pipes(PCB * proc){
     for (int i = 0; i < MAX_FD; i++) {
-        int fd_real = proc->fileDescriptors[i];
+        int fd_real = proc->file_descriptors[i];
         if (fd_real > 2) {                   
             // FD 0 (STDIN) (extremo de lectura de un pipe)
             if (i == 0) {
@@ -226,17 +226,17 @@ void kill_pipes(PCB * proc){
 
 void kill_all_of_type(const char *target_name) {
     for (int i = 0; i < MAX_PCS; i++) {
-        if (processTable[i] && strcmp(processTable[i]->name, target_name) == 0 && processTable[i]->state != ZOMBIE) {
-            kill_process(processTable[i]->PID);
+        if (process_table[i] && strcmp(process_table[i]->name, target_name) == 0 && process_table[i]->state != ZOMBIE) {
+            kill_process(process_table[i]->PID);
         }
     }
 }
 
 void kill_mvar(PCB * proc){
-    //ciclamos en processTable[] para ver si quedan readers/writers
+    //ciclamos en process_table[] para ver si quedan readers/writers
     int amount=0;
     for(int i=0; i<MAX_PCS && amount == 0; i++){
-        if(processTable[i] && strcmp(proc->name, processTable[i]->name) == 0 && processTable[i]->state != ZOMBIE){
+        if(process_table[i] && strcmp(proc->name, process_table[i]->name) == 0 && process_table[i]->state != ZOMBIE){
             amount++;
         }
     }
@@ -260,11 +260,11 @@ int kill_process(uint64_t pid){
     if (!is_pid_valid(pid))
         return -1;
 
-    PCB* proc = processTable[pid];   
+    PCB* proc = process_table[pid];   
     if(proc->state == ZOMBIE){
         return -2;
     } 
-    processTable[pid]->state = ZOMBIE;
+    process_table[pid]->state = ZOMBIE;
 
     if(strcmp("mvar_writer", proc->name)==0 || strcmp("mvar_reader", proc->name)==0 ){
         kill_mvar(proc);
@@ -274,39 +274,36 @@ int kill_process(uint64_t pid){
     } 
 
 
-    uint64_t parentPID = proc->ParentPID;
+    uint64_t parent_pid = proc->parent_pid;
 
-    if (parentPID >= 0 && parentPID < MAX_PCS && processTable[parentPID] != NULL) {
+    if (parent_pid >= 0 && parent_pid < MAX_PCS && process_table[parent_pid] != NULL) {
         
         // Despertar al padre
-        unblock_process(parentPID);
+        unblock_process(parent_pid);
 
         //me elimino de la lista de hijos del padre
-        PCB* parent = processTable[parentPID];
+        PCB* parent = process_table[parent_pid];
         for (int i = 0; i < MAX_PCS; i++) {
-            if (parent->childProc[i] == pid) {
-                parent->childProc[i] = -1;
-                parent->childrenAmount--;
+            if (parent->childs[i] == pid) {
+                parent->childs[i] = -1;
+                parent->child_amount--;
                 break;
             }
         }
     }
 
-
     //a todos mis hijos se los dejo a idle, no improta q este bloqueado
-    PCB * idle = processTable[IDLE_PID];
-    for(int i=0; i < proc->childrenAmount; i++){
-        int childPid = proc->childProc[i];
-        PCB* child = processTable[childPid];
-        child->ParentPID = IDLE_PID;
-        idle->childProc[idle->childrenAmount++] = childPid;
+    PCB * idle = process_table[IDLE_PID];
+    for(int i=0; i < proc->child_amount; i++){
+        int childPid = proc->childs[i];
+        PCB* child = process_table[childPid];
+        child->parent_pid = IDLE_PID;
+        idle->childs[idle->child_amount++] = childPid;
     }
-
-    //dejo esto en 0 por si sigo apareciendo en el ps y q se vea lindo :)
-    proc->childrenAmount = 0;
+    proc->child_amount = 0;     //dejo esto en 0 por si sigo apareciendo en el ps y q se vea lindo :)
 
     active_processes--;
-    last_wish(pid);
+    last_wish(pid); //yield especial porque este pid ya es zombie
     return 0;
 }
 
@@ -316,7 +313,7 @@ ProcessInfo* get_proc_list() {
         return NULL;
 
     for (int i = 0; i < MAX_PCS; i++) {
-        PCB* p = processTable[i];
+        PCB* p = process_table[i];
         ProcessInfo* info = &list[i];
 
         if (p == NULL) {
@@ -331,7 +328,7 @@ ProcessInfo* get_proc_list() {
         info->name[PROCESS_NAME_MAX_LENGTH - 1] = '\0';
 
         info->pid = p->PID;
-        info->parentPid = p->ParentPID;
+        info->parent_pid = p->parent_pid;
 
         switch (p->state) {
             case RUNNING: memcpy(info->state, "RUNNING", 15); break;
@@ -357,18 +354,18 @@ ProcessInfo* get_proc_list() {
         info->my_prio[15] = '\0';
 
 
-        info->childrenAmount = p->childrenAmount;
+        info->child_amount = p->child_amount;
         for (int j = 0; j < MAX_PCS; j++)
-            info->children[j] = p->childProc[j];
+            info->children[j] = p->childs[j];
 
         // File descriptors
         int fdCount = 0;
         for (int j = 0; j < MAX_FD; j++) {
-            info->fileDescriptors[j] = p->fileDescriptors[j];
-            if (p->fileDescriptors[j] != 0)
+            info->file_descriptors[j] = p->file_descriptors[j];
+            if (p->file_descriptors[j] != 0)
                 fdCount++;
         }
-        info->fileDescriptorCount = fdCount;
+        info->fds_count = fdCount;
     }
 
     return list;
@@ -378,8 +375,8 @@ int get_pid(){
     
     int pid = -1;
     for (int i = 0; i <MAX_PCS; i++) {
-        if (processTable[i] != NULL && processTable[i]->state == RUNNING) {
-            pid = processTable[i]->PID;
+        if (process_table[i] != NULL && process_table[i]->state == RUNNING) {
+            pid = process_table[i]->PID;
             break;
         }
     }
@@ -389,7 +386,7 @@ int get_pid(){
 
 int is_pid_valid(int pid){
     if (pid < 0 || pid >= MAX_PCS) return 0;
-    if (processTable[pid] == NULL) return 0;
+    if (process_table[pid] == NULL) return 0;
     return 1;
 }
 
@@ -401,10 +398,10 @@ int wait(uint64_t target_pid, uint64_t my_pid, char* target_name){
     if (!is_pid_valid(my_pid)) 
         return -2;
 
-    if (strcmp(target_name, processTable[target_pid]->name) != 0)
+    if (strcmp(target_name, process_table[target_pid]->name) != 0)
         return -3;
 
-    PCB* target = processTable[target_pid]; //a quien tenemos q esperar
+    PCB* target = process_table[target_pid]; //a quien tenemos q esperar
 
     //si el target termino primero, lo terminamos
     if (target->state == ZOMBIE) { 

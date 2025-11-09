@@ -30,7 +30,7 @@ extern void mvar_dummy(int argc, char **argv);
 extern void msg_dummy(int argc, char **argv);
 
 // Esto es un "string" manual para poder imprimir el caracter 128 de nuestro font de kernel usando lsa funciones estandar
-#define ERROR_PROMPT "Unknown command: "
+#define ERROR_PROMPT "Comando desconocido: "
 char PROMPT_START[] = {127, 0};
 int kill_from_shell = 0, foreground = 1, bye_shell=0;
 int current_foreground_pid;
@@ -104,12 +104,12 @@ int shell(){
     }
 
     clearScreen();
-
     return 0;
 }
 
 
 void process_key(char key){
+    
     if (key == '\n'){
 
         command_buffer[command_cursor] = '\0';
@@ -124,7 +124,7 @@ void process_key(char key){
 
         command_cursor = 0;
         if(!foreground){
-            _yield();
+            _yield(); //para q imprima la estrella dsp de q el proceso bg se haya ejecutado
             write_out(PROMPT_START);
         }
         else{
@@ -512,7 +512,7 @@ void comando_regs(){
     exit_pcs(EXIT);
 }
 
-int isdigit(char *str) {
+int is_digit_str(char *str) {
     if (str == 0 || *str == '\0')
         return 0; 
 
@@ -528,7 +528,7 @@ void comando_sleep(int argc, char** argv){
 
     argc_1(argc);
 
-    if(!isdigit(argv[0])){
+    if(!is_digit_str(argv[0])){
         write_out("Para este comando tenes que mandar un numero positivo porfavor\n");
         exit_pcs(ERROR);
     }

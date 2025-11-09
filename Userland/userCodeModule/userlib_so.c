@@ -129,7 +129,7 @@ void kill_dummy(int argc, char ** argv){
 
     int ret = _kill_process(toKill); 
     char k_str[21];
-    int_to_str(toKill, k_str);
+    int_to_char(toKill, k_str);
     pid_no_valid(ret);
     if(ret==SECOND_ERROR){
         write_out("El proceso de pid ");
@@ -158,7 +158,7 @@ void exit_pcs(int ret){
         pid = _get_pid(); 
     }
     char pid_str[21];
-    int_to_str(pid, pid_str);
+    int_to_char(pid, pid_str);
 
     if(ret == ERROR){
         write_out("El proceso de pid ");
@@ -187,7 +187,7 @@ void block_process_dummy(int argc, char ** argv){
     if(pid == idle_pid){
         write_out("Bloquear el idle... no sos muy inteligente.\n");
     }
-    if(pid == get_pid()){
+    if(pid == _get_pid()){
         write_out("Que haces loco, nos vas a meter en problemas raja de aca.\n");
         estrellita_bg();
         exit_pcs(ERROR); 
@@ -257,17 +257,17 @@ void get_proc_list_dummy(int argc, char ** argv){
             continue;
 
         char pid_str[21];
-        int_to_str(p->pid, pid_str);
+        int_to_char(p->pid, pid_str);
         write_out(pid_str);
         write_out("\t");
         write_out(p->name);
         write_out("\t");
         write_out(p->state);
         write_out("\t");
-        if (p->parentPid == (uint64_t)-1) write_out("-1");
+        if (p->parent_pid == (uint64_t)-1) write_out("-1");
         else {
             char ppid_str[21];
-            int_to_str(p->parentPid, ppid_str);
+            int_to_char(p->parent_pid, ppid_str);
             write_out(ppid_str);
         }
         write_out("\t0x");
@@ -289,11 +289,11 @@ void get_proc_list_dummy(int argc, char ** argv){
         write_out(p->my_prio);
         write_out("\t");
         char chi_str[21];
-        int_to_str(p->childrenAmount, chi_str);
+        int_to_char(p->child_amount, chi_str);
         write_out(chi_str);
         write_out("\t");
         char fdc_str[21];
-        int_to_str(p->fileDescriptorCount, fdc_str);
+        int_to_char(p->fds_count, fdc_str);
         write_out(fdc_str);
         write_out("\n");
     }
@@ -307,21 +307,6 @@ void get_proc_list_dummy(int argc, char ** argv){
 
 int get_proc_list(int argc, char ** argv){
     return create_process(&get_proc_list_dummy, "ps", argc, argv);
-}
-
-//ésta no es proceso, es built-in porq sino devolveria su propio pid
-int get_pid(){
-    return _get_pid();
-}
-
-void yield_dummy(int argc, char ** argv){
-    _yield();
-    
-    exit_pcs(EXIT);
-}
-
-int yield(int argc, char ** argv){
-    return create_process(&yield_dummy, "yield", argc, argv);
 }
 
 void be_nice_dummy(int argc, char ** argv){
@@ -373,7 +358,6 @@ int test_pcs(int argc, char ** argv){
     return create_process(&test_processes_dummy, "test processes", argc, argv);
 }
 
-
 void loop_dummy(int argc, char ** argv){
   
     argc_1(argc);
@@ -381,11 +365,11 @@ void loop_dummy(int argc, char ** argv){
     if(foreground){
         loop_fg=1;
     }
-    int pid = get_pid(); //agarro mi priopio pid
+    int pid = _get_pid(); //agarro mi priopio pid
     int cloop=0;
     int tiempo = char_to_int(argv[0]);   
     char pid_str[21];
-    int_to_str(pid, pid_str);
+    int_to_char(pid, pid_str);
     while (1){
         if(loop_fg){
             write_out(PROMPT_START);
@@ -394,7 +378,7 @@ void loop_dummy(int argc, char ** argv){
         write_out(pid_str);
         write_out(".\t Esta es mi vuelta ");
         char c_str[21];
-        int_to_str(cloop, c_str);
+        int_to_char(cloop, c_str);
         write_out(c_str);
         cloop++;
         write_out(".\n");
@@ -684,14 +668,13 @@ void mvar_dummy(int argc, char ** argv){
         exit_pcs(ERROR);
     }
 
-
     // spawnea los writers
     for (int i = 0; i < n_writers; i++) {
     char letter[2];
     letter[0] = 'A' + (i % 26);
     letter[1] = '\0';
     char pipebuf[12];
-    int_to_str(pipe_id, pipebuf);
+    int_to_char(pipe_id, pipebuf);
     char *wargv[3];
     wargv[0] = letter;
     wargv[1] = pipebuf;
@@ -707,10 +690,10 @@ void mvar_dummy(int argc, char ** argv){
     // spawnea los readers
     for (int j = 0; j < n_readers; j++) {
     char id_str[8];
-    int_to_str(j+1, id_str);
+    int_to_char(j+1, id_str);
 
     char pipebuf_r[12];
-    int_to_str(pipe_id, pipebuf_r);
+    int_to_char(pipe_id, pipebuf_r);
 
     char *rargv[3];
     rargv[0] = id_str;
@@ -728,6 +711,7 @@ void mvar_dummy(int argc, char ** argv){
     write_out("Se crearon exitosamente los procesos para el mvar. Espera a que se impriman los caracteres.\n");
     exit_pcs(EXIT);
 }
+
 int mvar(int argc, char ** argv){
     return create_process(&mvar_dummy, "mvar", argc, argv);
 }

@@ -168,10 +168,10 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
 void sys_write(uint64_t fd, uint64_t message, uint64_t length) {
   int current_pid = get_pid();
   if (!is_pid_valid(current_pid)) return;
-  PCB* pcb = processTable[current_pid];
+  PCB* pcb = process_table[current_pid];
 
   if (fd >= MAX_FD) return;
-  int real_fd = pcb->fileDescriptors[fd];
+  int real_fd = pcb->file_descriptors[fd];
 
   switch (real_fd) {
     case (STDOUT): // El FD real es 1
@@ -195,10 +195,10 @@ int sys_read(uint64_t fd, uint64_t buffer, uint64_t length) {
     
     int current_pid = get_pid();
     if (!is_pid_valid(current_pid)) return -1;
-    PCB* pcb = processTable[current_pid];
+    PCB* pcb = process_table[current_pid];
 
     if (fd >= MAX_FD) return -1;
-    int real_fd = pcb->fileDescriptors[fd]; 
+    int real_fd = pcb->file_descriptors[fd]; 
 
     if (real_fd == STDIN) {
         // El FD real es 0 (STDIN/Teclado)

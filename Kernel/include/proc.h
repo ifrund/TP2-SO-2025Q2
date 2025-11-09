@@ -28,7 +28,7 @@ typedef enum {
     BLOCKED,
     ZOMBIE,
     INVALID
-} ProcessState;
+} process_state;
 
 typedef enum {
     LEVEL_0 = 0, //mayor prio
@@ -44,15 +44,15 @@ typedef struct {
     //Informacion 
     char name[PROCESS_NAME_MAX_LENGTH];
     uint64_t PID;
-    uint64_t ParentPID;
-    ProcessState state;
+    uint64_t parent_pid;
+    process_state state;
 
     //File Descriptors
-    uint64_t fileDescriptors[MAX_FD];
+    uint64_t file_descriptors[MAX_FD];
 
     //Datos
     void* rsp; 
-    void* stackBase;
+    void* stack_base;
     char** argv; //solo existe para poder hacerle free
 
     Priorities my_prio;
@@ -62,29 +62,29 @@ typedef struct {
     int changes;
     int yield_changes;
     //Informacion de los hijos:
-    int childrenAmount;
-    int childProc[MAX_PCS];
-    int blocksAmount;
+    int child_amount;
+    int childs[MAX_PCS];
+    int blocks_amount;
 
-    int isYielding; //1 true, 0 false
+    int yielding; //1 true, 0 false
 } PCB;
 
-extern PCB* processTable[MAX_PCS]; 
+extern PCB* process_table[MAX_PCS]; 
   
 //Para el get_proc_list
 typedef struct {
     char name[PROCESS_NAME_MAX_LENGTH];
     uint64_t pid;
-    uint64_t parentPid;
+    uint64_t parent_pid;
     char state[16];            // "READY", etc.
     uint64_t rsp;
     char my_prio[16];
-    int childrenAmount;
+    int child_amount;
 
     int children[MAX_PCS];
     // Podrías incluir file descriptors si querés: los ids nada más.
-    uint64_t fileDescriptors[MAX_FD];
-    int fileDescriptorCount;  // Número de FDs válidos
+    uint64_t file_descriptors[MAX_FD];
+    int fds_count;  // Número de FDs válidos
 } ProcessInfo;
 
 

@@ -32,8 +32,6 @@ void exit_pcs(int ret);
 int block_process(int argc, char ** argv);
 int unblock_process(int argc, char ** argv);
 int get_proc_list(int argc, char ** argv);
-int get_pid();
-int yield(int argc, char ** argv);
 int be_nice(int argc, char ** argv);
 
 int test_mm(int argc, char **argv);

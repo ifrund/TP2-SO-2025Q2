@@ -195,7 +195,7 @@ int getRegs(uint64_t regs[]);
 //================================================================================================================================
 void beep(uint32_t frequency, int duration);
 
-void int_to_str(int value, char *str);
+void int_to_char(int value, char *str);
 int char_to_int(const char* str);
 
 #endif

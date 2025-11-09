@@ -8,8 +8,8 @@ void *scheduling(void *rsp) {
     if (active_processes == 0)
         return rsp; // No hay pcs
 
-    if (current_index >= 0 && processTable[current_index] != NULL) {
-        PCB *curr = processTable[current_index];
+    if (current_index >= 0 && process_table[current_index] != NULL) {
+        PCB *curr = process_table[current_index];
         curr->rsp = rsp;
 
         if (curr->state == RUNNING){
@@ -30,10 +30,11 @@ void *scheduling(void *rsp) {
                 }           
             }
             else{
-                if(curr->isYielding){
+                if(curr->yielding){
                     //aunque le queda tiempo, lo sacamos porq viene de un yield
-                    curr->isYielding=0;
+                    curr->yielding=0;
                     curr->time_used=0;
+                    curr->yield_changes++;
                     curr->state = READY; //como estaba running y metio yield, lo dejamos ready
                 }
                 else{
@@ -51,7 +52,7 @@ void *scheduling(void *rsp) {
     do {
         next_index = (next_index + 1) % MAX_PCS;
         checked++;
-        PCB *candidate = processTable[next_index];
+        PCB *candidate = process_table[next_index];
 
         if (candidate != NULL && candidate->state == READY) {
             current_index = next_index;
@@ -62,20 +63,20 @@ void *scheduling(void *rsp) {
 
     //como no hay ningun proceso en ready, tenemos q dejar algo corriendo en el sch
     //asiq vamos con el idle, q sabemos q siempre es el de pid 1
-    processTable[IDLE_PID]->state = RUNNING;
+    process_table[IDLE_PID]->state = RUNNING;
     current_index = IDLE_PID; 
-    return (void *)processTable[IDLE_PID]->rsp;
+    return (void *)process_table[IDLE_PID]->rsp;
 }
 
 void yield(){
     //forzamos un tick y al proceso q esta forzando el tick aka cediendo el CPU
     //y activamos el flag, para que el sch sepa que lo tiene que sacar de ready
-    processTable[get_pid()]->isYielding = 1;
+    process_table[get_pid()]->yielding = 1;
     _yield();
 }
 
 void last_wish(int pid){ //no se puede usar yield al final de kill, porq el get_pid devuelve -1 ya q el proceos esta ZOMBIE y no RUNNING
-    processTable[pid]->isYielding = 1;
+    process_table[pid]->yielding = 1;
     _yield();
 }
 
@@ -104,8 +105,8 @@ int be_nice(int pid, int new_prio){
     PCB *curr = NULL;
 
     for (int i = 0; i <MAX_PCS; i++) {
-        if (processTable[i] && processTable[i]->PID == pid && processTable[i]->state != ZOMBIE) {
-            curr = processTable[i];
+        if (process_table[i] && process_table[i]->PID == pid && process_table[i]->state != ZOMBIE) {
+            curr = process_table[i];
             break;
         }
     }  

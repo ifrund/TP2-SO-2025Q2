@@ -168,7 +168,7 @@ int char_to_int(const char* str) {
     return result;
 }
 
-void int_to_str(int value, char *str) {
+void int_to_char(int value, char *str) {
     int i = 0, j;
     char temp[16];
     bool isNeg = false;

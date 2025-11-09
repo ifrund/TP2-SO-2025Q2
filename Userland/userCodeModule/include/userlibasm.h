@@ -35,15 +35,15 @@ void _status_count(int *status_count);
 typedef struct {
     char name[PROCESS_NAME_MAX_LENGTH];
     uint64_t pid;
-    uint64_t parentPid;
+    uint64_t parent_pid;
     char state[16];            // "READY", etc.
     uint64_t rsp;
     char my_prio[16];
-    int childrenAmount;
+    int child_amount;
 
     int children[MAX_PCS];
-    uint64_t fileDescriptors[MAX_FD];
-    int fileDescriptorCount;  // Número de FDs válidos
+    uint64_t file_descriptors[MAX_FD];
+    int fds_count;  // Número de FDs válidos
 } ProcessInfo;
 
 

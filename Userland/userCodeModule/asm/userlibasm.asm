@@ -400,7 +400,7 @@ _unblock_process:
 ;================================================================================================================================
 
 ;================================================================================================================================
-;_get_proc_list obtiene los valores de los PIDS, ParentPIDs, status, nombre de los procesos, junto con su stack pointer
+;_get_proc_list obtiene los valores de los PIDS, parent_pids, status, nombre de los procesos, junto con su stack pointer
 ;================================================================================================================================
 
 _get_proc_list:

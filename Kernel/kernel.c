@@ -60,8 +60,8 @@ static void* const shell = (void *) 0x400000;
 //proceso basura cuando no hay ninguno ready, llama constantemente a halt, osea al sch, osea a q pase al proximo pcs
 //tmb lo usamos como init
 static void idle(){
-	char * argNull[1]={NULL};
-	SHELL_PID = create_process(shell, "shell", 0, argNull, NULL); 
+	char * arg_null[1]={NULL};
+	SHELL_PID = create_process(shell, "shell", 0, arg_null, NULL); 
 
 	while(1){
 		_hlt();
@@ -74,8 +74,8 @@ int main()
     flush_buffer();
 	create_mm();
 	pipe_init();
-	char * argNull[1]={NULL};
-	IDLE_PID = create_process(&idle, "idle", 0, argNull, NULL);  
+	char * arg_null[1]={NULL};
+	IDLE_PID = create_process(&idle, "idle", 0, arg_null, NULL);  
 	_sti(); //las desactivamos porq sino el sch nunca se activa y no toma el proceso idle
 
 	while(1){
