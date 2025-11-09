@@ -115,6 +115,14 @@ Se detallan ejemplos para requerimientos que no son triviales; en términos gene
 Consultar la sección # Comandos, utilizarlas basta para comprobar su funcionamiento.
 
 ### Requerimientos faltantes o parciales
+#### Matar proceso con semáforos
+Al matar un proceso que usa semáforos en su interacción con otros, si el mismo se encontraba en uso de la región crítica, no libera el uso del semáforo y los demás procesos quedan bloqueados sin manera de desbloquearlos.
+
+Esto sucede particularmente al utilizar `mvar`; en ejecución es imposible saber qué proceso está ejecutándose en un momento dado y si se mata a uno de ellos es posible matar al que se encontraba en la región crítica (notar además que, por diseño, aunque se mate a un writer también se bloquearán los readers, y viceversa).
+
+A su vez, luego de matar a todos los procesos de `mvar`, los semáforos quedan abiertos.
+
+En la rama `PipesMvar` se encuentra una solución parcial que se decidió no incorporar ya que provocaba bugs en `test-sync`.
 
 ## Limitaciones
 - Solo están implementadas las teclas especiales del lado izquierdo del teclado (`LCTRL`, `LSHIFT`, `LALT`)
