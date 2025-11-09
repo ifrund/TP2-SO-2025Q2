@@ -328,7 +328,7 @@ int kill_process(uint64_t pid)
 
     uint64_t parent_pid = proc->parent_pid;
 
-    if (parent_pid >= 0 && parent_pid < MAX_PCS && process_table[parent_pid] != NULL)
+    if (parent_pid < MAX_PCS && process_table[parent_pid] != NULL)
     {
 
         // Despertar al padre
@@ -392,20 +392,19 @@ ProcessInfo *get_proc_list()
         switch (p->state)
         {
         case RUNNING:
-            memcpy(info->state, "RUNNING", 15);
+            strncpy(info->state, "RUNNING", INFO_STR_LENGTH);
             break;
         case BLOCKED:
-            memcpy(info->state, "BLOCKED", 15);
+            strncpy(info->state, "BLOCKED", INFO_STR_LENGTH);
             break;
         case READY:
-            memcpy(info->state, "READY", 15);
+            strncpy(info->state, "READY", INFO_STR_LENGTH);
             break;
         case ZOMBIE:
-            memcpy(info->state, "ZOMBIE", 15);
+            strncpy(info->state, "ZOMBIE", INFO_STR_LENGTH);
             break;
         default:
-            memcpy(info->state, "UNKNOWN", 15);
-            break;
+            strncpy(info->state, "UNKNOWN", INFO_STR_LENGTH);
         }
 
         info->state[15] = '\0';
@@ -414,26 +413,25 @@ ProcessInfo *get_proc_list()
         switch (p->my_prio)
         {
         case LEVEL_0:
-            memcpy(info->my_prio, "LEVEL_0", 15);
+            strncpy(info->my_prio, "LEVEL_0", INFO_STR_LENGTH);
             break;
         case LEVEL_1:
-            memcpy(info->my_prio, "LEVEL_1", 15);
+            strncpy(info->my_prio, "LEVEL_1", INFO_STR_LENGTH);
             break;
         case LEVEL_2:
-            memcpy(info->my_prio, "LEVEL_2", 15);
+            strncpy(info->my_prio, "LEVEL_2", INFO_STR_LENGTH);
             break;
         case LEVEL_3:
-            memcpy(info->my_prio, "LEVEL_3", 15);
+            strncpy(info->my_prio, "LEVEL_3", INFO_STR_LENGTH);
             break;
         case LEVEL_4:
-            memcpy(info->my_prio, "LEVEL_4", 15);
+            strncpy(info->my_prio, "LEVEL_4", INFO_STR_LENGTH);
             break;
         case LEVEL_IDLE:
-            memcpy(info->my_prio, "LEVEL_IDLE", 15);
+            strncpy(info->my_prio, "LEVEL_IDLE", INFO_STR_LENGTH);
             break;
         default:
-            memcpy(info->my_prio, "UNKNOWN", 15);
-            break;
+            strncpy(info->my_prio, "UNKNOWN", INFO_STR_LENGTH);
         }
 
         info->my_prio[15] = '\0';

@@ -16,7 +16,8 @@
 #define QUANTUM 2
 #define IDLE_Q 1
 #define MAX_ARGUMENTS 16
-#define MAX_ARG_LENGTH 64 
+#define MAX_ARG_LENGTH 64
+#define INFO_STR_LENGTH 16
 
 extern int IDLE_PID; 
 extern int SHELL_PID;
@@ -76,9 +77,9 @@ typedef struct {
     char name[PROCESS_NAME_MAX_LENGTH];
     uint64_t pid;
     uint64_t parent_pid;
-    char state[16];            // "READY", etc.
+    char state[INFO_STR_LENGTH];            // "READY", etc.
     uint64_t rsp;
-    char my_prio[16];
+    char my_prio[INFO_STR_LENGTH];
     int child_amount;
 
     int children[MAX_PCS];
