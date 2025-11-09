@@ -693,7 +693,7 @@ void writer_dummy(int argc, char **argv)
     while (1)
     {
         int delay = rand() % 2 + 1;
-        sleep(1, 0);
+        sleep(delay, 0);
         _sem_wait("MVAR_EMPTY");
         _pipe_write(pid_pipe, buf, 1);
         _sem_post("MVAR_FULL");
@@ -722,11 +722,10 @@ void reader_dummy(int argc, char **argv)
 {
     srand(time() * _get_pid());
     char buf[1];
-    // buf[1] = '\0';
     while (1)
     {
         int delay = rand() % 2 + 1;
-        sleep(1, 0);
+        sleep(delay, 0);
 
         _sem_wait("MVAR_FULL");
         int bytes = _pipe_read(char_to_int(argv[1]), buf, 1);
