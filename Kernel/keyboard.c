@@ -106,7 +106,7 @@ void insert_key(int key)
 
 int read_key(int fd)
 {
-  int toRet;
+  int toRet = 0;
 
   if (fd == STDIN)
   {
