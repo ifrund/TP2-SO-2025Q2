@@ -129,32 +129,33 @@ int be_nice(int pid, int new_prio)
         return -1;
     }
 
-    PCB *curr = NULL;
-
-    for (int i = 0; i < MAX_PCS; i++)
-    {
-        if (process_table[i] && process_table[i]->PID == pid && process_table[i]->state != ZOMBIE)
-        {
-            curr = process_table[i];
-            break;
-        }
-    }
-
-    if (strcmp(curr->name, "idle") == 0)
-    { // el idle no lo podes cambiar
-        return -2;
-    }
-
     if (new_prio < 0 || new_prio > 4)
     {
         return -3;
     }
 
-    Priorities new = int_to_priority(new_prio);
+    PCB *curr = NULL;
 
-    curr->my_prio = new;
-    // actualizamos su max_time
-    curr->my_max_time = get_max_time_for_priority(curr->my_prio);
+    for (int i = 0; i < MAX_PCS && curr == NULL; i++)
+    {
+        if (process_table[i] && process_table[i]->PID == pid && process_table[i]->state != ZOMBIE)
+        {
+            curr = process_table[i];
+        }
+    }
+
+    if (curr != NULL)
+    {
+        if (strcmp(curr->name, "idle") == 0)
+        { // el idle no lo podes cambiar
+            return -2;
+        }
+        Priorities new = int_to_priority(new_prio);
+
+        curr->my_prio = new;
+        // actualizamos su max_time
+        curr->my_max_time = get_max_time_for_priority(curr->my_prio);
+    }
 
     return 0;
 }
