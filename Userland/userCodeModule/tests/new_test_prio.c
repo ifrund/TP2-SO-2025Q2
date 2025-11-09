@@ -62,7 +62,7 @@ uint64_t test_prio_new(uint64_t argc, char **argv) {
     write_out("\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++){
-        _wait(pids[i], my_pid, pcs_name);
+        _wait(pids[i], my_pid);
     }
 
     write_out("\nMISMA PRIORIDAD, LUEGO CAMBIA...\n");
@@ -79,7 +79,7 @@ uint64_t test_prio_new(uint64_t argc, char **argv) {
     write_out("\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++){
-        _wait(pids[i], my_pid, pcs_name);
+        _wait(pids[i], my_pid);
     }
 
     write_out("\nMISMA PRIORIDAD, LUEGO CAMBIA MIENTRAS ESTA BLOQUEADO...\n");
@@ -100,7 +100,7 @@ uint64_t test_prio_new(uint64_t argc, char **argv) {
     }
 
     for (i = 0; i < TOTAL_PROCESSES; i++){
-        _wait(pids[i], my_pid, pcs_name);
+        _wait(pids[i], my_pid);
     }
 
     write_out("\nTermino el test prio ;) \n");

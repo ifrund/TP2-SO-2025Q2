@@ -120,7 +120,7 @@ void test_processes_dummy(int argc, char **argv) {
     for (i = 0; i < max_processes; i++) {
       if (p_rqs[i].pid > 0) {
           // Esperamos a que termine cada proceso que creamos
-          int ret = _wait(p_rqs[i].pid, my_pid, name);
+          int ret = _wait(p_rqs[i].pid, my_pid);
           if (ret == -1) {
               write_out("test_processes: ERROR esperando proceso, pid no valido ");
               printDec(p_rqs[i].pid);

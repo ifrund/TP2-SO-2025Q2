@@ -107,7 +107,7 @@ void syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     break;
 
   case (0xA6):
-    sys_wait(rdi, rsi, rdx);
+    sys_wait(rdi, rsi);
     break;
 
   case (0xA7):
@@ -356,8 +356,8 @@ int sys_get_pid(){
   return get_pid();
 }
 
-int sys_wait(uint64_t target_pid, uint64_t my_pid, uint64_t name){
-  return wait(target_pid, my_pid, (char *)name);
+int sys_wait(uint64_t target_pid, uint64_t my_pid){
+  return wait(target_pid, my_pid);
 }
 
 int sys_sem_open_init(uint64_t name, uint64_t value){

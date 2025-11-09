@@ -218,7 +218,7 @@ void process_command(char* buffer){
                 current_foreground_pid = pid;
                 _update_foreground(current_foreground_pid);
                 int myPid = _get_pid();
-                _wait(pid, myPid, command_name);
+                _wait(pid, myPid);
                 current_foreground_pid = shell_pid;
             }
         }
@@ -340,8 +340,8 @@ static void handle_pipe_command(char* cmd_A, char* cmd_B, int foreground) {
     // Esperar si es foreground
     if (foreground) {
         int myPid = _get_pid();
-        _wait(pid_A, myPid, command_A);
-        _wait(pid_B, myPid, command_B);
+        _wait(pid_A, myPid);
+        _wait(pid_B, myPid);
     }
 
     

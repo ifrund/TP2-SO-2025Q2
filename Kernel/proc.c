@@ -390,16 +390,13 @@ int is_pid_valid(int pid){
     return 1;
 }
 
-int wait(uint64_t target_pid, uint64_t my_pid, char* target_name){
+int wait(uint64_t target_pid, uint64_t my_pid){
 
     if (!is_pid_valid(target_pid))
         return -1;
     
     if (!is_pid_valid(my_pid)) 
         return -2;
-
-    if (strcmp(target_name, process_table[target_pid]->name) != 0)
-        return -3;
 
     PCB* target = process_table[target_pid]; //a quien tenemos q esperar
 

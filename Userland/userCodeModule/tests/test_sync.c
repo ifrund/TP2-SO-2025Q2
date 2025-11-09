@@ -95,17 +95,17 @@ void test_sync_dummy(int argc, char **argv) { //{n, use_sem}
   global = 0;
 
   uint64_t i;
-  for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-    pids[i] = create_process(&my_process_inc, "my_process_inc", 3, argvDec);
-    pids[i + TOTAL_PAIR_PROCESSES] = create_process(&my_process_inc, "my_process_inc", 3, argvInc);
-  }
-
-  int pid = _get_pid();
   char name[128];
   strcpy(name, "my_process_inc");
   for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-    _wait(pids[i], pid, "my_process_inc");
-    _wait(pids[i + TOTAL_PAIR_PROCESSES], pid, "my_process_inc");
+    pids[i] = create_process(&my_process_inc, name, 3, argvDec);
+    pids[i + TOTAL_PAIR_PROCESSES] = create_process(&my_process_inc, name, 3, argvInc);
+  }
+
+  int pid = _get_pid();
+  for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
+    _wait(pids[i], pid);
+    _wait(pids[i + TOTAL_PAIR_PROCESSES], pid);
   }
 
   write_out("Valor final (deberia ser 0 si usaste sem): ");
