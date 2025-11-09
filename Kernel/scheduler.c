@@ -82,12 +82,12 @@ void last_wish(int pid){ //no se puede usar yield al final de kill, porq el get_
 
 static int get_max_time_for_priority(Priorities p) {
     switch (p) {
-        case LEVEL_0: return QUANTUM * 5; // 25
-        case LEVEL_1: return QUANTUM * 4; // 20
-        case LEVEL_2: return QUANTUM * 3; // 15
-        case LEVEL_3: return QUANTUM * 2; // 10
+        case LEVEL_0: return QUANTUM * 40; // 200
+        case LEVEL_1: return QUANTUM * 10; // 50
+        case LEVEL_2: return QUANTUM * 5; // 25
+        case LEVEL_3: return QUANTUM * 4; // 20
         case LEVEL_4: return QUANTUM * 1; // 5
-        case LEVEL_IDLE: return 1;
+        case LEVEL_IDLE: return 1; //1
         default: return QUANTUM; //5
     }
 } 
