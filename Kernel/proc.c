@@ -10,6 +10,7 @@
 #include "include/proc.h"
 #include "include/pipes.h"
 #include "include/scheduler.h"
+#include "include/sem.h"
 
 PCB *process_table[MAX_PCS] = {NULL};
 int IDLE_PID;
@@ -367,7 +368,7 @@ int kill_process(uint64_t pid)
     {
         close_all_sems();
     }
-    
+
     last_wish(pid); // yield especial porque este pid ya es zombie
     return 0;
 }
