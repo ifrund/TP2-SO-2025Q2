@@ -476,6 +476,9 @@ int loop(int argc, char **argv)
 
 void wc_dummy(int argc, char **argv)
 {
+    if(!foreground)
+        exit_pcs(EXIT);
+
     char buffer[2];
     int line_count = 1;
     buffer[1] = '\0';
@@ -519,6 +522,8 @@ int wc(int argc, char **argv)
 
 void cat_dummy(int argc, char **argv)
 {
+    if(!foreground)
+        exit_pcs(EXIT);
 
     char line_buffer[BUFFER_SIZE];
     int line_index = 0;
@@ -587,6 +592,8 @@ int cat(int argc, char **argv)
 
 void filter_dummy(int argc, char **argv)
 {
+    if(!foreground)
+        exit_pcs(EXIT);
 
     char line_buffer[BUFFER_SIZE];
     char filtered_buffer[BUFFER_SIZE];
