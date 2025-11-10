@@ -48,6 +48,21 @@ La ejecución del sistema se realiza por fuera del entorno de compilación, sobr
 #### Ejecución del sistema
 ```./run.sh```
 
+### Debug y análisis de código
+
+El sistema está preparado para ser debugueado con `gdb` y `gdb-dashboard`, además del analizador PVS-studio.
+
+#### Debug
+
+1. Compilar el sistema con las instrucciones de compilación detalladas anteriormente
+2. Fuera del contenedor, ejecutar el sistema con el comando `./run.sh gdb`
+3. Otra vez dentro del contenedor, ejecutar el comando `gdb`. Se iniciará `gdb-dashboard` para comenzar con el debugueo.
+
+#### PVS-studio
+
+1. Compilar el sistema con el comando `make pvs`
+2. Consultar el informe generado en el directorio `/informe_completo.html/index.html`
+
 ## Instrucciones de replicación
 
 El teclado del sistema está en inglés, por lo que el mapeo de teclas coincide con este teclado y no con el de español. Se aclarará la combinación de teclas correcta en caso de ser necesario.
@@ -115,11 +130,6 @@ Se detallan ejemplos para requerimientos que no son triviales; en términos gene
 Consultar la sección # Comandos, utilizarlas basta para comprobar su funcionamiento.
 
 ### Requerimientos faltantes o parciales
-#### Prioridades
-El uso de prioridades presenta un error donde procesos con la misma prioridad pueden demorar una cantidad distinta y arbitraria de ticks.
-
-Esto puede replicarse con `test-prio`, donde el primer proceso tendrá algunos ticks más que los demás.
-
 #### Cerrar semáforos
 Aunque el presente trabajo cuenta con la implementación de la syscall para cerrar semáforos, la misma no se utiliza al matar procesos (incluida la `shell`).
 
@@ -130,6 +140,11 @@ Esto sucede particularmente al utilizar `mvar`; en ejecución es imposible saber
 A su vez, luego de matar a todos los procesos de `mvar`, los semáforos quedan abiertos.
 
 En la rama `PipesMvar` se encuentra una solución parcial que se decidió no incorporar ya que provocaba bugs en `test-sync`.
+
+#### Prioridades
+El uso de prioridades presenta una complicación en la cual procesos idénticos demoran cantidades diferentes de ticks en cumplirse, provocando que no se ejecuten en el orden esperado. Los procesos guardan datos como `total_ticks` y `changes` para documentar cuantos ticks tuvieron y cuántas veces cedieron su lugar en el scheduler, mediante los cuales se verificó que las prioridades y el mecanismo round-robin implementados se respetan; pero al ejecutar `mvar` o `test-prio` los resultados no corresponden con lo esperado.
+
+Para replicar este problema, en el modo de `debug` colocar un breakpoint `b new_test_prio.c:80`, continuar, ejecutar dicho test (`test-prio`), y colocar otro en `b proc.c:create_process`. Una vez parado en éste último podrá mirar los ticks y changes hechos por los procesos, y verificar que aunque todos los `zero_to_max` son idénticos y de misma prioridad (ya que corresponden a los de la primer tanda del test), algunos tardan más ticks que los otros. 
 
 ## Limitaciones
 - Solo están implementadas las teclas especiales del lado izquierdo del teclado (`LCTRL`, `LSHIFT`, `LALT`)
