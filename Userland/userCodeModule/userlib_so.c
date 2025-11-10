@@ -294,12 +294,12 @@ void get_proc_list_dummy(int argc, char **argv)
         return;
     }
 
-    uint8_t lengths[] = {3, 16, 7, 4, 11, 10, 3, 3};
+    uint8_t lengths[] = {3, 14, 7, 4, 11, 10, 3, 3};
 
     // encabezado
     write_out("=== Lista de procesos ===\n");
-    write_out("PID|Nombre          |Estado |PPID|RSP        |Priority  |Chd|FDs\n");
-    write_out("---|----------------|-------|----|-----------|----------|---|---\n");
+    write_out("PID|Nombre        |Estado |PPID|RSP        |Priority  |Chd|FDs\n");
+    write_out("---|--------------|-------|----|-----------|----------|---|---\n");
 
     // iterar sobre la lista
     for (int i = 0; i < MAX_PCS; i++)
@@ -365,7 +365,7 @@ void get_proc_list_dummy(int argc, char **argv)
         write_out("\n");
     }
 
-    write_out("---|----------------|-------|----|-----------|----------|---|---\n");
+    write_out("---|--------------|-------|----|-----------|----------|---|---\n");
 
     _free(list);
     estrellita_bg();
