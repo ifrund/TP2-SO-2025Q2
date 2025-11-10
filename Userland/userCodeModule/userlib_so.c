@@ -296,7 +296,7 @@ void get_proc_list_dummy(int argc, char **argv)
         return;
     }
 
-    uint8_t lengths[] = {3, 16, 7, 4, 10, 10, 3, 3};
+    uint8_t lengths[] = {3, 16, 7, 4, 11, 10, 3, 3};
 
     // encabezado
     write_out("=== Lista de procesos ===\n");
@@ -316,7 +316,10 @@ void get_proc_list_dummy(int argc, char **argv)
         write_out("|");
 
         char name[lengths[1]];
-        strcpy(name, p->name); // TODO
+        // Corto el nombre del proceso a 16 caracteres para no romper la tabla
+        for (int j = 0; j < lengths[1]; j++) {
+            name[j] = p->name[j];
+        }
         print_proc_list_field(name, lengths[1]);
         write_out("|");
 
@@ -340,7 +343,7 @@ void get_proc_list_dummy(int argc, char **argv)
         const char hex_chars[] = "0123456789ABCDEF";
         rsp_str[0] = '0';
         rsp_str[1] = 'x';
-        for (int j = 0; j < lengths[4] - 2; j++)
+        for (int j = 0; j < lengths[4] - 3; j++)
         {
             uint8_t hex_index = (p->rsp >> (28 - j * 4)) & 0xF;
             rsp_str[j + 2] = hex_chars[hex_index];
@@ -818,7 +821,7 @@ void mvar_dummy(int argc, char **argv)
         create_process_piped(&reader_dummy, "mvar_reader", 2, rargv, fds_r);
     }
 
-    // El proceso principal debe terminar inmediatamente después de crear los lectores y escritores.​
+    // El proceso principal finaliza inmediatamente luego de crear los escritores y lectores
     write_out("Se crearon exitosamente los procesos para el mvar. Espera a que se impriman los caracteres.\n");
     exit_pcs(EXIT);
 }

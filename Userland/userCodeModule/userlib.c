@@ -3,7 +3,7 @@
 
 #include "include/userlib.h"
 
-static char buffer[64] = {'0'};
+static char buffer[2];
 static char *char_buffer = " ";
 
 //================================================================================================================================
@@ -49,8 +49,8 @@ void flushBuffer()
 
 void change_font(int size)
 {
-    char *msg = "\033[nF";
-    msg[2] = size + '0';
+    char msg[6] = "\033[nF";
+    msg[5] = size + '0';
     print(msg);
 }
 
@@ -172,7 +172,7 @@ int char_to_int(const char *str)
         exit_pcs(ERROR);
     }
 
-    while (*str != '\0')
+    while (str != NULL && *str != '\0')
     {
         if (!is_digit(*str))
         {
