@@ -1,18 +1,17 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <keyboard.h>
-#include <lib.h>
 #include <stdint.h>
-#include <syscall_handler.h>
-#include <videoDriver.h>
-#include <time.h>
-#include <registers.h>
-#include <sound.h>
+#include "include/keyboard.h"
 #include "include/memory_manager.h"
-#include "include/proc.h"
-#include "include/scheduler.h"
 #include "include/pipes.h"
+#include "include/registers.h"
+#include "include/scheduler.h"
+#include "include/sem.h"
+#include "include/sound.h"
+#include "include/syscall_handler.h"
+#include "include/time.h"
+#include "include/videoDriver.h"
 
 #define STDIN 0
 #define STDOUT 1

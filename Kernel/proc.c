@@ -1,8 +1,15 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "proc.h"
-#include "pipes.h"
+#include <stdint.h>
+#include <stddef.h>
+#include "include/lib_asm.h"
+#include "include/lib_mem.h"
+#include "include/lib_str.h"
+#include "include/memory_manager.h"
+#include "include/proc.h"
+#include "include/pipes.h"
+#include "include/scheduler.h"
 
 PCB *process_table[MAX_PCS] = {NULL};
 int IDLE_PID;

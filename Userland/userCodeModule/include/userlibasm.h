@@ -2,7 +2,6 @@
 #define USERLIBASM_H
 
 #include <stdint.h>
-#include <stdbool.h>
 
 /*---Arquitectura de Computadoras---*/
 void _print(int fd, char * string, int length);

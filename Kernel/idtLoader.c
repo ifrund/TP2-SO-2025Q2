@@ -1,10 +1,10 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <defs.h>
-#include <idtLoader.h>
-#include <interrupts.h>
 #include <stdint.h>
+#include "include/idtLoader.h"
+#include <defs.h>
+#include "include/interrupts.h"
 #include "include/sem.h"
 
 #pragma pack(push) /* Push de la alineación actual */

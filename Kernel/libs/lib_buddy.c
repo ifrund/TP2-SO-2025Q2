@@ -3,6 +3,7 @@
 
 // Implementation based on https://pdos.csail.mit.edu/6.828/2019/lec/malloc.c
 
+#include <stddef.h>
 #include "../include/memory_manager.h"
 #include "../include/lib_buddy.h"
 

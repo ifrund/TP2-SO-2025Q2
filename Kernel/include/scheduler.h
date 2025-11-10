@@ -1,16 +1,10 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
-#include <stdint.h>
-#include <stddef.h>
-#include "proc.h"
-#include "lib.h"
-#include "interrupts.h"
-
 extern int active_processes;
 extern int current_index;
 
-void * scheduling(void *rsp);
+void *scheduling(void *rsp);
 void yield();
 void last_wish(int pid);
 int be_nice(int pid, int new_prio);

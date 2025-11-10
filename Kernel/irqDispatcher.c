@@ -1,12 +1,10 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <time.h>
-#include <keyboard.h>
 #include <stdint.h>
-#include <syscall_handler.h>
-#include <naiveConsole.h>
-#include <registers.h>
+#include "include/keyboard.h"
+#include "include/syscall_handler.h"
+#include "include/time.h"
 
 static void int_20();
 static void int_21();

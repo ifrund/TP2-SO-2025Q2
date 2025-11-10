@@ -41,8 +41,8 @@ typedef struct size_info
 } size_info;
 
 uint16_t first_power(uint64_t n, uint64_t min_size);
-uint16_t addr_to_bi(uint16_t k, char *p, void* base_addr);
-void *bi_to_addr(uint16_t k, uint16_t bi, void* base_addr);
+uint16_t addr_to_bi(uint16_t k, char *p, void *base_addr);
+void *bi_to_addr(uint16_t k, uint16_t bi, void *base_addr);
 
 // List functions that the buddy allocator uses. Implementations
 // are at the end of the buddy allocator code.

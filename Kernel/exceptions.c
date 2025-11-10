@@ -2,10 +2,10 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <stdint.h>
-#include <videoDriver.h>
-#include <sound.h>
-#include <time.h>
-#include <keyboard.h>
+#include "include/keyboard.h"
+#include "include/sound.h"
+#include "include/time.h"
+#include "include/videoDriver.h"
 
 #define ZERO_EXCEPTION_ID 0
 #define INVALID_OP_CODE_ID 6

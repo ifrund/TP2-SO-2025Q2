@@ -1,4 +1,5 @@
-#include <stdint.h>
+#ifndef KEYBOARD_H
+#define KEYBOARD_H
 
 void key_handler();
 int read_key(int fd);
@@ -7,3 +8,5 @@ void flush_buffer();
 void checkShift(int key);
 void checkRegs(int key);
 int altPressed();
+
+#endif

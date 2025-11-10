@@ -1,11 +1,13 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "include/userlib_so.h"
-#include "include/shell.h"
-#include "include/userlibasm.h"
-#include "include/file_descriptors.h"
 #include <stdint.h>
+#include <stddef.h>
+#include "include/file_descriptors.h"
+#include "include/shell.h"
+#include "include/userlib.h"
+#include "include/userlibasm.h"
+#include "include/userlib_so.h"
 
 #define COMMANDS 22
 #define TESTS 4

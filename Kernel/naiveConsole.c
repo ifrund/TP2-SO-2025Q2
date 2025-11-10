@@ -1,12 +1,11 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <naiveConsole.h>
 #include <stdint.h>
+#include "include/lib_math.h"
+#include "include/naiveConsole.h"
 
 #define VIDEO_ADDRESS (void *)0xB8000
-
-static uint32_t uintToBase(uint64_t value, char *buffer, uint32_t base);
 
 static char buffer[64];
 static uint8_t *video = (uint8_t *)VIDEO_ADDRESS;
@@ -117,36 +116,4 @@ uint8_t *getCurrentVideo()
 void setCurrentVideo(uint8_t *location)
 {
 	currentVideo = location;
-}
-
-static uint32_t uintToBase(uint64_t value, char *buffer, uint32_t base)
-{
-	char *p = buffer;
-	char *p1, *p2;
-	uint32_t digits = 0;
-
-	// Calculate characters for each digit
-	do
-	{
-		uint32_t remainder = value % base;
-		*p++ = (remainder < 10) ? remainder + '0' : remainder + 'A' - 10;
-		digits++;
-	} while (value /= base);
-
-	// Terminate string in buffer.
-	*p = 0;
-
-	// Reverse string in buffer.
-	p1 = buffer;
-	p2 = p - 1;
-	while (p1 < p2)
-	{
-		char tmp = *p1;
-		*p1 = *p2;
-		*p2 = tmp;
-		p1++;
-		p2--;
-	}
-
-	return digits;
 }

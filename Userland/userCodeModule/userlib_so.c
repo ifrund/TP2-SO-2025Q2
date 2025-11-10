@@ -1,8 +1,14 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "userlib_so.h"
+#include <stddef.h>
+#include <stdint.h>
+#include "include/shell.h"
+#include "include/userlib.h"
+#include "include/userlibasm.h"
+#include "include/userlib_so.h"
 #include "include/rand.h"
+#include "tests/test_util.h"
 
 int shell_pid;
 int idle_pid;
@@ -300,8 +306,8 @@ void get_proc_list_dummy(int argc, char **argv)
 
     // encabezado
     write_out("=== Lista de procesos ===\n");
-    write_out("PID|Nombre          |Estado |PPID|RSP       |Priority  |Chd|FDs\n");
-    write_out("---|----------------|-------|----|----------|----------|---|---\n");
+    write_out("PID|Nombre          |Estado |PPID|RSP        |Priority  |Chd|FDs\n");
+    write_out("---|----------------|-------|----|-----------|----------|---|---\n");
 
     // iterar sobre la lista
     for (int i = 0; i < MAX_PCS; i++)
@@ -317,7 +323,8 @@ void get_proc_list_dummy(int argc, char **argv)
 
         char name[lengths[1]];
         // Corto el nombre del proceso a 16 caracteres para no romper la tabla
-        for (int j = 0; j < lengths[1]; j++) {
+        for (int j = 0; j < lengths[1]; j++)
+        {
             name[j] = p->name[j];
         }
         print_proc_list_field(name, lengths[1]);
@@ -348,7 +355,7 @@ void get_proc_list_dummy(int argc, char **argv)
             uint8_t hex_index = (p->rsp >> (28 - j * 4)) & 0xF;
             rsp_str[j + 2] = hex_chars[hex_index];
         }
-        rsp_str[10] = '\0';
+        rsp_str[lengths[4] - 1] = '\0';
         print_proc_list_field(rsp_str, lengths[4]);
         write_out("|");
 
@@ -366,7 +373,7 @@ void get_proc_list_dummy(int argc, char **argv)
         write_out("\n");
     }
 
-    write_out("---|----------------|-------|----|----------|----------|---|---\n");
+    write_out("---|----------------|-------|----|-----------|----------|---|---\n");
 
     _free(list);
     estrellita_bg();

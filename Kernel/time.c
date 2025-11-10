@@ -1,11 +1,13 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <lib.h>
-#include <naiveConsole.h>
 #include <stdint.h>
-#include <time.h>
-#include <interrupts.h>
+#include "include/interrupts.h"
+#include "include/lib_asm.h"
+#include "include/lib_math.h"
+#include "include/naiveConsole.h"
+#include "include/time.h"
+#include "include/videoDriver.h"
 
 #define MILLENIUM 2000 // cambiarlo si llega a ser necesario
 #define CENTURY 0      // lo usamos para calcular la fecha completa

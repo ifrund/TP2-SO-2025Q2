@@ -1,7 +1,14 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+#include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include "include/shell.h"
+#include "include/file_descriptors.h"
 #include "include/userlib.h"
+#include "include/userlibasm.h"
+#include "include/userlib_so.h"
 
 static char buffer[2];
 static char *char_buffer = " ";

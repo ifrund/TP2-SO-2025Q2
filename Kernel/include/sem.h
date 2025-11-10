@@ -1,9 +1,7 @@
 #ifndef _sem_
 #define _sem_
 
-#include "memory_manager.h"
-#include "proc.h"
-#include "lib.h"
+#include <stdint.h>
 
 #define MAX_SEMAPHORES 10
 #define MAX_NAME_LENGTH 32

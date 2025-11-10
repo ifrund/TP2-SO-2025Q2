@@ -1,12 +1,11 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "pipes.h"
-#include "sem.h"
-#include "memory_manager.h"
-#include "lib.h"
 #include <stddef.h>
-#include "videoDriver.h"
+#include "include/lib_str.h"
+#include "include/pipes.h"
+#include "include/proc.h"
+#include "include/sem.h"
 
 #define MAX_PIPES 16
 #define PIPE_BUFFER_SIZE 1024 // Tamaño del buffer
@@ -275,8 +274,8 @@ int pipe_read(int pipe_id, char *buffer, int count)
         {
             // Si no hay datos pero no EOF (puede pasar si varios readers fueron despertados)
             sem_post(pipe->sem_pipe_lock_name);
-            
-            if(pipe->eof_signaled)
+
+            if (pipe->eof_signaled)
                 return bytes_read; // devuelve 0 si no se leyó nada
         }
 

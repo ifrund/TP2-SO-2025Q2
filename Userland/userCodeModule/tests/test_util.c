@@ -2,7 +2,6 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <stdint.h>
-#include <stdio.h>
 #include "test_util.h"
 
 #define WAIT 100000 // Change this value to make the wait long enough to see theese processes beeing run at least twice

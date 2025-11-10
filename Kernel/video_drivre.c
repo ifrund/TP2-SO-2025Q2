@@ -1,10 +1,11 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <videoDriver.h>
-#include <fonts.h>
-#include <lib.h>
 #include <stdint.h>
+#include "include/fonts.h"
+#include "include/lib_math.h"
+#include "include/lib_mem.h"
+#include "include/videoDriver.h"
 
 #define ERROR_FONT 0xDADADA
 #define ERROR_BACK 0xa70000

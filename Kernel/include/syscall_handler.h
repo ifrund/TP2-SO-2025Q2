@@ -1,7 +1,8 @@
+#ifndef SYSCALL_HANDLER_H
+#define SYSCALL_HANDLER_H
+
 #include <stdint.h>
 #include "proc.h"
-#include "sem.h"
-#include <pipes.h>
 
 extern int foreground_pid;
 
@@ -13,8 +14,8 @@ void sys_nanosleep(uint64_t nanos);
 void sys_draw(uint64_t bitmap, uint64_t hexColor, uint64_t height, uint64_t init_x, uint64_t init_y);
 void sys_screenData(uint64_t screenHeight, uint64_t screenWidth, uint64_t fontSize, uint64_t drawSize);
 
-int read_chars(int fd, char* buffer, int length);
-void getScreenData(uint16_t * screenHeight, uint16_t * screenWidth, uint8_t * fontSize, uint8_t * drawSize);
+int read_chars(int fd, char *buffer, int length);
+void getScreenData(uint16_t *screenHeight, uint16_t *screenWidth, uint8_t *fontSize, uint8_t *drawSize);
 
 void sys_sleep(uint32_t cant, uint32_t unidad);
 
@@ -25,7 +26,7 @@ void sys_speak(uint64_t frequence, uint64_t duration);
 
 void sys_changeSize(uint8_t newSize, uint8_t fd);
 
-//SO 
+// SO
 
 void sys_create_mm();
 void *sys_alloc(uint64_t size);
@@ -36,7 +37,7 @@ int sys_create_process(uint64_t rip, uint64_t name, uint64_t argc, uint64_t argv
 int sys_kill_process(uint64_t pid);
 int sys_block_process(uint64_t pid);
 int sys_unblock_process(uint64_t pid);
-ProcessInfo* sys_get_proc_list();
+ProcessInfo *sys_get_proc_list();
 int sys_get_pid();
 int sys_wait(uint64_t target_pid, uint64_t my_pid);
 void sys_yield();
@@ -45,7 +46,7 @@ int sys_sem_open_init(uint64_t name, uint64_t value);
 int sys_sem_wait(uint64_t name);
 int sys_sem_post(uint64_t name);
 int sys_sem_close(uint64_t name);
-//PIPES
+// PIPES
 int sys_pipe_create_named(uint64_t name);
 int sys_pipe_create_anonymous(uint64_t pipe_ids);
 int sys_pipe_close(uint64_t pipe_id, uint64_t mode);
@@ -57,3 +58,5 @@ int sys_get_idle();
 void sys_foreground(int pid);
 
 void sys_print_color(uint64_t message, uint64_t length, uint64_t fontColor, uint64_t bgColor);
+
+#endif

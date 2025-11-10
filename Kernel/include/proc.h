@@ -3,10 +3,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "lib.h"
-#include "memory_manager.h"
-#include "naiveConsole.h"
-#include "scheduler.h"
 
 //Constants
 #define MAX_FD 128

@@ -1,6 +1,11 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+#include <stddef.h>
+#include "include/lib_asm.h"
+#include "include/lib_mem.h"
+#include "include/lib_str.h"
+#include "include/proc.h"
 #include "include/sem.h"
 
 static sem_internal_t semaphores[MAX_SEMAPHORES] = {0};

@@ -1,19 +1,17 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "include/lib.h"
 #include <stdint.h>
-#include <sound.h>
-#include <lib.h>
-#include <moduleLoader.h>
-#include <videoDriver.h>
-#include <naiveConsole.h>
-#include <idtLoader.h>
-#include <keyboard.h>
-#include <interrupts.h>
+#include <stddef.h>
+#include "include/idtLoader.h"
+#include "include/interrupts.h"
+#include "include/lib_mem.h"
 #include "include/memory_manager.h"
-#include "include/proc.h"
+#include "include/moduleLoader.h"
+#include "include/naiveConsole.h"
 #include "include/pipes.h"
+#include "include/proc.h"
+#include "include/videoDriver.h"
 
 #define USERSPACE_ADDRESS (void*)0x400000
 #define DATASPACE_ADDRESS (void*)0x500000

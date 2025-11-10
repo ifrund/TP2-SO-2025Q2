@@ -2,8 +2,8 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <stdint.h>
-#include <time.h>
-#include <lib.h>
+#include "include/lib_asm.h"
+#include "include/time.h"
 
 // Esto fue sacado de la pagina de wikiOSDev: https://wiki.osdev.org/PC_Speaker
 

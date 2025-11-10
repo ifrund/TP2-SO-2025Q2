@@ -1,11 +1,10 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <keyboard.h>
-#include <lib.h>
-#include <naiveConsole.h>
 #include <stdint.h>
-#include <videoDriver.h>
+#include "include/keyboard.h"
+#include "include/lib_asm.h"
+#include "include/proc.h"
 #include "include/sem.h"
 
 #define KEY_BUF_SIZE 16

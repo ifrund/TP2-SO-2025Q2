@@ -1,5 +1,8 @@
+#ifndef TEST_UTIL_H
+#define TEST_UTIL_H
+
 #include <stdint.h>
-#include "../include/shell.h"   //write_out lib, for testing
+#include "../include/shell.h" //write_out lib, for testing
 #include "../include/userlibasm.h"
 #include "../include/userlib.h"
 #include "../include/userlib_so.h"
@@ -17,3 +20,4 @@ void test_processes_dummy(int argc, char **argv);
 void test_sync_dummy(int argc, char **argv);
 uint64_t test_prio_new(uint64_t argc, char **argv);
 
+#endif

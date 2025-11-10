@@ -1,13 +1,8 @@
 #ifndef _OURLIB_H_
 #define _OURLIB_H_
 
-#include "userlibasm.h"
-#include "file_descriptors.h"
-#include "shell.h"
-#include "../tests/test_util.h"
 #include <stdint.h>
 
-#define NULL ((void *)0)
 #define ERROR -1
 #define EXIT 0
 
@@ -19,7 +14,7 @@
 //================================================================================================================================
 // Imprime en pantalla un string
 //================================================================================================================================
-void print(char * string);
+void print(char *string);
 
 //================================================================================================================================
 // Imprime en pantalla un char
@@ -27,17 +22,17 @@ void print(char * string);
 void printChar(char charToPrint);
 
 // Imprime en pantalla un string con color (font, bg)
-void print_color(char * string, int length, uint32_t fontColor, uint32_t bgColor);
+void print_color(char *string, int length, uint32_t fontColor, uint32_t bgColor);
 
 //================================================================================================================================
 // Imprime en pantalla una determinada cantidad de chars de un string
 //================================================================================================================================
-void printCant(char* string, int cant);
+void printCant(char *string, int cant);
 
 //================================================================================================================================
 // Imprime en pantalla un mensaje de error
 //================================================================================================================================
-void printError(char * string);
+void printError(char *string);
 
 //================================================================================================================================
 // Logica para imprimir en pantalla numeros
@@ -91,12 +86,12 @@ void sleep_once();
 //================================================================================================================================
 // Dibuja un bitmap de 16bit de ancho en pantalla
 //================================================================================================================================
-void draw(uint16_t * bitmap, uint32_t color, uint16_t height, uint64_t x, uint64_t y);
+void draw(uint16_t *bitmap, uint32_t color, uint16_t height, uint64_t x, uint64_t y);
 
 //================================================================================================================================
 // Obtiene la información de dimensión de pantalla
 //================================================================================================================================
-void getScreenData(uint16_t * screenHeight, uint16_t * screenWidth, uint8_t * fontSize, uint8_t * drawSize);
+void getScreenData(uint16_t *screenHeight, uint16_t *screenWidth, uint8_t *fontSize, uint8_t *drawSize);
 
 //================================================================================================================================
 // Cambia el tamaño de los dibujos
@@ -114,18 +109,17 @@ void changeDrawSize(uint8_t newSize);
 //================================================================================================================================
 // Lee del buffer de input
 //================================================================================================================================
-int read(char* buffer, int length);
+int read(char *buffer, int length);
 
 //================================================================================================================================
 // Devuelve el scan code leido
 //================================================================================================================================
-int readRaw(char* buffer, int length);
+int readRaw(char *buffer, int length);
 
 //================================================================================================================================
 // Devuelve el último caracter leido
 //================================================================================================================================
-int readLast(char* buffer, int length);
-
+int readLast(char *buffer, int length);
 
 //********************************************************************************************************************************
 //********************************************************************************************************************************
@@ -137,7 +131,7 @@ int readLast(char* buffer, int length);
 //================================================================================================================================
 // Devuelve la longitud de un string dado
 //================================================================================================================================
-int strlen(char * string);
+int strlen(char *string);
 
 //================================================================================================================================
 // Copia un string en un destino
@@ -152,7 +146,7 @@ int strcmp(const char *str1, const char *str2);
 //================================================================================================================================
 // Logica para imprimir correctamente un numero dada su base
 //================================================================================================================================
-uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
+uint32_t uintToBase(uint64_t value, char *buffer, uint32_t base);
 
 //================================================================================================================================
 // Funcion modulo
@@ -196,6 +190,6 @@ int getRegs(uint64_t regs[]);
 void beep(uint32_t frequency, int duration);
 
 void int_to_char(int value, char *str);
-int char_to_int(const char* str);
+int char_to_int(const char *str);
 
 #endif

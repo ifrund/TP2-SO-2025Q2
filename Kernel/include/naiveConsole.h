@@ -4,14 +4,14 @@
 #include <stdint.h>
 
 // regular prints
-void ncPrint(const char * string);
+void ncPrint(const char *string);
 void ncPrintChar(char character);
-void ncPrintCant(const char * string, int num);
+void ncPrintCant(const char *string, int num);
 
 // color prints
-void ncPrintColor(const char * string, int color);
+void ncPrintColor(const char *string, int color);
 void ncPrintCharColor(char character, int color);
-void ncPrintColorCant(const char * string, int num, int color);
+void ncPrintColorCant(const char *string, int num, int color);
 
 // cleanup
 void ncNewline();

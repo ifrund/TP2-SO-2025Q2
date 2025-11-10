@@ -1,6 +1,10 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+#include <stddef.h>
+#include "include/lib_asm.h"
+#include "include/lib_str.h"
+#include "include/proc.h"
 #include "include/scheduler.h"
 
 int active_processes = 0; // procesos q no estan ZOMBIE
