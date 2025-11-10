@@ -184,15 +184,7 @@ int kill_process(int argc, char **argv)
 void exit_pcs(int ret)
 {
 
-    int pid;
-    if (bye_shell)
-    {
-        pid = shell_pid;
-    }
-    else
-    {
-        pid = _get_pid();
-    }
+    int pid = _get_pid();
     char pid_str[21];
     int_to_char(pid, pid_str);
 

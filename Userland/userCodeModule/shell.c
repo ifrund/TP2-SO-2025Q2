@@ -38,7 +38,7 @@ extern void msg_dummy(int argc, char **argv);
 // Esto es un "string" manual para poder imprimir el caracter 128 de nuestro font de kernel usando lsa funciones estandar
 #define ERROR_PROMPT "Comando desconocido: "
 char PROMPT_START[] = {127, 0};
-int kill_from_shell = 0, foreground = 1, bye_shell = 0;
+int kill_from_shell = 0, foreground = 1;
 static int current_foreground_pid;
 
 // Buffers
@@ -218,6 +218,10 @@ void process_command(char *buffer)
 
         if (rip == NULL)
         {
+            if (strcmp(command_name, "exit") == 0) {
+                exit_shell();
+            }
+            
             if (strlen(buffer) == BUFFER_SIZE)
             {
                 write_out("Buenas... una poesia?\n");
@@ -420,7 +424,7 @@ static void *find_command_rip(char *name)
     // Array de punteros a funciones (o sea los RIPs)
     // MISMO ORDEN QUE COMMANDS
     static void *command_rips[COMMANDS] = {
-        &exit_shell,            // "exit"
+        NULL,            // "exit"
         &comando_clean,         // "clear"
         &comando_sleep,         // "sleep"
         &comando_help,          // "help"
@@ -480,7 +484,6 @@ void exit_shell()
     write_out("Nos vemos, esperamos que la hayas pasado bien! \n");
     bye[0] = "0";
     bye[1] = NULL;
-    bye_shell = 1;
     exit_pcs(EXIT);
 }
 
