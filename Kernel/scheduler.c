@@ -102,13 +102,13 @@ static int get_max_time_for_priority(Priorities p)
     switch (p)
     {
     case LEVEL_0:
-        return QUANTUM * 10 * 10 * 10 * 10; // 20000
+        return QUANTUM * 5 * 5 * 5 * 5; // 1250
     case LEVEL_1:
-        return QUANTUM * 10 * 10 * 10; // 2000
+        return QUANTUM * 5 * 5 * 5; // 250
     case LEVEL_2:
-        return QUANTUM * 10 * 10; // 200
+        return QUANTUM * 5 * 5; // 50
     case LEVEL_3:
-        return QUANTUM * 10; // 20
+        return QUANTUM * 5; // 10
     case LEVEL_4:
         return QUANTUM * 1; // 2
     case LEVEL_IDLE:
