@@ -144,8 +144,6 @@ uint8_t getFontSize()
 
 #define SCALED_CHARACTER_WIDTH (charWidth * SCALE)
 #define SCALED_CHARACTER_HEIGHT (charHeight * SCALE)
-#define WIDTH_IN_CHARS (VBE_mode_info->width)
-#define HEIGHT_IN_CHARS (VBE_mode_info->height)
 
 void putChar(char character, uint32_t colorFont, uint32_t colorBg, uint64_t init_x, uint64_t init_y)
 {
@@ -172,7 +170,7 @@ void printChar(char character)
 
 void printCharColor(char character, uint32_t fontColor, uint32_t bgColor)
 {
-    if (cursorX == WIDTH_IN_CHARS)
+    if (cursorX == VBE_mode_info->width)
     {
         newLine();
     }
@@ -191,7 +189,7 @@ void printCharColor(char character, uint32_t fontColor, uint32_t bgColor)
     default:
         putChar(character, fontColor, bgColor, cursorX, cursorY);
         cursorX += SCALED_CHARACTER_WIDTH;
-        if (cursorX >= WIDTH_IN_CHARS)
+        if (cursorX >= VBE_mode_info->width)
             newLine();
     }
 }
@@ -259,8 +257,10 @@ void printHex(uint64_t value)
  */
 void newLine()
 {
+    // cursorY += charHeight * SCALE;
+    // cursorX = 0;
     cursorX = 0;
-    if (cursorY / SCALED_CHARACTER_HEIGHT < HEIGHT_IN_CHARS - 2)
+    if (cursorY < VBE_mode_info->height - SCALED_CHARACTER_HEIGHT)
     {
         cursorY += SCALED_CHARACTER_HEIGHT; // avanzo normalmente, sigo teniendo pantalla
     }
@@ -304,13 +304,15 @@ void repoCursor()
     if (cursorX == 0 && cursorY > 0)
     {
         cursorY -= SCALED_CHARACTER_HEIGHT;
-        cursorX = WIDTH_IN_CHARS;
+        cursorX = VBE_mode_info->width - SCALED_CHARACTER_WIDTH;
     }
     cursorX -= SCALED_CHARACTER_WIDTH;
 }
 
 void clear()
 {
+    cursorX = 0;
+    cursorY = 0;
     for (int i = 0; i < VBE_mode_info->width; i++)
     {
         for (int j = 0; j < VBE_mode_info->height; j++)
@@ -318,8 +320,6 @@ void clear()
             putPixel(DEFAULT_BACK, i, j);
         }
     }
-    cursorX = 0;
-    cursorY = 0;
 }
 
 //================================================================================================================================
