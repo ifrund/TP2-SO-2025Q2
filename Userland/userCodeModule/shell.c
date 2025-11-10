@@ -235,6 +235,8 @@ void process_command(char *buffer)
             write_out(command_name);
             foreground = 1;
             write_out("\n");
+        } else if (rip == (void*)-1) {
+            exit_shell();
         }
         else
         {
@@ -256,7 +258,7 @@ void process_command(char *buffer)
 void shift()
 {
     clearScreen();
-
+    
     for (int i = 1; i < rows_to_show; i++)
     {
 
@@ -425,7 +427,7 @@ static void *find_command_rip(char *name)
     // Array de punteros a funciones (o sea los RIPs)
     // MISMO ORDEN QUE COMMANDS
     static void *command_rips[COMMANDS] = {
-        &exit_shell,            // "exit"
+        (void*)-1,            // "exit"
         &comando_clean,         // "clear"
         &comando_sleep,         // "sleep"
         &comando_help,          // "help"
