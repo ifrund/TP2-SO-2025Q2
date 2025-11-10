@@ -51,6 +51,7 @@ static char *help[COMMANDS - TESTS] = {"exit", "clear", "sleep", "help", "regist
                                        "kill", "ps", "nice", "block", "unblock", "loop", "wc", "cat", "filter", "mvar", "msg"};
 static char *info[COMMANDS - TESTS] = {"-", "-", "(tiempo a dormir)", "-", "-", "-", "-", "(el pid a matar)", "-", "(pid a afectar) (nueva prioridad)",
                                        "(pid a bloquear)", "(pid a desbloquear)", "(segundos entre aparaciones del loop)", "-", "-", "-", "-", "-"};
+static char *info_tests[TESTS] = {"(bytes a pedir recurrentemente)", "(maxima prioridad a aplicar)", "(cantidad de procesos a crear)", "(iteraciones de las operaciones) (booleano para utilizar semaforos)"};
 
 char char_buffer[1];
 
@@ -512,6 +513,8 @@ void comando_tests()
     for (int i = 0; i < (TESTS); i++)
     {
         write_out(tests[i]);
+        write_out(" ");
+        write_out(info_tests[i]);
         write_out("\n");
     }
     exit_pcs(EXIT);
