@@ -71,7 +71,6 @@ static int cantRegs = 18;
 static uint64_t regs[18];
 static char *regsNames[18] = {"rax:", "rbx:", "rcx:", "rdx:", "rsi:", "rdi:", "rbp:", "rsp:", "r8:", "r9:",
                        "r10:", "r11:", "r12:", "r13:", "r14:", "r15:", "rip:", "rflags:"};
-static char *bye[MAX_ARGS];
 
 void exit_shell();
 void comando_help();
@@ -482,8 +481,6 @@ int read_input(char *buffer, int max_len)
 void exit_shell()
 {
     write_out("Nos vemos, esperamos que la hayas pasado bien! \n");
-    bye[0] = "0";
-    bye[1] = NULL;
     exit_pcs(EXIT);
 }
 
