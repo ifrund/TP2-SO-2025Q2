@@ -257,8 +257,6 @@ void printHex(uint64_t value)
  */
 void newLine()
 {
-    // cursorY += charHeight * SCALE;
-    // cursorX = 0;
     cursorX = 0;
     if (cursorY < VBE_mode_info->height - SCALED_CHARACTER_HEIGHT)
     {
