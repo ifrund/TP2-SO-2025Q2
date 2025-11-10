@@ -366,6 +366,12 @@ int kill_process(uint64_t pid)
 
     if (pid == SHELL_PID)
     {
+        for(int i = SHELL_PID + 1; i < MAX_PCS; i++) {
+            if(process_table[i] != NULL) {
+                kill_pipes(process_table[i]);
+                process_table[i]->state = ZOMBIE;
+            }
+        }
         close_all_sems();
     }
 
