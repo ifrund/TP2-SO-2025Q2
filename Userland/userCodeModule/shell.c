@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "include/file_descriptors.h"
+#include "include/lib_str.h"
 #include "include/shell.h"
 #include "include/userlib.h"
 #include "include/userlibasm.h"
@@ -38,11 +39,11 @@ extern void msg_dummy(int argc, char **argv);
 #define ERROR_PROMPT "Comando desconocido: "
 char PROMPT_START[] = {127, 0};
 int kill_from_shell = 0, foreground = 1, bye_shell = 0;
-int current_foreground_pid;
+static int current_foreground_pid;
 
 // Buffers
-char screen_buffer[VERT_SIZE][LINE_SIZE];
-char command_buffer[BUFFER_SIZE];
+static char screen_buffer[VERT_SIZE][LINE_SIZE];
+static char command_buffer[BUFFER_SIZE];
 static char *commands[COMMANDS] = {"exit", "clear", "sleep", "help", "registers", "test-mm", "test-prio",
                                    "test-pcs", "test-sync", "mem", "tests", "kill", "ps", "nice", "block", "unblock", "loop", "wc", "cat", "filter", "mvar", "msg"};
 static char *tests[TESTS] = {"test-mm", "test-prio", "test-pcs", "test-sync"};
@@ -54,27 +55,24 @@ static char *info[COMMANDS - TESTS] = {"-", "-", "(tiempo a dormir)", "-", "-", 
 char char_buffer[1];
 
 // Cursor & flags
-int command_cursor = 0;
-int cursor_y;
-int cursor_x;
-int exit_command;
+static int command_cursor = 0;
+static int cursor_y;
+static int cursor_x;
+static int exit_command;
 
 // Variables Importantes
-uint8_t font_size;
-int rows_to_show;
-int limit_index = VERT_SIZE - 1;
-int line_size = LINE_SIZE;
+static uint8_t font_size;
+static int rows_to_show;
+static int limit_index = VERT_SIZE - 1;
+static int line_size = LINE_SIZE;
 
-int hrs = 0;
-int min = 0;
-int sec = 0;
-
-char aux[128];
-int cantRegs = 18;
-uint64_t regs[18];
-char *regsNames[18] = {"rax:", "rbx:", "rcx:", "rdx:", "rsi:", "rdi:", "rbp:", "rsp:", "r8:", "r9:",
+static char aux[128];
+static int cantRegs = 18;
+static uint64_t regs[18];
+static char *regsNames[18] = {"rax:", "rbx:", "rcx:", "rdx:", "rsi:", "rdi:", "rbp:", "rsp:", "r8:", "r9:",
                        "r10:", "r11:", "r12:", "r13:", "r14:", "r15:", "rip:", "rflags:"};
-char *bye[MAX_ARGS];
+static char *bye[MAX_ARGS];
+
 void exit_shell();
 void comando_help();
 void comando_clean();
@@ -83,8 +81,6 @@ void comando_regs();
 void comando_sleep(int argc, char **argv);
 
 // Helpers
-static void remove_extra_spaces(char *str);
-static char *strchr(const char *str, int c);
 static int parse_arguments(char *buffer, char **argv);
 static void *find_command_rip(char *name);
 static void handle_pipe_command(char *cmd_A, char *cmd_B, int foreground);
@@ -458,51 +454,7 @@ static void *find_command_rip(char *name)
     return NULL;
 }
 
-static char *strchr(const char *str, int c)
-{
-    while (*str != '\0')
-    {
-        if (*str == (char)c)
-        {
-            return (char *)str;
-        }
-        str++;
-    }
-    if (c == '\0')
-    {
-        return (char *)str;
-    }
-    return NULL;
-}
 
-static void remove_extra_spaces(char *str)
-{
-    int i = 0, j = 0;
-    int in_space = 1;
-
-    while (str[i])
-    {
-        char c = str[i++];
-        if (c == ' ' || c == '\t' || c == '\n')
-        {
-            if (!in_space)
-            {
-                in_space = 1;
-                str[j++] = ' ';
-            }
-        }
-        else
-        {
-            in_space = 0;
-            str[j++] = c;
-        }
-    }
-
-    if (j > 0 && str[j - 1] == ' ')
-        j--;
-
-    str[j] = '\0';
-}
 
 int read_input(char *buffer, int max_len)
 {
@@ -584,20 +536,6 @@ void comando_regs()
         }
     }
     exit_pcs(EXIT);
-}
-
-int is_digit_str(char *str)
-{
-    if (str == 0 || *str == '\0')
-        return 0;
-
-    for (int i = 0; str[i] != '\0'; i++)
-    {
-        if (str[i] < '0' || str[i] > '9')
-            return 0;
-    }
-
-    return 1;
 }
 
 void comando_sleep(int argc, char **argv)

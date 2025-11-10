@@ -15,14 +15,6 @@ PCB *process_table[MAX_PCS] = {NULL};
 int IDLE_PID;
 int SHELL_PID;
 
-static int strlen(char *string)
-{
-    int i = 0;
-    while (string[i++] != 0)
-        ;
-    return i;
-}
-
 // tabla de procesos
 int create_process(void *rip, char *name, int argc, char *argv[], uint64_t *fds)
 {

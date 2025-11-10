@@ -41,13 +41,6 @@ Pipe global_pipe_table[MAX_PIPES];
 
 static int create_pipe_object(int pipe_id, const char *name, int is_named);
 static void build_sem_names(const char *base_name, Pipe *pipe);
-static void itoa(int n, char s[], int base);
-static void reverse(char s[]);
-static int strlen_custom(const char *s);
-static void strcopy(char *dest, const char *src);
-static void strncopy(char *dest, const char *src, unsigned int n);
-static char *strcat(char *dest, const char *src);
-static char *strncat(char *dest, const char *src, unsigned int n);
 
 void pipe_init()
 {
@@ -88,7 +81,7 @@ int pipe_create_anonymous(int pipe_ids[2])
 
     // Generacion de nombre para el pipe anonimo
     char anon_name[MAX_PIPE_NAME_LENGTH];
-    strncopy(anon_name, "anon_", 5);
+    strncpy(anon_name, "anon_", 5);
     char slot_str[10];
     itoa(free_slot, slot_str, 10);
     strcat(anon_name, slot_str);
@@ -318,22 +311,22 @@ static void build_sem_names(const char *base_name, Pipe *pipe)
 {
     // Lock
     strncpy(pipe->sem_pipe_lock_name, "p_lock_", MAX_NAME_LENGTH - 1);
-    strncat(pipe->sem_pipe_lock_name, base_name, MAX_NAME_LENGTH - strlen_custom(pipe->sem_pipe_lock_name) - 1);
+    strncat(pipe->sem_pipe_lock_name, base_name, MAX_NAME_LENGTH - strlen(pipe->sem_pipe_lock_name) - 1);
 
     // Items
     strncpy(pipe->sem_items_available_name, "p_items_", MAX_NAME_LENGTH - 1);
-    strncat(pipe->sem_items_available_name, base_name, MAX_NAME_LENGTH - strlen_custom(pipe->sem_items_available_name) - 1);
+    strncat(pipe->sem_items_available_name, base_name, MAX_NAME_LENGTH - strlen(pipe->sem_items_available_name) - 1);
 
     // Espacio
     strncpy(pipe->sem_empty_space_available_name, "p_space_", MAX_NAME_LENGTH - 1);
-    strncat(pipe->sem_empty_space_available_name, base_name, MAX_NAME_LENGTH - strlen_custom(pipe->sem_empty_space_available_name) - 1);
+    strncat(pipe->sem_empty_space_available_name, base_name, MAX_NAME_LENGTH - strlen(pipe->sem_empty_space_available_name) - 1);
 }
 
 static int create_pipe_object(int pipe_id, const char *name, int is_named)
 {
     Pipe *pipe = &global_pipe_table[pipe_id];
 
-    strcopy(pipe->name, name);
+    strcpy(pipe->name, name);
     pipe->is_named = is_named;
     pipe->read_index = 0;
     pipe->write_index = 0;
@@ -358,83 +351,4 @@ static int create_pipe_object(int pipe_id, const char *name, int is_named)
     }
 
     return pipe_id;
-}
-
-static int strlen_custom(const char *s)
-{
-    int n = 0;
-    while (s[n] != '\0')
-        n++;
-    return n;
-}
-
-static void strcopy(char *dest, const char *src)
-{
-    while ((*dest++ = *src++) != '\0')
-        ;
-}
-
-static void strncopy(char *dest, const char *src, unsigned int n)
-{
-    unsigned int i;
-    for (i = 0; i < n && src[i] != '\0'; i++)
-    {
-        dest[i] = src[i];
-    }
-    dest[i] = '\0';
-}
-
-static char *strcat(char *dest, const char *src)
-{
-    char *ret = dest;
-    while (*dest)
-        dest++;
-    while ((*dest++ = *src++))
-        ;
-    return ret;
-}
-
-static char *strncat(char *dest, const char *src, unsigned int n)
-{
-    char *ret = dest;
-    while (*dest)
-        dest++;
-    while (n-- && *src)
-    {
-        *dest++ = *src++;
-    }
-    *dest = '\0';
-    return ret;
-}
-
-static void reverse(char s[])
-{
-    int i, j;
-    char c;
-    for (i = 0, j = strlen_custom(s) - 1; i < j; i++, j--)
-    {
-        c = s[i];
-        s[i] = s[j];
-        s[j] = c;
-    }
-}
-
-static void itoa(int n, char s[], int base)
-{
-    int i = 0, sign = n;
-
-    if (n < 0)
-        n = -n;
-
-    do
-    {
-        int digit = n % base;
-        s[i++] = (digit < 10) ? digit + '0' : digit - 10 + 'A';
-    } while ((n /= base) > 0);
-
-    if (sign < 0)
-        s[i++] = '-';
-
-    s[i] = '\0';
-    reverse(s);
 }
