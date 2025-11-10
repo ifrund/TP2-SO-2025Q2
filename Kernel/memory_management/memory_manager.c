@@ -1,7 +1,7 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "include/memory_manager.h"
+#include "../include/memory_manager.h"
 
 #define BLOCK_SIZE 0x1000                       // 4KB, igual que una página
 #define MEMORY_START (void *)0x0000000000500000 // Dirección del primer bloque. Todo el espacio desde ~0x40 0000 esta disponible
@@ -30,8 +30,25 @@ static bool is_initialized = false;
 uint32_t first_free_index = 0;
 uint32_t free_blocks;
 
-void reset_first_free_index();
+/**
+ * Reubica el índice del primer bloque libre tras una operación que podría haberlo cambiado
+ */
+void reset_first_free_index()
+{
+    bool found = false;
+    for (uint32_t i = 0; i < TOTAL_BLOCK_COUNT && !found; i++)
+    {
+        if (block_array[i].status == FREE)
+        {
+            first_free_index = i;
+            found = true;
+        }
+    }
+}
 
+/**
+ * Inicializa la memoria a administrar y las estructuras de datos del alocador
+ */
 void create_mm()
 {
 
@@ -49,7 +66,10 @@ void create_mm()
     free_blocks = TOTAL_BLOCK_COUNT;
 }
 
-// size: cantidad de bytes para reservar
+/**
+ * Aloca una cantidad de bytes en memoria
+ * @param size cantidad de bytes a alocar
+ */
 void *alloc(const uint64_t size)
 {
 
@@ -102,6 +122,10 @@ void *alloc(const uint64_t size)
     return NULL;
 }
 
+/**
+ * Libera la memoria alocada en la dirección p
+ * @param address puntero de la memoria a liberar
+ */
 void free(void *address)
 {
     if (address == NULL)
@@ -124,6 +148,10 @@ void free(void *address)
     free_blocks += blocks_to_free;
 }
 
+/**
+ * Almacena el estado de la memoria en el arreglo recibido
+ * @param status_out arreglo de 6 enteros
+ */
 void status_count(uint32_t *status_out)
 {
     status_out[0] = _TOTAL_MEMORY;
@@ -132,17 +160,4 @@ void status_count(uint32_t *status_out)
     status_out[3] = BLOCK_SIZE;
     status_out[4] = TOTAL_BLOCK_COUNT;
     status_out[5] = TOTAL_BLOCK_COUNT - free_blocks;
-}
-
-void reset_first_free_index()
-{
-    bool found = false;
-    for (uint32_t i = 0; i < TOTAL_BLOCK_COUNT && !found; i++)
-    {
-        if (block_array[i].status == FREE)
-        {
-            first_free_index = i;
-            found = true;
-        }
-    }
 }
