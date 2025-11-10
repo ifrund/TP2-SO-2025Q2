@@ -115,7 +115,14 @@ Se detallan ejemplos para requerimientos que no son triviales; en términos gene
 Consultar la sección # Comandos, utilizarlas basta para comprobar su funcionamiento.
 
 ### Requerimientos faltantes o parciales
-#### Matar proceso con semáforos
+#### Prioridades
+El uso de prioridades presenta un error donde procesos con la misma prioridad pueden demorar una cantidad distinta y arbitraria de ticks.
+
+Esto puede replicarse con `test-prio`, donde el primer proceso tendrá algunos ticks más que los demás.
+
+#### Cerrar semáforos
+Aunque el presente trabajo cuenta con la implementación de la syscall para cerrar semáforos, la misma no se utiliza al matar procesos (incluida la `shell`).
+
 Al matar un proceso que usa semáforos en su interacción con otros, si el mismo se encontraba en uso de la región crítica, no libera el uso del semáforo y los demás procesos quedan bloqueados sin manera de desbloquearlos.
 
 Esto sucede particularmente al utilizar `mvar`; en ejecución es imposible saber qué proceso está ejecutándose en un momento dado y si se mata a uno de ellos es posible matar al que se encontraba en la región crítica (notar además que, por diseño, aunque se mate a un writer también se bloquearán los readers, y viceversa).
@@ -126,6 +133,8 @@ En la rama `PipesMvar` se encuentra una solución parcial que se decidió no inc
 
 ## Limitaciones
 - Solo están implementadas las teclas especiales del lado izquierdo del teclado (`LCTRL`, `LSHIFT`, `LALT`)
+- El scrolleo de pantalla funciona pero por problemas ajenos al alcance de este trabajo práctico presenta errores donde se imprime basura en las últimas líneas en lugar de limpiarlas para continuar la escritura. Aunque no sea visible, ejecutar `clear` limpia la pantalla pero incluso así presenta algunos problemas.
+- Los procesos que imprimen en pantalla de forma recurrente, como `loop` y los readers de `mvar`, lo hacen sobre la línea de comandos pero esta escritura no forma parte del buffer de comandos. Es decir, al enviar un comando, no se tendrá en cuenta lo escrito por estos procesos.
 
 ## Citas
 - Como nota general, se hizo uso de clientes de IA para encarar la implementación. Todo el código generado por IA fue interpretado, modificado y adaptado sobre secciones puntuales del código, por lo que no hay una cita apropiada para el mismo.
