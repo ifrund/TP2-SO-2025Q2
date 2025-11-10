@@ -66,7 +66,7 @@ typedef struct {
     int child_amount;
     int childs[MAX_PCS];
     int blocks_amount;
-
+    int dad_blocked;
     int yielding; //1 true, 0 false
 } PCB;
 

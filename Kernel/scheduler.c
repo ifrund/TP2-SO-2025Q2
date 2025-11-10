@@ -23,8 +23,6 @@ void *scheduling(void *rsp)
             curr->total_ticks++;
 
             // si consumio su tiempo, resetiamos su tiempo y lo dejamos en ready
-            // esto quiere decir q si le aplicas nice a un pcs recien se va a ver el efecto una vez q consuma su tiempo
-            // y pase por get_max_time_for_priority
             if (curr->time_used >= curr->my_max_time)
             {
                 curr->time_used = 0;

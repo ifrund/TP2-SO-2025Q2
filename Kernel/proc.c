@@ -181,6 +181,7 @@ int create_process(void *rip, char *name, int argc, char *argv[], uint64_t *fds)
     pcb->total_ticks = 0;
     pcb->changes = 0;
     pcb->yield_changes = 0;
+    pcb->dad_blocked = 0;
 
     if (strcmp(name, "wait") == 0)
     {
@@ -332,7 +333,9 @@ int kill_process(uint64_t pid)
     {
 
         // Despertar al padre
-        unblock_process(parent_pid);
+        if(proc->dad_blocked){
+            unblock_process(parent_pid);
+        }
 
         // me elimino de la lista de hijos del padre
         PCB *parent = process_table[parent_pid];
@@ -496,6 +499,7 @@ int wait(uint64_t target_pid, uint64_t my_pid)
         return 0;
     }
 
+    target->dad_blocked = 1;
     block_process(my_pid);
     return 0;
 }
