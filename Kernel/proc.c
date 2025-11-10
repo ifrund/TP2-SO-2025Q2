@@ -332,7 +332,8 @@ int kill_process(uint64_t pid)
     {
 
         // Despertar al padre
-        if(proc->dad_blocked){
+        if (proc->dad_blocked)
+        {
             unblock_process(parent_pid);
         }
 
@@ -361,6 +362,12 @@ int kill_process(uint64_t pid)
     proc->child_amount = 0; // dejo esto en 0 por si sigo apareciendo en el ps y q se vea lindo :)
 
     active_processes--;
+
+    if (pid == SHELL_PID)
+    {
+        close_all_sems();
+    }
+    
     last_wish(pid); // yield especial porque este pid ya es zombie
     return 0;
 }

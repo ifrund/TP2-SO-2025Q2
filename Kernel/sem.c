@@ -145,3 +145,14 @@ int sem_close(const char *name)
 
     return 0;
 }
+
+void close_all_sems()
+{
+    for (int i = 0; i < MAX_SEMAPHORES; i++)
+    {
+        if (semaphores[i].initialized)
+        {
+            sem_close(semaphores[i].name);
+        }
+    }
+}
