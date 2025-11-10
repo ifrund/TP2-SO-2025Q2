@@ -9,6 +9,7 @@
 #include "../include/memory_manager.h"
 #include "../include/lib_bit.h"
 #include "../include/lib_buddy.h"
+#include "../include/lib_mem.h"
 
 static size_info buddy_sizes[NSIZES];
 static void *buddy_base; // start address of memory managed by the buddy allocator
@@ -16,7 +17,7 @@ static uint64_t allocated;
 
 uint32_t block_size(char *p)
 {
-    for (uint16_t k = 0; k < NSIZES; k++)
+    for (uint16_t k = 0; k < NSIZES - 1; k++)
     {
         if (is_bit_set(buddy_sizes[k + 1].split, addr_to_bi(k + 1, p, buddy_base)))
             return k;
