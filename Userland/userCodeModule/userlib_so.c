@@ -90,10 +90,12 @@ void status_count_dummy(int argc, char **argv)
     _status_count(status);
 
     write_out("=== Estado del sistema de memoria ===");
+    char status_str[16];
     for (int i = 0; i < 6; i++)
     {
         write_out(aux_strings[i]);
-        printDec(status[i]);
+        int_to_char(status[i], status_str);
+        write_out(status_str);
     }
     write_out("\n");
 
