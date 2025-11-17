@@ -130,10 +130,12 @@ Se detallan ejemplos para requerimientos que no son triviales; en términos gene
 Consultar la sección # Comandos, utilizarlas basta para comprobar su funcionamiento.
 
 ### Requerimientos faltantes o parciales
-#### Cerrar semáforos
-Aunque el presente trabajo cuenta con la implementación de la syscall para cerrar semáforos, la misma no se utiliza al matar procesos (incluida la `shell`).
+#### Buddy memory manager
+Cuando se compila con el administrador de memoria buddy, el test del mismo (`test-mm`) rompe el sistema.
 
-Al matar un proceso que usa semáforos en su interacción con otros, si el mismo se encontraba en uso de la región crítica, no libera el uso del semáforo y los demás procesos quedan bloqueados sin manera de desbloquearlos.
+El sistema en sí funciona usando este administrador, y no se logró rastrear el error para solucionarlo.
+#### Cerrar semáforos
+Al matar un proceso que usa semáforos en su interacción con otros, si el mismo se encontraba en uso de la región crítica, no libera el uso del semáforo y los demás procesos quedan bloqueados sin manera de desbloquearlos. Además, si se matan a todos los procesos que utilizaban un semáforo, este no se cierra.
 
 Esto sucede particularmente al utilizar `mvar`; en ejecución es imposible saber qué proceso está ejecutándose en un momento dado y si se mata a uno de ellos es posible matar al que se encontraba en la región crítica (notar además que, por diseño, aunque se mate a un writer también se bloquearán los readers, y viceversa).
 
@@ -148,7 +150,7 @@ Para replicar este problema, en el modo de `debug` colocar un breakpoint `b new_
 
 ## Limitaciones
 - Solo están implementadas las teclas especiales del lado izquierdo del teclado (`LCTRL`, `LSHIFT`, `LALT`)
-- El scrolleo de pantalla funciona pero por problemas ajenos al alcance de este trabajo práctico presenta errores donde se imprime basura en las últimas líneas en lugar de limpiarlas para continuar la escritura. Aunque no sea visible, ejecutar `clear` limpia la pantalla pero incluso así presenta algunos problemas.
+- El scrolleo de pantalla funciona pero por problemas ajenos al alcance de este trabajo práctico presenta errores donde se imprime basura en las últimas líneas en lugar de limpiarlas para continuar la escritura. Se pide utilizar el comando `clear` **antes de llenar la pantalla** para continuar con la ejecución del sistema.
 - Los procesos que imprimen en pantalla de forma recurrente, como `loop` y los readers de `mvar`, lo hacen sobre la línea de comandos pero esta escritura no forma parte del buffer de comandos. Es decir, al enviar un comando, no se tendrá en cuenta lo escrito por estos procesos.
 
 ## Citas
