@@ -509,11 +509,43 @@ int wait(uint64_t target_pid, uint64_t my_pid)
     // si el target termino primero, lo terminamos
     if (target->state == ZOMBIE)
     {
+        //ya se desbloqueo asiq el hijo es libre
+        PCB *zombie = target;
+
+        if (zombie->argv != NULL)
+        {
+            for (int j = 0; zombie->argv[j] != NULL; j++)
+            {
+                free(zombie->argv[j]);
+            }
+            free(zombie->argv);
+        }
+
+        free(zombie->stack_base);
+        free(zombie);
+        process_table[target_pid] = NULL;
         return 0;
     }
 
     target->dad_blocked = 1;
     block_process(my_pid);
+
+    //ya se desbloqueo asiq el hijo es libre
+    PCB *zombie = target;
+
+    if (zombie->argv != NULL)
+    {
+        for (int j = 0; zombie->argv[j] != NULL; j++)
+        {
+            free(zombie->argv[j]);
+        }
+        free(zombie->argv);
+    }
+
+    free(zombie->stack_base);
+    free(zombie);
+    process_table[target_pid] = NULL;
+    
     return 0;
 }
 
